@@ -12,3 +12,7 @@ Board game collection and session tracker application
 - Custom scoring by board game
 - User login
 - Frontend
+
+## Entity relationships
+
+![image](docs/er_diagram.svg)
