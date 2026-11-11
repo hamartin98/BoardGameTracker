@@ -29,7 +29,12 @@ public class PlaySessionService : IPlaySessionService
         throw new NotImplementedException();
     }
 
-    public Task<PlaySession> UpdateAsync(PlaySession model, CancellationToken cancellationToken)
+    public Task<PlaySession> UpdateAsync(
+        PlaySession model,
+        Guid id,
+        int version,
+        CancellationToken cancellationToken
+    )
     {
         throw new NotImplementedException();
     }

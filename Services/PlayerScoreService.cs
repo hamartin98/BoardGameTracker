@@ -29,7 +29,12 @@ public class PlayerScoreService : IPlayerScoreService
         throw new NotImplementedException();
     }
 
-    public Task<PlayerScore> UpdateAsync(PlayerScore model, CancellationToken cancellationToken)
+    public Task<PlayerScore> UpdateAsync(
+        PlayerScore model,
+        Guid id,
+        int version,
+        CancellationToken cancellationToken
+    )
     {
         throw new NotImplementedException();
     }

@@ -29,7 +29,12 @@ public class PlayerService : IPlayerService
         throw new NotImplementedException();
     }
 
-    public Task<Player> UpdateAsync(Player model, CancellationToken cancellationToken)
+    public Task<Player> UpdateAsync(
+        Player model,
+        Guid id,
+        int version,
+        CancellationToken cancellationToken
+    )
     {
         throw new NotImplementedException();
     }
