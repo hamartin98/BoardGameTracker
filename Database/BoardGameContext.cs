@@ -1,4 +1,4 @@
-﻿using BoardGameTracker.Models;
+﻿using BoardGameTracker.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Database;
