@@ -1,6 +1,6 @@
 using BoardGameTracker.Models.Enums;
 
-namespace BoardGameTracker.Models;
+namespace BoardGameTracker.Models.Entities;
 
 /// <summary>
 /// Board game information

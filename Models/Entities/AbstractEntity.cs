@@ -1,4 +1,4 @@
-﻿namespace BoardGameTracker.Models;
+﻿namespace BoardGameTracker.Models.Entities;
 
 /// <summary>
 /// Abstract class for common information about entities.
