@@ -10,3 +10,5 @@ Board game collection and session tracker application
 - Board game recommendation based on time and player count
 - BoardGameGeek integration
 - Custom scoring by board game
+- User login
+- Frontend
