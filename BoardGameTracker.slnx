@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="BoardGameTrackerApi/BoardGameTrackerApi.csproj" />
+  <Project Path="Database/Database.csproj" />
   <Project Path="Models/Models.csproj" />
 </Solution>
