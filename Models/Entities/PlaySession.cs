@@ -7,9 +7,9 @@ namespace BoardGameTracker.Models.Entities;
 /// </summary>
 public class PlaySession : AbstractEntity
 {
-  /// <summary>
-  /// Id of the board game used
-  /// </summary>
+    /// <summary>
+    /// Id of the board game used
+    /// </summary>
     public required Guid BoardGameId { get; set; }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class PlaySession : AbstractEntity
     /// <summary>
     /// Type of the play session
     /// </summary>
-    public PlaySessionType SessionType {get; set; }
+    public PlaySessionType SessionType { get; set; }
 
     /// <summary>
     /// Additional notes about the play session

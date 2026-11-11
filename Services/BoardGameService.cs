@@ -29,7 +29,12 @@ public class BoardGameService : IBoardGameService
         throw new NotImplementedException();
     }
 
-    public Task<BoardGame> UpdateAsync(BoardGame model, CancellationToken cancellationToken)
+    public Task<BoardGame> UpdateAsync(
+        BoardGame model,
+        Guid id,
+        int version,
+        CancellationToken cancellationToken
+    )
     {
         throw new NotImplementedException();
     }

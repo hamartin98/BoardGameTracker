@@ -8,7 +8,12 @@ public interface ICrudService<ModelType, FilterType>
 
     Task<ModelType> CreateAsync(ModelType model, CancellationToken cancellationToken);
 
-    Task<ModelType> UpdateAsync(ModelType model, CancellationToken cancellationToken);
+    Task<ModelType> UpdateAsync(
+        ModelType model,
+        Guid id,
+        int version,
+        CancellationToken cancellationToken
+    );
 
     Task<IEnumerable<ModelType>> GetAllAsync(
         FilterType filter,
