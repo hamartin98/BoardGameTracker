@@ -1,4 +1,4 @@
-using BoardGameTracker.Models;
+namespace BoardGameTracker.Models.Entities;
 
 /// <summary>
 /// Recorded score for a player for the given session

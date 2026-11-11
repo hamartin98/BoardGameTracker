@@ -1,4 +1,6 @@
 using BoardGameTracker.Database;
+using BoardGameTracker.Interfaces.Services;
+using BoardGameTracker.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +13,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<BoardGameContext>(options =>
     options.UseInMemoryDatabase("BoardGameList")
 );
+
+builder.Services.AddTransient<IBoardGameService, BoardGameService>();
+builder.Services.AddTransient<IPlayerService, PlayerService>();
+builder.Services.AddTransient<IPlayerScoreService, PlayerScoreService>();
+builder.Services.AddTransient<IPlaySessionService, PlaySessionService>();
 
 var app = builder.Build();
 
