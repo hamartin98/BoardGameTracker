@@ -1,9 +1,16 @@
+using BoardGameTracker.Database;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<BoardGameContext>(options =>
+    options.UseInMemoryDatabase("BoardGameList")
+);
 
 var app = builder.Build();
 
