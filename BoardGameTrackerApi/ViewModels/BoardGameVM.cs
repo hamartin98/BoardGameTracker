@@ -42,7 +42,7 @@ public class BoardGameBaseVM
     /// <summary>
     /// Categories of the board game
     /// </summary>
-    public BoardGameCategoryVM Categories { get; set; }
+    public List<BoardGameCategoryVM> Categories { get; set; } = [];
 
     /// <summary>
     /// Optional id of the board game that this game is the expansion of
@@ -52,9 +52,13 @@ public class BoardGameBaseVM
 
 public class BoardGameCreateVM : BoardGameBaseVM { }
 
-public class BordGameUpdateVM : BoardGameCreateVM { }
+public class BoardGameUpdateVM : BoardGameCreateVM { }
 
-public class BordGameResponseVM : BoardGameCreateVM
+public class BoardGameResponseVM : BoardGameCreateVM
 {
     public required ResponseMetaDataVM MetaData { get; set; }
+
+    public BoardGameResponseVM? ExpansionOf { get; set; }
+
+    public List<BoardGameResponseVM> Expansions { get; set; } = [];
 }

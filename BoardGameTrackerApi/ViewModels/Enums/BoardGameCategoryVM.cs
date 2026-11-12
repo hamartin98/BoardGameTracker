@@ -4,7 +4,6 @@ namespace BoardGameTracker.Api.ViewModels.Enums;
 /// Some of the more important board game categories from:
 /// https://boardgamegeek.com/browse/boardgamecategory
 /// </summary>
-[Flags]
 public enum BoardGameCategoryVM : ulong
 {
   ABSTRACT = 1,

@@ -56,4 +56,9 @@ public class BoardGame : AbstractEntity
     /// Optional board game entity that this game is the expansion of
     /// </summary>
     public BoardGame? ExpansionOf { get; set; }
+
+    /// <summary>
+    /// Expansions of the game
+    /// </summary>
+    public ICollection<BoardGame> Expansions { get; set; } = [];
 }
