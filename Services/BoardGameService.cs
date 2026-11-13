@@ -22,15 +22,26 @@ public class BoardGameService : IBoardGameService
             cancellationToken
         );
 
-        var res = await Context.BoardGames.AddAsync(model, cancellationToken);
+        var result = await Context.BoardGames.AddAsync(model, cancellationToken);
         await Context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return res.Entity;
+        return result.Entity;
     }
 
-    public Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await using var transaction = await Context.Database.BeginTransactionAsync(
+            cancellationToken
+        );
+
+        var entity =
+            await Context
+                .BoardGames.Include(e => e.Expansions)
+                .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+            ?? throw new Exception("Entity not found");
+        Context.Remove(entity);
+        await Context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<BoardGame>> GetAllAsync(
