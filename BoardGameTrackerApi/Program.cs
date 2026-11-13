@@ -1,6 +1,7 @@
 using System.Reflection;
 using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
+using BoardGameTracker.Mappers;
 using BoardGameTracker.Services;
 using Mapster;
 using MapsterMapper;
@@ -23,13 +24,12 @@ builder.Services.AddTransient<IPlayerService, PlayerService>();
 builder.Services.AddTransient<IPlayerScoreService, PlayerScoreService>();
 builder.Services.AddTransient<IPlaySessionService, PlaySessionService>();
 
-builder.Services.AddMapster();
-
-
-TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
 var typeAdapterConfig = new TypeAdapterConfig();
 builder.Services.AddSingleton(typeAdapterConfig);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
+typeAdapterConfig.Scan(Assembly.GetExecutingAssembly());
+
+builder.Services.AddScoped<IBoardGameTrackerMapper, BoardGameTrackerMapper>();
 
 var app = builder.Build();
 
