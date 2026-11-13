@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using BoardGameTracker.Database;
+using BoardGameTracker.Database.Interceptors;
 using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Services;
 using Mapster;
@@ -22,10 +23,14 @@ builder.Services.AddSwaggerGen(config =>
     config.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 });
 
-builder.Services.AddDbContext<BoardGameContext>(options =>
-    options
-        .UseInMemoryDatabase("BoardGameList")
-        .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+builder.Services.AddSingleton<SoftDeleteInterceptor>();
+
+builder.Services.AddDbContext<BoardGameContext>(
+    (serviceProvider, options) =>
+        options
+            .UseInMemoryDatabase("BoardGameList")
+            .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .AddInterceptors(serviceProvider.GetRequiredService<SoftDeleteInterceptor>())
 );
 
 builder.Services.AddTransient<IBoardGameService, BoardGameService>();

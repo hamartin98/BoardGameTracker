@@ -60,6 +60,21 @@ public static class DbDataSeeder
             ExpansionOfId = scythe.Id,
         };
 
-        return [scythe, scytheFenris];
+        var deletedBoardGame = new BoardGame
+        {
+          
+            Id = new Guid("77934a16-a70a-4ac3-9c0e-000000000002"),
+            IsDeleted = true,
+            Name = "Scythe: The Rise of Fenris",
+            MinPlayerCount = 1,
+            MaxPlayerCount = 2,
+            MinPlayTime = new TimeSpan(0, 30, 0),
+            MaxPlayTime = new TimeSpan(1, 0, 0),
+            Categories =
+                BoardGameCategory.ANIMALS,
+            Type = BoardGameType.BASE_GAME,
+        };
+
+        return [scythe, scytheFenris, deletedBoardGame];
     }
 }

@@ -12,6 +12,11 @@ public class AbstractEntityConfiguration
         {
             abstracEntity.HasKey(e => e.Id);
             abstracEntity.Property(e => e.Version).IsConcurrencyToken();
+            abstracEntity.HasQueryFilter(e => !e.IsDeleted);
+
+            abstracEntity
+                .HasIndex(e => e.IsDeleted)
+                .HasFilter($"{nameof(AbstractEntity.IsDeleted)} = false");
         });
     }
 }

@@ -14,7 +14,8 @@ public static partial class ModelBuilderExtensions
                 .HasMany(e => e.Expansions)
                 .WithOne(e => e.ExpansionOf)
                 .HasForeignKey(e => e.ExpansionOfId)
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
