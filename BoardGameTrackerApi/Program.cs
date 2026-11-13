@@ -5,6 +5,7 @@ using BoardGameTracker.Services;
 using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,9 @@ builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<BoardGameContext>(options =>
-    options.UseInMemoryDatabase("BoardGameList")
+    options
+        .UseInMemoryDatabase("BoardGameList")
+        .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning))
 );
 
 builder.Services.AddTransient<IBoardGameService, BoardGameService>();
