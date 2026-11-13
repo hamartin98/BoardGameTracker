@@ -1,4 +1,5 @@
-﻿using BoardGameTracker.Models.Entities;
+﻿using BoardGameTracker.Database.EntityConfigurations;
+using BoardGameTracker.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Database;
@@ -15,4 +16,9 @@ public class BoardGameContext : DbContext
     public DbSet<PlayerScore> PlayerScores { get; set; }
 
     public DbSet<PlaySession> PlaySessions { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ConfigureBoardGame();
+    }
 }
