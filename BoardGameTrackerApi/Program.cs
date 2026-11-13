@@ -34,8 +34,6 @@ builder.Services.AddSingleton(typeAdapterConfig);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
 typeAdapterConfig.Scan(Assembly.GetExecutingAssembly());
 
-builder.Services.AddScoped<IBoardGameTrackerMapper, BoardGameTrackerMapper>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
