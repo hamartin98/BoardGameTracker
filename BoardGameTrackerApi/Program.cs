@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
-using BoardGameTracker.Mappers;
 using BoardGameTracker.Services;
 using Mapster;
 using MapsterMapper;
@@ -16,7 +15,12 @@ builder
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
     );
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(config =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    config.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+});
 
 builder.Services.AddDbContext<BoardGameContext>(options =>
     options
