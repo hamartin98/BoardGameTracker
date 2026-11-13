@@ -8,11 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public class BoardGameService : IBoardGameService
+public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
 {
     private readonly BoardGameContext Context;
 
     public BoardGameService(BoardGameContext context)
+        : base(context)
     {
         Context = context;
     }
@@ -40,8 +41,7 @@ public class BoardGameService : IBoardGameService
                 .BoardGames.Include(e => e.Expansions)
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
             ?? throw new EntityNotFoundException<BoardGame>();
-        Context.Remove(entity);
-        await Context.SaveChangesAsync(cancellationToken);
+        await DeleteEntity(entity, version, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 

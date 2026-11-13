@@ -82,7 +82,7 @@ public class BoardGamesController : Controller
     }
 
     /// <summary>
-    /// Get all board games
+    /// Delete board game
     /// </summary>
     /// <param name="boardGameId">Id of the board game to delete</param>
     /// <param name="version">Version of the board game for concurrency check</param>
