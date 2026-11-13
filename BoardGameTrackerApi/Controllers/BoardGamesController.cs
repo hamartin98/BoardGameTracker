@@ -36,21 +36,14 @@ public class BoardGamesController : Controller
         CancellationToken cancellationToken
     )
     {
-        try
-        {
-            BoardGame entity = Mapper.Map<BoardGame>(createVM);
-            BoardGame result = await BoardGameService.CreateAsync(entity, cancellationToken);
-            BoardGameResponseVM mappedResult = Mapper.Map<BoardGameResponseVM>(result);
-            return CreatedAtAction(
-                nameof(GetById),
-                new { boardGameId = mappedResult.MetaData.Id },
-                mappedResult
-            );
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex);
-        }
+        BoardGame entity = Mapper.Map<BoardGame>(createVM);
+        BoardGame result = await BoardGameService.CreateAsync(entity, cancellationToken);
+        BoardGameResponseVM mappedResult = Mapper.Map<BoardGameResponseVM>(result);
+        return CreatedAtAction(
+            nameof(GetById),
+            new { boardGameId = mappedResult.MetaData.Id },
+            mappedResult
+        );
     }
 
     /// <summary>
@@ -67,16 +60,9 @@ public class BoardGamesController : Controller
         CancellationToken cancellationToken
     )
     {
-        try
-        {
-            BoardGame result = await BoardGameService.GetByIdAsync(boardGameId, cancellationToken);
-            BoardGameResponseVM mappedResult = Mapper.Map<BoardGameResponseVM>(result);
-            return Ok(mappedResult);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
+        BoardGame result = await BoardGameService.GetByIdAsync(boardGameId, cancellationToken);
+        BoardGameResponseVM mappedResult = Mapper.Map<BoardGameResponseVM>(result);
+        return Ok(mappedResult);
     }
 
     /// <summary>
@@ -89,20 +75,10 @@ public class BoardGamesController : Controller
     [Produces("application/json")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        try
-        {
-            var filter = new BoardGameFilter();
-            List<BoardGame> result =
-            [
-                .. await BoardGameService.GetAllAsync(filter, cancellationToken),
-            ];
-            List<BoardGameResponseVM> mappedResult = Mapper.Map<List<BoardGameResponseVM>>(result);
-            return Ok(mappedResult);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
+        var filter = new BoardGameFilter();
+        List<BoardGame> result = [.. await BoardGameService.GetAllAsync(filter, cancellationToken)];
+        List<BoardGameResponseVM> mappedResult = Mapper.Map<List<BoardGameResponseVM>>(result);
+        return Ok(mappedResult);
     }
 
     /// <summary>
@@ -121,14 +97,7 @@ public class BoardGamesController : Controller
         CancellationToken cancellationToken
     )
     {
-        try
-        {
-            await BoardGameService.DeleteAsync(boardGameId, version, cancellationToken);
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
+        await BoardGameService.DeleteAsync(boardGameId, version, cancellationToken);
+        return NoContent();
     }
 }

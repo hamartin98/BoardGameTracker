@@ -43,6 +43,9 @@ builder.Services.AddSingleton(typeAdapterConfig);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
 typeAdapterConfig.Scan(Assembly.GetExecutingAssembly());
 
+builder.Services.AddExceptionHandler<ExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateAsyncScope())
@@ -67,6 +70,8 @@ if (app.Environment.IsDevelopment())
         options.SwaggerEndpoint("v1/swagger.json", "Board game tracker API");
     });
 }
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 

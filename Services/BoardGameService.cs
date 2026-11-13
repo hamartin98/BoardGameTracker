@@ -1,5 +1,6 @@
 using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
+using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
@@ -38,7 +39,7 @@ public class BoardGameService : IBoardGameService
             await Context
                 .BoardGames.Include(e => e.Expansions)
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
-            ?? throw new Exception("Entity not found");
+            ?? throw new EntityNotFoundException<BoardGame>();
         Context.Remove(entity);
         await Context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -57,7 +58,7 @@ public class BoardGameService : IBoardGameService
     {
         BoardGame? result =
             await Context.BoardGames.FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
-            ?? throw new Exception("Entity not found");
+            ?? throw new EntityNotFoundException<BoardGame>();
 
         await LoadRelations(result);
         return result;
