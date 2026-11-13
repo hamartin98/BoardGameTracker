@@ -104,4 +104,31 @@ public class BoardGamesController : Controller
             return StatusCode(500, ex.Message);
         }
     }
+
+    /// <summary>
+    /// Get all board games
+    /// </summary>
+    /// <param name="boardGameId">Id of the board game to delete</param>
+    /// <param name="version">Version of the board game for concurrency check</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <response code="206">Entity successfully deleted</response>
+    /// <response code="500">Internal system error</response>
+    [HttpDelete("{boardGameId}")]
+    [Produces("application/json")]
+    public async Task<IActionResult> Delete(
+        Guid boardGameId,
+        [FromQuery] int version,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            await BoardGameService.DeleteAsync(boardGameId, version, cancellationToken);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
 }
