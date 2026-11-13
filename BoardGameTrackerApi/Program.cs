@@ -40,6 +40,19 @@ typeAdapterConfig.Scan(Assembly.GetExecutingAssembly());
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateAsyncScope())
+{
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<BoardGameContext>();
+        await DbDataSeeder.Seed(context);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
