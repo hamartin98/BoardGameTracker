@@ -24,7 +24,7 @@ public class PlaySessionService : IPlaySessionService
         throw new NotImplementedException();
     }
 
-    public Task<PlaySession> GetByIdAsync(Guid id, int version, CancellationToken cancellationToken)
+    public Task<PlaySession> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

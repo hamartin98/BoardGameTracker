@@ -24,7 +24,7 @@ public class BoardGameService : IBoardGameService
         throw new NotImplementedException();
     }
 
-    public Task<BoardGame> GetByIdAsync(Guid id, int version, CancellationToken cancellationToken)
+    public Task<BoardGame> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

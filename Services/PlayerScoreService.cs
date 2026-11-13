@@ -24,7 +24,7 @@ public class PlayerScoreService : IPlayerScoreService
         throw new NotImplementedException();
     }
 
-    public Task<PlayerScore> GetByIdAsync(Guid id, int version, CancellationToken cancellationToken)
+    public Task<PlayerScore> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
