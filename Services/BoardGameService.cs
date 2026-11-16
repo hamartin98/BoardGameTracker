@@ -4,11 +4,10 @@ using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
-using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
+public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBoardGameService
 {
     private readonly BoardGameContext Context;
 
@@ -34,13 +33,7 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
         CancellationToken cancellationToken
     )
     {
-        var query = Context.BoardGames.AsQueryable().AsNoTracking();
-        query = filter.FilterQuery(query);
-        var result = await PaginatedResponse<BoardGame>.CreateAsync(
-            query,
-            filter.Page,
-            filter.PageSize
-        );
+        var result = await GetAllFilteredAsync(filter, cancellationToken);
         return result;
     }
 

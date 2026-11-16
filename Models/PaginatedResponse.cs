@@ -30,11 +30,15 @@ public class PaginatedResponse<EntityType> : List<EntityType>
     public static async Task<PaginatedResponse<EntityType>> CreateAsync(
         IQueryable<EntityType> source,
         int page,
-        int pageSize
+        int pageSize,
+        CancellationToken cancellationToken
     )
     {
-        var count = await source.CountAsync();
-        var items = await source.Skip(page * pageSize).Take(pageSize).ToListAsync();
+        var count = await source.CountAsync(cancellationToken);
+        var items = await source
+            .Skip(page * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
         return new PaginatedResponse<EntityType>(items, count, page, pageSize);
     }
 }
