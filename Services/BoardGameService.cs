@@ -1,5 +1,6 @@
 using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
+using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
@@ -28,13 +29,19 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
         await DeleteEntityAsync(id, version, cancellationToken);
     }
 
-    public async Task<IEnumerable<BoardGame>> GetAllAsync(
+    public async Task<PaginatedResponse<BoardGame>> GetAllAsync(
         BoardGameFilter filter,
         CancellationToken cancellationToken
     )
     {
-        List<BoardGame> boardGames = await Context.BoardGames.ToListAsync(cancellationToken);
-        return boardGames;
+        var query = Context.BoardGames.AsQueryable().AsNoTracking();
+        query = filter.FilterQuery(query);
+        var result = await PaginatedResponse<BoardGame>.CreateAsync(
+            query,
+            filter.Page,
+            filter.PageSize
+        );
+        return result;
     }
 
     public async Task<BoardGame> GetByIdAsync(Guid id, CancellationToken cancellationToken)

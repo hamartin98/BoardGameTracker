@@ -1,3 +1,5 @@
+using BoardGameTracker.Models.Entities;
+
 namespace BoardGameTracker.Models.Filters;
 
-public class PlayerFilter : AbstractFilter { }
+public class PlayerFilter : AbstractFilter<Player> { }

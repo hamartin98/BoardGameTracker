@@ -1,4 +1,5 @@
 using BoardGameTracker.Interfaces.Services;
+using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
 
@@ -16,7 +17,7 @@ public class PlayerService : IPlayerService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Player>> GetAllAsync(
+    public Task<PaginatedResponse<Player>> GetAllAsync(
         PlayerFilter filter,
         CancellationToken cancellationToken
     )

@@ -1,4 +1,5 @@
 using BoardGameTracker.Api.ViewModels;
+using BoardGameTracker.Api.ViewModels.Filters;
 using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
@@ -55,6 +56,7 @@ public class BoardGamesController : Controller
     /// <response code="500">Internal system error</response>
     [HttpGet("{boardGameId}", Name = "GetById")]
     [Produces("application/json")]
+    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetById(
         [FromRoute] Guid boardGameId,
         CancellationToken cancellationToken
@@ -66,18 +68,20 @@ public class BoardGamesController : Controller
     }
 
     /// <summary>
-    /// Get all board games
+    /// Get board games filtered and paginated
     /// </summary>
+    /// <param name="filter">Filter</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <response code="200">Entities successfully retrieved</response>
     /// <response code="500">Internal system error</response>
     [HttpGet]
     [Produces("application/json")]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(BoardGamesResponseVM), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll([FromQuery] BoardGameFilterVM filter, CancellationToken cancellationToken)
     {
-        var filter = new BoardGameFilter();
-        List<BoardGame> result = [.. await BoardGameService.GetAllAsync(filter, cancellationToken)];
-        List<BoardGameResponseVM> mappedResult = Mapper.Map<List<BoardGameResponseVM>>(result);
+        var filterModel = Mapper.Map<BoardGameFilter>(filter);
+        var result = await BoardGameService.GetAllAsync(filterModel, cancellationToken);
+        var mappedResult = Mapper.Map<BoardGamesResponseVM>(result);
         return Ok(mappedResult);
     }
 
@@ -93,7 +97,7 @@ public class BoardGamesController : Controller
     [HttpPut("{boardGameId}")]
     [Consumes("application/json")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status200OK)]
     public async Task<IActionResult> Update(
         Guid boardGameId,
         BoardGameUpdateVM updateVM,
