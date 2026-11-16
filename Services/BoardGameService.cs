@@ -1,41 +1,73 @@
+using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Models.Entities;
+using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public class BoardGameService : IBoardGameService
+public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
 {
-    public Task<BoardGame> CreateAsync(BoardGame model, CancellationToken cancellationToken)
+    private readonly BoardGameContext Context;
+
+    public BoardGameService(BoardGameContext context)
+        : base(context)
     {
-        throw new NotImplementedException();
+        Context = context;
     }
 
-    public Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
+    public async Task<BoardGame> CreateAsync(BoardGame model, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        BoardGame result = await CreateEntityAsync(model, cancellationToken);
+        return result;
     }
 
-    public Task<IEnumerable<BoardGame>> GetAllAsync(
+    public async Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
+    {
+        await DeleteEntityAsync(id, version, cancellationToken);
+    }
+
+    public async Task<IEnumerable<BoardGame>> GetAllAsync(
         BoardGameFilter filter,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        List<BoardGame> boardGames = await Context.BoardGames.ToListAsync(cancellationToken);
+        return boardGames;
     }
 
-    public Task<BoardGame> GetByIdAsync(Guid id, int version, CancellationToken cancellationToken)
+    public async Task<BoardGame> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        BoardGame result = await FindByIdAsync(id, cancellationToken);
+        await LoadRelations(result, cancellationToken);
+        return result;
     }
 
-    public Task<BoardGame> UpdateAsync(
+    public async Task<BoardGame> UpdateAsync(
         BoardGame model,
         Guid id,
         int version,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
+        return entity;
+    }
+
+    protected override async Task LoadRelations(
+        BoardGame entity,
+        CancellationToken cancellationToken
+    )
+    {
+        var entry = Context.Entry(entity);
+        if (entity.Type == BoardGameType.BASE_GAME)
+        {
+            await entry.Collection(e => e.Expansions).LoadAsync(cancellationToken);
+        }
+        else if (entity.Type == BoardGameType.EXPANSION)
+        {
+            await entry.Reference(e => e.ExpansionOf).LoadAsync(cancellationToken);
+        }
     }
 }

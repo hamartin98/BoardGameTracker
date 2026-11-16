@@ -11,12 +11,7 @@ public class Player : AbstractEntity
     public required string Name { get; set; }
 
     /// <summary>
-    /// Collection of score entity ids for the player
-    /// </summary>
-    public ICollection<Guid> PlayerScoreIds { get; set; } = [];
-
-    /// <summary>
     /// Collection of score entities for the player
     /// </summary>
-    public ICollection<PlayerScore> PlayerScores { get; set; } = [];
+    public ICollection<PlayerScore> PlayerScores { get; } = [];
 }

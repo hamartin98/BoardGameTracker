@@ -2,7 +2,7 @@ using BoardGameTracker.Api.ViewModels;
 using BoardGameTracker.Models.Entities;
 using Mapster;
 
-namespace BoardGameTracker.Mappers;
+namespace BoardGameTracker.Mappers.Configs;
 
 public class PlayerScoreMapperConfig : IRegister
 {
@@ -13,13 +13,4 @@ public class PlayerScoreMapperConfig : IRegister
             .NewConfig<PlayerScore, PlayerScoreResponseVM>()
             .Map(dest => dest.MetaData, src => src.Adapt<ResponseMetaDataVM>());
     }
-}
-
-[Mapper]
-public interface IPlayerScoreMapper
-{
-    PlayerScore MapToEntity(PlayerScoreCreateVM playerScore);
-    PlayerScore MapToEntity(PlayerScoreUpdateVM playerScore);
-
-    PlayerScoreResponseVM MapToVM(PlayerScore playerScore);
 }

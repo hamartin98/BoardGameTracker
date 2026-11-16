@@ -3,7 +3,7 @@ namespace BoardGameTracker.Api.ViewModels;
 /// <summary>
 /// Response metadata for common information about entities.
 /// </summary>
-public abstract class ResponseMetaDataVM
+public class ResponseMetaDataVM
 {
     /// <summary>
     /// Id of the entity

@@ -18,14 +18,9 @@ public class PlaySession : AbstractEntity
     public BoardGame? BoardGame { get; set; }
 
     /// <summary>
-    /// List of expansion ids used during the session
-    /// </summary>
-    public ICollection<Guid> UsedExpansionIds { get; set; } = [];
-
-    /// <summary>
     /// List of used expansion entities used during the session
     /// </summary>
-    public ICollection<BoardGame> UsedExpansions { get; set; } = [];
+    public ICollection<BoardGame> UsedExpansions { get; } = [];
 
     /// <summary>
     /// Starting date and time of the play session
@@ -38,14 +33,9 @@ public class PlaySession : AbstractEntity
     public TimeSpan? Duration { get; set; }
 
     /// <summary>
-    /// Player score ids for the play session
-    /// </summary>
-    public ICollection<Guid> PlayerScoreIds { get; set; } = [];
-
-    /// <summary>
     /// Player scores for the play session
     /// </summary>
-    public ICollection<PlayerScore> PlayerScores { get; set; } = [];
+    public ICollection<PlayerScore> PlayerScores { get; } = [];
 
     /// <summary>
     /// Type of the play session

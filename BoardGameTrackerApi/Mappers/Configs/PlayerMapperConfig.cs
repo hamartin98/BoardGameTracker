@@ -14,12 +14,3 @@ public class PlayerMapperConfig : IRegister
             .Map(dest => dest.MetaData, src => src.Adapt<ResponseMetaDataVM>());
     }
 }
-
-[Mapper]
-public interface IPlayerMapper
-{
-    Player MapToEntity(PlayerCreateVM player);
-    Player MapToEntity(PlayerUpdateVM player);
-
-    PlayerResponseVM MapToVM(Player player);
-}

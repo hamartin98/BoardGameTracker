@@ -1,18 +1,40 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using BoardGameTracker.Database;
+using BoardGameTracker.Database.Interceptors;
 using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Services;
 using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
+    );
+builder.Services.AddSwaggerGen(config =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    config.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+});
 
-builder.Services.AddDbContext<BoardGameContext>(options =>
-    options.UseInMemoryDatabase("BoardGameList")
+builder.Services.AddSingleton<SoftDeleteInterceptor>();
+builder.Services.AddSingleton<UpdateInterceptor>();
+
+builder.Services.AddDbContext<BoardGameContext>(
+    (serviceProvider, options) =>
+        options
+            .UseInMemoryDatabase("BoardGameList")
+            .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .AddInterceptors(
+                serviceProvider.GetRequiredService<SoftDeleteInterceptor>(),
+                serviceProvider.GetRequiredService<UpdateInterceptor>()
+            )
 );
 
 builder.Services.AddTransient<IBoardGameService, BoardGameService>();
@@ -20,15 +42,28 @@ builder.Services.AddTransient<IPlayerService, PlayerService>();
 builder.Services.AddTransient<IPlayerScoreService, PlayerScoreService>();
 builder.Services.AddTransient<IPlaySessionService, PlaySessionService>();
 
-builder.Services.AddMapster();
-
-
-TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
 var typeAdapterConfig = new TypeAdapterConfig();
 builder.Services.AddSingleton(typeAdapterConfig);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
+typeAdapterConfig.Scan(Assembly.GetExecutingAssembly());
+
+builder.Services.AddExceptionHandler<ExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateAsyncScope())
+{
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<BoardGameContext>();
+        await DbDataSeeder.Seed(context);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -39,6 +74,8 @@ if (app.Environment.IsDevelopment())
         options.SwaggerEndpoint("v1/swagger.json", "Board game tracker API");
     });
 }
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 

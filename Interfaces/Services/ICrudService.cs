@@ -4,7 +4,7 @@ public interface ICrudService<ModelType, FilterType>
     where ModelType : class
     where FilterType : class
 {
-    Task<ModelType> GetByIdAsync(Guid id, int version, CancellationToken cancellationToken);
+    Task<ModelType> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<ModelType> CreateAsync(ModelType model, CancellationToken cancellationToken);
 

@@ -60,5 +60,5 @@ public class BoardGame : AbstractEntity
     /// <summary>
     /// Expansions of the game
     /// </summary>
-    public ICollection<BoardGame> Expansions { get; set; } = [];
+    public ICollection<BoardGame> Expansions { get; } = [];
 }

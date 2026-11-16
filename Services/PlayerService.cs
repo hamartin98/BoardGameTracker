@@ -24,7 +24,7 @@ public class PlayerService : IPlayerService
         throw new NotImplementedException();
     }
 
-    public Task<Player> GetByIdAsync(Guid id, int version, CancellationToken cancellationToken)
+    public Task<Player> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
