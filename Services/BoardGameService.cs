@@ -64,14 +64,25 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
         return result;
     }
 
-    public Task<BoardGame> UpdateAsync(
+    public async Task<BoardGame> UpdateAsync(
         BoardGame model,
         Guid id,
         int version,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        await using var transaction = await Context.Database.BeginTransactionAsync(
+            cancellationToken
+        );
+
+        BoardGame? entity =
+            await Context.BoardGames.FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+            ?? throw new EntityNotFoundException<BoardGame>();
+        await UpdateEntity(entity, model, version, cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return entity;
     }
 
     private async Task LoadRelations(BoardGame boardGame)

@@ -24,13 +24,17 @@ builder.Services.AddSwaggerGen(config =>
 });
 
 builder.Services.AddSingleton<SoftDeleteInterceptor>();
+builder.Services.AddSingleton<UpdateInterceptor>();
 
 builder.Services.AddDbContext<BoardGameContext>(
     (serviceProvider, options) =>
         options
             .UseInMemoryDatabase("BoardGameList")
             .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .AddInterceptors(serviceProvider.GetRequiredService<SoftDeleteInterceptor>())
+            .AddInterceptors(
+                serviceProvider.GetRequiredService<SoftDeleteInterceptor>(),
+                serviceProvider.GetRequiredService<UpdateInterceptor>()
+            )
 );
 
 builder.Services.AddTransient<IBoardGameService, BoardGameService>();

@@ -27,4 +27,20 @@ public class AbstractService<EntityType>
         Context.Remove(entity);
         await Context.SaveChangesAsync(cancellationToken);
     }
+
+    protected async Task UpdateEntity(
+        EntityType entity,
+        EntityType model,
+        int version,
+        CancellationToken cancellationToken
+    )
+    {
+        if (entity.Version != version)
+        {
+            throw new VersionMismatchException();
+        }
+        model.Id = entity.Id;
+        Context.Entry(entity).CurrentValues.SetValues(model);
+        await Context.SaveChangesAsync(cancellationToken);
+    }
 }

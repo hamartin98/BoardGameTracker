@@ -29,8 +29,8 @@ public class BoardGamesController : Controller
     /// <response code="500">Internal system error</response>
     [HttpPost]
     [Consumes("application/json")]
-    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status201Created)]
     [Produces("application/json")]
+    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create(
         [FromBody] BoardGameCreateVM createVM,
         CancellationToken cancellationToken
@@ -78,6 +78,37 @@ public class BoardGamesController : Controller
         var filter = new BoardGameFilter();
         List<BoardGame> result = [.. await BoardGameService.GetAllAsync(filter, cancellationToken)];
         List<BoardGameResponseVM> mappedResult = Mapper.Map<List<BoardGameResponseVM>>(result);
+        return Ok(mappedResult);
+    }
+
+    /// <summary>
+    /// Update board game
+    /// </summary>
+    /// <param name="boardGameId">Id of the board game to update</param>
+    ///  /// <param name="updateVM">Board game update request body</param>
+    /// <param name="version">Version of the board game for concurrency check</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <response code="206">Entity successfully updated</response>
+    /// <response code="500">Internal system error</response>
+    [HttpPut("{boardGameId}")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status201Created)]
+    public async Task<IActionResult> Update(
+        Guid boardGameId,
+        BoardGameUpdateVM updateVM,
+        [FromQuery] int version,
+        CancellationToken cancellationToken
+    )
+    {
+        BoardGame model = Mapper.Map<BoardGame>(updateVM);
+        BoardGame updated = await BoardGameService.UpdateAsync(
+            model,
+            boardGameId,
+            version,
+            cancellationToken
+        );
+        BoardGameResponseVM mappedResult = Mapper.Map<BoardGameResponseVM>(updated);
         return Ok(mappedResult);
     }
 
