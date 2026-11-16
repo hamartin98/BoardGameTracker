@@ -19,22 +19,13 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
 
     public async Task<BoardGame> CreateAsync(BoardGame model, CancellationToken cancellationToken)
     {
-        await using var transaction = await Context.Database.BeginTransactionAsync(
-            cancellationToken
-        );
-
         BoardGame result = await CreateEntityAsync(model, cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
         return result;
     }
 
     public async Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
     {
-        await using var transaction = await Context.Database.BeginTransactionAsync(
-            cancellationToken
-        );
         await DeleteEntityAsync(id, version, cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<BoardGame>> GetAllAsync(
@@ -60,14 +51,7 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
         CancellationToken cancellationToken
     )
     {
-        await using var transaction = await Context.Database.BeginTransactionAsync(
-            cancellationToken
-        );
-
         BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
-
-        await transaction.CommitAsync(cancellationToken);
-
         return entity;
     }
 
