@@ -23,10 +23,9 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
             cancellationToken
         );
 
-        var result = await Context.BoardGames.AddAsync(model, cancellationToken);
-        await Context.SaveChangesAsync(cancellationToken);
+        BoardGame result = await CreateEntityAsync(model, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return result.Entity;
+        return result;
     }
 
     public async Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
@@ -34,10 +33,7 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
         await using var transaction = await Context.Database.BeginTransactionAsync(
             cancellationToken
         );
-
-        BoardGame entity = await FindByIdAsync(id, cancellationToken);
-        await LoadRelations(entity);
-        await DeleteEntityAsync(entity, version, cancellationToken);
+        await DeleteEntityAsync(id, version, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 
@@ -68,8 +64,7 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
             cancellationToken
         );
 
-        BoardGame entity = await FindByIdAsync(id, cancellationToken);
-        await UpdateEntityAsync(entity, model, version, cancellationToken);
+        BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
 
