@@ -1,3 +1,5 @@
+using BoardGameTracker.Models;
+
 namespace BoardGameTracker.Interfaces.Services;
 
 public interface ICrudService<ModelType, FilterType>
@@ -15,7 +17,7 @@ public interface ICrudService<ModelType, FilterType>
         CancellationToken cancellationToken
     );
 
-    Task<IEnumerable<ModelType>> GetAllAsync(
+    Task<PaginatedResponse<ModelType>> GetAllAsync(
         FilterType filter,
         CancellationToken cancellationToken
     );

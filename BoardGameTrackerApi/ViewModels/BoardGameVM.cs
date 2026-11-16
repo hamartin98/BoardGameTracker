@@ -38,7 +38,7 @@ public class BoardGameBaseVM : IValidatableObject
     /// <summary>
     /// Type of the board game
     /// </summary>
-    public BoardGameTypeVM Type { get; set; } = BoardGameTypeVM.BASE_GAME;
+    public required BoardGameTypeVM Type { get; set; } = BoardGameTypeVM.BASE_GAME;
 
     /// <summary>
     /// Categories of the board game
@@ -77,3 +77,5 @@ public class BoardGameResponseVM : BoardGameCreateVM
 
     public BoardGameResponseVM? ExpansionOf { get; set; }
 }
+
+public class BoardGamesResponseVM : PaginatedResponseVM<BoardGameResponseVM>;

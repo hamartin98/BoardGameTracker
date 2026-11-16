@@ -1,12 +1,14 @@
 using BoardGameTracker.Database;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
+using BoardGameTracker.Models.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public abstract class AbstractService<EntityType>
+public abstract class AbstractService<EntityType, FilterType>
     where EntityType : AbstractEntity
+    where FilterType : AbstractFilter<EntityType>
 {
     private readonly BoardGameContext Context;
 
@@ -69,6 +71,22 @@ public abstract class AbstractService<EntityType>
         await Context.SaveChangesAsync(cancellationToken);
 
         return entity;
+    }
+
+    protected async Task<PaginatedResponse<EntityType>> GetAllFilteredAsync(
+        FilterType filter,
+        CancellationToken cancellationToken
+    )
+    {
+        var query = Context.Set<EntityType>().AsQueryable().AsNoTracking();
+        query = filter.FilterQuery(query);
+        var result = await PaginatedResponse<EntityType>.CreateAsync(
+            query,
+            filter.Page,
+            filter.PageSize,
+            cancellationToken
+        );
+        return result;
     }
 
     protected abstract Task LoadRelations(EntityType entity, CancellationToken cancellationToken);

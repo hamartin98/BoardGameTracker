@@ -1,7 +1,10 @@
 using BoardGameTracker.Api.ViewModels;
 using BoardGameTracker.Api.ViewModels.Enums;
+using BoardGameTracker.Api.ViewModels.Filters;
+using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
+using BoardGameTracker.Models.Filters;
 using Mapster;
 
 namespace BoardGameTracker.Mappers;
@@ -33,5 +36,12 @@ public class BoardGameMapperConfig : IRegister
             .NewConfig<BoardGame, BoardGameResponseVM>()
             .Map(dest => dest.MetaData, src => src)
             .Map(dest => dest.Categories, src => MapBoardGameCategories(src.Categories));
+        config
+            .NewConfig<BoardGameFilterVM, BoardGameFilter>()
+            .Map(dest => dest.Types, src => src.Type)
+            .Map(dest => dest.Categories, src => MapBoardGameCategory(src.Categories));
+        config
+            .NewConfig<PaginatedResponse<BoardGame>, BoardGamesResponseVM>()
+            .Map(dest => dest.Items, src => src);
     }
 }
