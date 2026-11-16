@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public class AbstractService<EntityType>
+public abstract class AbstractService<EntityType>
     where EntityType : AbstractEntity
 {
     private readonly BoardGameContext Context;
@@ -46,7 +46,7 @@ public class AbstractService<EntityType>
             throw new VersionMismatchException();
         }
 
-        // TODO: Load relations
+        await LoadRelations(entity, cancellationToken);
         Context.Remove(entity);
         await Context.SaveChangesAsync(cancellationToken);
     }
@@ -70,4 +70,6 @@ public class AbstractService<EntityType>
 
         return entity;
     }
+
+    protected abstract Task LoadRelations(EntityType entity, CancellationToken cancellationToken);
 }

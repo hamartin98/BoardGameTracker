@@ -40,7 +40,7 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
     public async Task<BoardGame> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         BoardGame result = await FindByIdAsync(id, cancellationToken);
-        await LoadRelations(result);
+        await LoadRelations(result, cancellationToken);
         return result;
     }
 
@@ -55,16 +55,19 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
         return entity;
     }
 
-    private async Task LoadRelations(BoardGame boardGame)
+    protected override async Task LoadRelations(
+        BoardGame entity,
+        CancellationToken cancellationToken
+    )
     {
-        var entry = Context.Entry(boardGame);
-        if (boardGame.Type == BoardGameType.BASE_GAME)
+        var entry = Context.Entry(entity);
+        if (entity.Type == BoardGameType.BASE_GAME)
         {
-            await entry.Collection(e => e.Expansions).LoadAsync();
+            await entry.Collection(e => e.Expansions).LoadAsync(cancellationToken);
         }
-        else if (boardGame.Type == BoardGameType.EXPANSION)
+        else if (entity.Type == BoardGameType.EXPANSION)
         {
-            await entry.Reference(e => e.ExpansionOf).LoadAsync();
+            await entry.Reference(e => e.ExpansionOf).LoadAsync(cancellationToken);
         }
     }
 }
