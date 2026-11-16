@@ -1,6 +1,5 @@
 using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
-using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
@@ -36,12 +35,9 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
             cancellationToken
         );
 
-        var entity =
-            await Context
-                .BoardGames.Include(e => e.Expansions)
-                .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
-            ?? throw new EntityNotFoundException<BoardGame>();
-        await DeleteEntity(entity, version, cancellationToken);
+        BoardGame entity = await FindByIdAsync(id, cancellationToken);
+        await LoadRelations(entity);
+        await DeleteEntityAsync(entity, version, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 
@@ -56,10 +52,7 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
 
     public async Task<BoardGame> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        BoardGame? result =
-            await Context.BoardGames.FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
-            ?? throw new EntityNotFoundException<BoardGame>();
-
+        BoardGame result = await FindByIdAsync(id, cancellationToken);
         await LoadRelations(result);
         return result;
     }
@@ -75,10 +68,8 @@ public class BoardGameService : AbstractService<BoardGame>, IBoardGameService
             cancellationToken
         );
 
-        BoardGame? entity =
-            await Context.BoardGames.FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
-            ?? throw new EntityNotFoundException<BoardGame>();
-        await UpdateEntity(entity, model, version, cancellationToken);
+        BoardGame entity = await FindByIdAsync(id, cancellationToken);
+        await UpdateEntityAsync(entity, model, version, cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
 

@@ -1,6 +1,7 @@
 using BoardGameTracker.Database;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
@@ -14,7 +15,15 @@ public class AbstractService<EntityType>
         Context = context;
     }
 
-    protected async Task DeleteEntity(
+    protected async Task<EntityType> FindByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        EntityType result =
+            await Context.Set<EntityType>().FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+            ?? throw new EntityNotFoundException<EntityType>();
+        return result;
+    }
+
+    protected async Task DeleteEntityAsync(
         EntityType entity,
         int version,
         CancellationToken cancellationToken
@@ -28,7 +37,7 @@ public class AbstractService<EntityType>
         await Context.SaveChangesAsync(cancellationToken);
     }
 
-    protected async Task UpdateEntity(
+    protected async Task UpdateEntityAsync(
         EntityType entity,
         EntityType model,
         int version,
