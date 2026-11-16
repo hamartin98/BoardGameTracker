@@ -1,4 +1,5 @@
 using BoardGameTracker.Models.Entities;
+using BoardGameTracker.Models.Enums;
 
 namespace BoardGameTracker.Models.Filters;
 
@@ -13,6 +14,10 @@ public abstract class AbstractFilter<EntityType>
 
     public DateTime? CreatedAtTo { get; set; }
 
+    public string? OrderBy { get; set; }
+
+    public OrderByDirection OrderDirection { get; set; } = OrderByDirection.ASC;
+
     public AbstractFilter()
     {
         Page = Page < 1 ? 1 : Page;
@@ -23,6 +28,16 @@ public abstract class AbstractFilter<EntityType>
     public virtual IQueryable<EntityType> FilterQuery(IQueryable<EntityType> source)
     {
         var filtered = source;
+
+        if (OrderBy is not null)
+        {
+            filtered = filtered.OrderBy(OrderBy, OrderDirection).ThenBy("id", OrderByDirection.ASC);
+        }
+        else
+        {
+            filtered = filtered.OrderBy("id", OrderByDirection.ASC);
+        }
+
         if (CreatedAtFrom.HasValue)
         {
             filtered = filtered.Where(e => e.CreatedAt >= CreatedAtFrom);

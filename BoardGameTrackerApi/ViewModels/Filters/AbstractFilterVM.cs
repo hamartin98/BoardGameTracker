@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using BoardGameTracker.Api.ViewModels.Enums;
 
 namespace BoardGameTracker.Api.ViewModels.Filters;
 
@@ -11,4 +12,8 @@ public abstract class AbstractFilterVM
 
     public DateTime? CreatedAtFrom { get; set; }
     public DateTime? CreatedAtTo { get; set; }
+
+    public string? OrderBy { get; set; }
+
+    public OrderByDirectionVM OrderDirection { get; set; } = OrderByDirectionVM.ASC;
 }
