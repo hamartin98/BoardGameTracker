@@ -34,12 +34,12 @@ public class BoardGame : AbstractEntity
     /// <summary>
     /// Minimum number of players
     /// </summary>
-    public required int MinPlayerCount { get; set; }
+    public required byte MinPlayerCount { get; set; }
 
     /// <summary>
     /// Maximum number of players
     /// </summary>
-    public required int MaxPlayerCount { get; set; }
+    public required byte MaxPlayerCount { get; set; }
 
     /// <summary>
     /// Optional URL for BoardGameGeek page
