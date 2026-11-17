@@ -19,10 +19,7 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
 
     public async Task<BoardGame> CreateAsync(BoardGame model, CancellationToken cancellationToken)
     {
-        if (model.ExpansionOfId is not null)
-        {
-            await ThrowIfNotExists<BoardGame>(model.ExpansionOfId.Value, cancellationToken);
-        }
+        await CheckParentAsync(model, cancellationToken);
         BoardGame result = await CreateEntityAsync(model, cancellationToken);
         return result;
     }
@@ -55,12 +52,24 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         CancellationToken cancellationToken
     )
     {
-        if (model.ExpansionOfId is not null)
-        {
-            await ThrowIfNotExists<BoardGame>(model.ExpansionOfId.Value, cancellationToken);
-        }
+        await CheckParentAsync(model, cancellationToken);
         BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
         return entity;
+    }
+
+    private async Task CheckParentAsync(BoardGame boardGame, CancellationToken cancellationToken)
+    {
+        if (boardGame.ExpansionOfId is not null)
+        {
+            BoardGame parent = await FindByIdAsync(
+                boardGame.ExpansionOfId.Value,
+                cancellationToken
+            );
+            if (parent.Type != BoardGameType.BASE_GAME)
+            {
+                throw new InvalidOperationException("The expansion must belong to a base game.");
+            }
+        }
     }
 
     protected override async Task LoadRelations(
