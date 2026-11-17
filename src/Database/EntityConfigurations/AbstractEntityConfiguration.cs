@@ -16,7 +16,7 @@ public class AbstractEntityConfiguration
 
             abstracEntity
                 .HasIndex(e => e.IsDeleted)
-                .HasFilter($"{nameof(AbstractEntity.IsDeleted)} = false");
+                .HasFilter("is_deleted = false");
         });
     }
 }
