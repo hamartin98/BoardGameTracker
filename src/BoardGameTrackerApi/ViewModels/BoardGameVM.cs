@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using BoardGameTracker.Api.ViewModels.Enums;
+using BoardGameTracker.Utils;
 
 namespace BoardGameTracker.Api.ViewModels;
 
@@ -8,27 +9,32 @@ public class BoardGameBaseVM : IValidatableObject
     /// <summary>
     /// Name of the board game
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
     /// Minimum play time
     /// </summary>
+    [Required]
     public required TimeSpan MinPlayTime { get; set; }
 
     /// <summary>
     /// Maximum playtime
     /// </summary>
+    [Required]
     public required TimeSpan MaxPlayTime { get; set; }
 
     /// <summary>
     /// Minimum number of players
     /// </summary>
-    public required int MinPlayerCount { get; set; }
+    [Required]
+    public required byte MinPlayerCount { get; set; }
 
     /// <summary>
     /// Maximum number of players
     /// </summary>
-    public required int MaxPlayerCount { get; set; }
+    [Required]
+    public required byte MaxPlayerCount { get; set; }
 
     /// <summary>
     /// Optional URL for BoardGameGeek page
@@ -38,6 +44,7 @@ public class BoardGameBaseVM : IValidatableObject
     /// <summary>
     /// Type of the board game
     /// </summary>
+    [Required]
     public required BoardGameTypeVM Type { get; set; } = BoardGameTypeVM.BASE_GAME;
 
     /// <summary>
@@ -54,13 +61,72 @@ public class BoardGameBaseVM : IValidatableObject
     {
         List<ValidationResult> result = [];
 
+        // Type & expansion
         if (Type == BoardGameTypeVM.EXPANSION && ExpansionOfId is null)
         {
             result.Add(new("An expansion must have the board game set that it belongs to."));
         }
         else if (Type == BoardGameTypeVM.BASE_GAME && ExpansionOfId is not null)
         {
-            result.Add(new("A base game should not have expansion of relation"));
+            result.Add(new("A base game should not have an expansionOf relation."));
+        }
+
+        // MinPlayTime && MaxPlayTime
+        {
+            TimeSpan minPlayTime = new(0, 10, 0);
+            TimeSpan maxPlayTime = new(24, 0, 0);
+
+            if (MinPlayTime < minPlayTime || MinPlayTime > maxPlayTime)
+            {
+                result.Add(
+                    new($"MinPlayTime should be int the range {minPlayTime} - {maxPlayTime}.")
+                );
+            }
+            if (MaxPlayTime < minPlayTime || MaxPlayTime > maxPlayTime)
+            {
+                result.Add(
+                    new($"MaxPlayTime should be in the range {minPlayTime} - {maxPlayTime}.")
+                );
+            }
+            if (MinPlayTime > MaxPlayTime)
+            {
+                result.Add(new ValidationResult("MinPlayTime should be less than MaxPlayTime."));
+            }
+        }
+
+        // MinPlayerCount && MaxPlayerCount
+        {
+            byte minPlayerCount = 1;
+            byte maxPlayerCount = 100;
+
+            if (MinPlayerCount < minPlayerCount || MinPlayerCount > maxPlayerCount)
+            {
+                result.Add(
+                    new(
+                        $"MinPlayerCount should be in the range {minPlayerCount} - {maxPlayerCount}."
+                    )
+                );
+            }
+            if (MaxPlayerCount < minPlayerCount || MaxPlayerCount > maxPlayerCount)
+            {
+                result.Add(
+                    new(
+                        $"MaxPlayerCount should be in the range {minPlayerCount} - {maxPlayerCount}."
+                    )
+                );
+            }
+            if (MinPlayerCount > MaxPlayerCount)
+            {
+                result.Add(
+                    new ValidationResult("MinPlayerCount should be less than MaxPlayerCount.")
+                );
+            }
+        }
+
+        // BggUrl
+        if (BggUrl is not null && !Validators.IsUrlValid(BggUrl))
+        {
+            result.Add(new("Invalid BggUrl."));
         }
 
         return result;

@@ -53,16 +53,16 @@ namespace Migrations.Migrations
                         .HasColumnType("interval")
                         .HasColumnName("max_play_time");
 
-                    b.Property<int>("MaxPlayerCount")
-                        .HasColumnType("integer")
+                    b.Property<byte>("MaxPlayerCount")
+                        .HasColumnType("smallint")
                         .HasColumnName("max_player_count");
 
                     b.Property<TimeSpan>("MinPlayTime")
                         .HasColumnType("interval")
                         .HasColumnName("min_play_time");
 
-                    b.Property<int>("MinPlayerCount")
-                        .HasColumnType("integer")
+                    b.Property<byte>("MinPlayerCount")
+                        .HasColumnType("smallint")
                         .HasColumnName("min_player_count");
 
                     b.Property<string>("Name")
