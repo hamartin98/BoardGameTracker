@@ -4,6 +4,7 @@ using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
@@ -86,5 +87,19 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         {
             await entry.Reference(e => e.ExpansionOf).LoadAsync(cancellationToken);
         }
+    }
+
+    public async Task<List<BoardGame>> GetExpansionsAsync(
+        Guid id,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await Context
+            .Set<BoardGame>()
+            .AsQueryable()
+            .Where(bg => bg.ExpansionOfId == id && bg.Type == BoardGameType.EXPANSION)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+        return result;
     }
 }
