@@ -26,12 +26,14 @@ public class BoardGamesController : Controller
     /// </summary>
     /// <param name="createVM">Board game create request body</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <response code="201">Entity successfully created</response>
-    /// <response code="500">Internal system error</response>
     [HttpPost]
     [Consumes("application/json")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status201Created)]
+    [ProducesResponseType(
+        typeof(BoardGameResponseVM),
+        StatusCodes.Status201Created,
+        Description = "Entity successfully created"
+    )]
     public async Task<IActionResult> Create(
         [FromBody] BoardGameCreateVM createVM,
         CancellationToken cancellationToken
@@ -52,11 +54,13 @@ public class BoardGamesController : Controller
     /// </summary>
     /// <param name="boardGameId">Id of the board game to return</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <response code="200">Entity successfully retrieved</response>
-    /// <response code="500">Internal system error</response>
     [HttpGet("{boardGameId}", Name = "GetById")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(BoardGameResponseVM),
+        StatusCodes.Status200OK,
+        Description = "Entity successfully retrieved"
+    )]
     public async Task<IActionResult> GetById(
         [FromRoute] Guid boardGameId,
         CancellationToken cancellationToken
@@ -72,12 +76,17 @@ public class BoardGamesController : Controller
     /// </summary>
     /// <param name="filter">Filter</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <response code="200">Entities successfully retrieved</response>
-    /// <response code="500">Internal system error</response>
     [HttpGet]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(BoardGamesResponseVM), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromQuery] BoardGameFilterVM filter, CancellationToken cancellationToken)
+    [ProducesResponseType(
+        typeof(BoardGamesResponseVM),
+        StatusCodes.Status200OK,
+        Description = "Entities successfully retrieved"
+    )]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] BoardGameFilterVM filter,
+        CancellationToken cancellationToken
+    )
     {
         var filterModel = Mapper.Map<BoardGameFilter>(filter);
         var result = await BoardGameService.GetAllAsync(filterModel, cancellationToken);
@@ -92,12 +101,14 @@ public class BoardGamesController : Controller
     ///  /// <param name="updateVM">Board game update request body</param>
     /// <param name="version">Version of the board game for concurrency check</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <response code="206">Entity successfully updated</response>
-    /// <response code="500">Internal system error</response>
     [HttpPut("{boardGameId}")]
     [Consumes("application/json")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(BoardGameResponseVM), StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(BoardGameResponseVM),
+        StatusCodes.Status200OK,
+        Description = "Entity successfully updated"
+    )]
     public async Task<IActionResult> Update(
         Guid boardGameId,
         BoardGameUpdateVM updateVM,
@@ -122,10 +133,12 @@ public class BoardGamesController : Controller
     /// <param name="boardGameId">Id of the board game to delete</param>
     /// <param name="version">Version of the board game for concurrency check</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <response code="206">Entity successfully deleted</response>
-    /// <response code="500">Internal system error</response>
     [HttpDelete("{boardGameId}")]
     [Produces("application/json")]
+    [ProducesResponseType(
+        StatusCodes.Status204NoContent,
+        Description = "Entity successfully deleted"
+    )]
     public async Task<IActionResult> Delete(
         Guid boardGameId,
         [FromQuery] int version,

@@ -9,41 +9,48 @@ public class BoardGameBaseVM : IValidatableObject
     /// <summary>
     /// Name of the board game
     /// </summary>
+    /// <example>Scythe</example>
     [Required]
     public required string Name { get; set; }
 
     /// <summary>
     /// Minimum play time
     /// </summary>
+    /// <example>00:10:00</example>
     [Required]
     public required TimeSpan MinPlayTime { get; set; }
 
     /// <summary>
     /// Maximum playtime
     /// </summary>
+    /// <example>1:00:00</example>
     [Required]
     public required TimeSpan MaxPlayTime { get; set; }
 
     /// <summary>
     /// Minimum number of players
     /// </summary>
+    /// <example>1</example>
     [Required]
     public required byte MinPlayerCount { get; set; }
 
     /// <summary>
     /// Maximum number of players
     /// </summary>
+    /// <example>4</example>
     [Required]
     public required byte MaxPlayerCount { get; set; }
 
     /// <summary>
     /// Optional URL for BoardGameGeek page
     /// </summary>
+    /// <example>https://boardgamegeek.com/boardgame/169786/scythe</example>
     public string? BggUrl { get; set; }
 
     /// <summary>
     /// Type of the board game
     /// </summary>
+    /// <example>BASE_GAME</example>
     [Required]
     public required BoardGameTypeVM Type { get; set; } = BoardGameTypeVM.BASE_GAME;
 
@@ -55,6 +62,7 @@ public class BoardGameBaseVM : IValidatableObject
     /// <summary>
     /// Optional id of the board game that this game is the expansion of
     /// </summary>
+    /// <example>null</example>
     public Guid? ExpansionOfId { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

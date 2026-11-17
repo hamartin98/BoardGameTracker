@@ -7,6 +7,8 @@ using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Services;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -73,6 +75,15 @@ typeAdapterConfig.Scan(Assembly.GetExecutingAssembly());
 
 builder.Services.AddExceptionHandler<ExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+builder.Services.AddMvc(o =>
+{
+    o.Filters.Add(new ProducesResponseTypeAttribute(typeof(ProblemDetails), 400));
+    o.Filters.Add(new ProducesResponseTypeAttribute(typeof(ProblemDetails), 404));
+    o.Filters.Add(new ProducesResponseTypeAttribute(typeof(ProblemDetails), 409));
+    o.Filters.Add(new ProducesResponseTypeAttribute(typeof(ProblemDetails), 422));
+    o.Filters.Add(new ProducesResponseTypeAttribute(typeof(ProblemDetails), 500));
+});
 
 var app = builder.Build();
 
