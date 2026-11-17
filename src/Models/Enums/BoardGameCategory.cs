@@ -5,7 +5,7 @@ namespace BoardGameTracker.Models.Enums;
 /// https://boardgamegeek.com/browse/boardgamecategory
 /// </summary>
 [Flags]
-public enum BoardGameCategory : ulong
+public enum BoardGameCategory : long
 {
   ABSTRACT = 1,
   ANIMALS = 2,
