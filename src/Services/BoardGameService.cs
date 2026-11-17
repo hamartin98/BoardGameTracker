@@ -19,6 +19,10 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
 
     public async Task<BoardGame> CreateAsync(BoardGame model, CancellationToken cancellationToken)
     {
+        if (model.ExpansionOfId is not null)
+        {
+            await ThrowIfNotExists<BoardGame>(model.ExpansionOfId.Value, cancellationToken);
+        }
         BoardGame result = await CreateEntityAsync(model, cancellationToken);
         return result;
     }
@@ -51,6 +55,10 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         CancellationToken cancellationToken
     )
     {
+        if (model.ExpansionOfId is not null)
+        {
+            await ThrowIfNotExists<BoardGame>(model.ExpansionOfId.Value, cancellationToken);
+        }
         BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
         return entity;
     }

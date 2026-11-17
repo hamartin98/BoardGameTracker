@@ -89,5 +89,23 @@ public abstract class AbstractService<EntityType, FilterType>
         return result;
     }
 
+    protected async Task<bool> Exists<Type>(Guid id, CancellationToken cancellationToken)
+        where Type : AbstractEntity
+    {
+        return await Context
+            .Set<Type>()
+            .FindAsync([id, cancellationToken], cancellationToken: cancellationToken)
+            is not null;
+    }
+
+    protected async Task ThrowIfNotExists<Type>(Guid id, CancellationToken cancellationToken)
+        where Type : AbstractEntity
+    {
+        if (!await Exists<Type>(id, cancellationToken))
+        {
+            throw new EntityNotFoundException<Type>();
+        }
+    }
+
     protected abstract Task LoadRelations(EntityType entity, CancellationToken cancellationToken);
 }
