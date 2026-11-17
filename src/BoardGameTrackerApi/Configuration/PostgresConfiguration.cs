@@ -1,7 +1,11 @@
+using NLog;
+
 namespace BoardGameTracker.Api.Configuration;
 
 public class PostgresConfguration
 {
+    private static Logger Logger = LogManager.GetCurrentClassLogger();
+
     public string Host { get; set; } = "localhost";
     public int Port { get; set; } = 5432;
     public string Username { get; set; } = "postgres";
@@ -10,11 +14,11 @@ public class PostgresConfguration
 
     public void Print()
     {
-        Console.WriteLine($"Host: {Host}");
-        Console.WriteLine($"Port: {Port}");
-        Console.WriteLine($"Username: {Username}");
-        Console.WriteLine($"Password: {'*' * Password.Length}");
-        Console.WriteLine($"Database: {Database}");
+        Logger.Info("Host: {host}", Host);
+        Logger.Info("Port: {port}", Port);
+        Logger.Info("Username: {username}", Username);
+        Logger.Info("Password: {password}", new string('*', Password.Length));
+        Logger.Info("Database: {database}", Database);
     }
 
     public string GetConnectionString()
