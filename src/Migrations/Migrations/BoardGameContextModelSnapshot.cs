@@ -70,6 +70,11 @@ namespace Migrations.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("normalized_name");
+
                     b.Property<Guid?>("PlaySessionId")
                         .HasColumnType("uuid")
                         .HasColumnName("play_session_id");
@@ -90,12 +95,19 @@ namespace Migrations.Migrations
                     b.HasKey("Id")
                         .HasName("pk_board_games");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_board_games_created_at");
+
                     b.HasIndex("ExpansionOfId")
                         .HasDatabaseName("ix_board_games_expansion_of_id");
 
                     b.HasIndex("IsDeleted")
                         .HasDatabaseName("ix_board_games_is_deleted")
                         .HasFilter("is_deleted = false");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_board_games_normalized_name");
 
                     b.HasIndex("PlaySessionId")
                         .HasDatabaseName("ix_board_games_play_session_id");

@@ -16,6 +16,8 @@ public static partial class ModelBuilderExtensions
                 .HasForeignKey(e => e.ExpansionOfId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.NormalizedName).IsUnique();
         });
     }
 }
