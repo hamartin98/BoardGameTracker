@@ -95,6 +95,28 @@ public class BoardGamesController : Controller
     }
 
     /// <summary>
+    /// Get all expansions of the given board game
+    /// </summary>
+    /// <param name="boardGameId">Board game id</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    [HttpGet("{boardGameId}/Expansions")]
+    [Produces("application/json")]
+    [ProducesResponseType(
+        typeof(List<BoardGameResponseVM>),
+        StatusCodes.Status200OK,
+        Description = "Entities successfully retrieved"
+    )]
+    public async Task<IActionResult> GetExpansions(
+        Guid boardGameId,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await BoardGameService.GetExpansionsAsync(boardGameId, cancellationToken);
+        var mappedResult = Mapper.Map<List<BoardGameResponseVM>>(result);
+        return Ok(mappedResult);
+    }
+
+    /// <summary>
     /// Update board game
     /// </summary>
     /// <param name="boardGameId">Id of the board game to update</param>

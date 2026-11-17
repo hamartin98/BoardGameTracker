@@ -3,4 +3,10 @@ using BoardGameTracker.Models.Filters;
 
 namespace BoardGameTracker.Interfaces.Services;
 
-public interface IBoardGameService : ICrudService<BoardGame, BoardGameFilter> { }
+public interface IBoardGameService : ICrudService<BoardGame, BoardGameFilter>
+{
+    Task<List<BoardGame>> GetExpansionsAsync(
+        Guid id,
+        CancellationToken cancellationToken
+    );
+}
