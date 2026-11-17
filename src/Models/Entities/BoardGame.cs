@@ -13,6 +13,15 @@ public class BoardGame : AbstractEntity
     public required string Name { get; set; }
 
     /// <summary>
+    /// Normalized name for search
+    /// </summary>
+    public string NormalizedName
+    {
+        get => Name.ToLower();
+        set { }
+    }
+
+    /// <summary>
     /// Minimum play time
     /// </summary>
     public required TimeSpan MinPlayTime { get; set; }

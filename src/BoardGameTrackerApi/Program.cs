@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using BoardGameTracker.Api.Configuration;
 using BoardGameTracker.Database;
 using BoardGameTracker.Database.Interceptors;
 using BoardGameTracker.Interfaces.Services;
@@ -23,19 +24,42 @@ builder.Services.AddSwaggerGen(config =>
     config.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 });
 
+DatabaseType databaseType = builder.Configuration.GetValue<DatabaseType>("DatabaseType");
+Console.WriteLine(databaseType);
+
+if (databaseType == DatabaseType.IN_MEMORY)
+{
+    builder.Services.AddDbContext<BoardGameContext>(
+        (serviceProvider, options) =>
+            options
+                .UseInMemoryDatabase("BoardGameList")
+                .ConfigureWarnings(config =>
+                    config.Ignore(InMemoryEventId.TransactionIgnoredWarning)
+                )
+                .AddInterceptors(
+                    serviceProvider.GetRequiredService<SoftDeleteInterceptor>(),
+                    serviceProvider.GetRequiredService<UpdateInterceptor>()
+                )
+                .UseSnakeCaseNamingConvention()
+    );
+}
+else if (databaseType == DatabaseType.POSTGRES)
+{
+    PostgresConfguration pgConfig = new();
+    builder.Configuration.GetSection("PostgresConfig").Bind(pgConfig);
+    builder.Services.AddDbContext<BoardGameContext>(options =>
+    {
+        options
+            .UseNpgsql(
+                pgConfig.GetConnectionString(),
+                options => options.MigrationsAssembly("Migrations")
+            )
+            .UseSnakeCaseNamingConvention();
+    });
+}
+
 builder.Services.AddSingleton<SoftDeleteInterceptor>();
 builder.Services.AddSingleton<UpdateInterceptor>();
-
-builder.Services.AddDbContext<BoardGameContext>(
-    (serviceProvider, options) =>
-        options
-            .UseInMemoryDatabase("BoardGameList")
-            .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .AddInterceptors(
-                serviceProvider.GetRequiredService<SoftDeleteInterceptor>(),
-                serviceProvider.GetRequiredService<UpdateInterceptor>()
-            )
-);
 
 builder.Services.AddTransient<IBoardGameService, BoardGameService>();
 builder.Services.AddTransient<IPlayerService, PlayerService>();
@@ -52,8 +76,9 @@ builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateAsyncScope())
+if (databaseType == DatabaseType.IN_MEMORY)
 {
+    using var scope = app.Services.CreateAsyncScope();
     try
     {
         var context = scope.ServiceProvider.GetRequiredService<BoardGameContext>();

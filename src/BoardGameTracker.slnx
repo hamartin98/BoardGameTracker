@@ -2,6 +2,7 @@
   <Project Path="BoardGameTrackerApi/BoardGameTrackerApi.csproj" />
   <Project Path="Database/Database.csproj" />
   <Project Path="Interfaces/Interfaces.csproj" />
+  <Project Path="Migrations/Migrations.csproj" />
   <Project Path="Models/Models.csproj" />
   <Project Path="Services/Services.csproj" />
 </Solution>

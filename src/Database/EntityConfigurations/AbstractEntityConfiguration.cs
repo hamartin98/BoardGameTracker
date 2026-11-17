@@ -14,9 +14,8 @@ public class AbstractEntityConfiguration
             abstracEntity.Property(e => e.Version).IsConcurrencyToken();
             abstracEntity.HasQueryFilter(e => !e.IsDeleted);
 
-            abstracEntity
-                .HasIndex(e => e.IsDeleted)
-                .HasFilter($"{nameof(AbstractEntity.IsDeleted)} = false");
+            abstracEntity.HasIndex(e => e.IsDeleted).HasFilter("is_deleted = false");
+            abstracEntity.HasIndex(e => e.CreatedAt);
         });
     }
 }

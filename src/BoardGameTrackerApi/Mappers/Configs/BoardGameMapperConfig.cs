@@ -38,8 +38,7 @@ public class BoardGameMapperConfig : IRegister
             .Map(dest => dest.Categories, src => MapBoardGameCategories(src.Categories));
         config
             .NewConfig<BoardGameFilterVM, BoardGameFilter>()
-            .Map(dest => dest.Types, src => src.Type)
-            .Map(dest => dest.Categories, src => MapBoardGameCategory(src.Categories));
+            .Map(dest => dest.Types, src => src.Type);
         config
             .NewConfig<PaginatedResponse<BoardGame>, BoardGamesResponseVM>()
             .Map(dest => dest.Items, src => src);

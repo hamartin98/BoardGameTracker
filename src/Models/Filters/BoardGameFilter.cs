@@ -17,14 +17,14 @@ public class BoardGameFilter : AbstractFilter<BoardGame>
 
     public List<BoardGameType> Types { get; set; } = [];
 
-    public BoardGameCategory? Categories { get; set; }
+    public List<BoardGameCategory> Categories { get; set; } = [];
 
     public override IQueryable<BoardGame> FilterQuery(IQueryable<BoardGame> source)
     {
         var filtered = base.FilterQuery(source);
         if (Name is not null)
         {
-            filtered = filtered.Where(e => e.Name.ToLower().Contains(Name.ToLower()));
+            filtered = filtered.Where(e => e.NormalizedName.Contains(Name.ToLower()));
         }
         if (MinPlayTime is not null)
         {
@@ -48,7 +48,8 @@ public class BoardGameFilter : AbstractFilter<BoardGame>
         }
         if (Categories is not null)
         {
-            filtered = filtered.Where(e => e.Categories.HasFlag(Categories));
+            long combinedFlags = Categories.Aggregate(0L, (acc, category) => acc | (long)category);
+            filtered = filtered.Where(e => ((long)e.Categories & combinedFlags) != 0);
         }
         return filtered;
     }
