@@ -147,8 +147,15 @@ public class BoardGameUpdateVM : BoardGameCreateVM { }
 
 public class BoardGameResponseVM : BoardGameCreateVM
 {
+    /// <summary>
+    /// Response metadata
+    /// </summary>
     public required ResponseMetaDataVM MetaData { get; set; }
 
+    /// <summary>
+    /// Populated parent board game data (applicable for expansions)
+    /// </summary>
+    /// <example>Scythe</example>
     public BoardGameResponseVM? ExpansionOf { get; set; }
 }
 
