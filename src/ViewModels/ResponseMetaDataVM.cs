@@ -1,4 +1,4 @@
-namespace BoardGameTracker.Api.ViewModels;
+namespace BoardGameTracker.ViewModels;
 
 /// <summary>
 /// Response metadata for common information about entities.

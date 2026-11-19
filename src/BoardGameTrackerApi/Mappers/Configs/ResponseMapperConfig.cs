@@ -1,4 +1,4 @@
-using BoardGameTracker.Api.ViewModels;
+using BoardGameTracker.ViewModels;
 using BoardGameTracker.Models.Entities;
 using Mapster;
 

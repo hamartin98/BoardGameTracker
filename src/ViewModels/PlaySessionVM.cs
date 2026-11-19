@@ -1,6 +1,6 @@
-using BoardGameTracker.Api.ViewModels.Enums;
+using BoardGameTracker.ViewModels.Enums;
 
-namespace BoardGameTracker.Api.ViewModels;
+namespace BoardGameTracker.ViewModels;
 
 public class PlaySessionBaseVM
 {

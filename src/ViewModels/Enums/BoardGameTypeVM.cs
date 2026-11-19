@@ -1,4 +1,4 @@
-namespace BoardGameTracker.Api.ViewModels.Enums;
+namespace BoardGameTracker.ViewModels.Enums;
 
 /// <summary>
 /// Type of board game. A Base game can have multiple expansions, and an expansion should belong to a base game.

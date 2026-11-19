@@ -1,4 +1,4 @@
-namespace BoardGameTracker.Api.ViewModels.Enums;
+namespace BoardGameTracker.ViewModels.Enums;
 
 /// <summary>
 /// Direction of ordering by the given property

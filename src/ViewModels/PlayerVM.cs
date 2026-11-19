@@ -1,4 +1,4 @@
-namespace BoardGameTracker.Api.ViewModels;
+namespace BoardGameTracker.ViewModels;
 
 public class PlayerBaseVM
 {

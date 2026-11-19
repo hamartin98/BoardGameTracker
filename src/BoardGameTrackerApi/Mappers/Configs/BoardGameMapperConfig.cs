@@ -1,6 +1,6 @@
-using BoardGameTracker.Api.ViewModels;
-using BoardGameTracker.Api.ViewModels.Enums;
-using BoardGameTracker.Api.ViewModels.Filters;
+using BoardGameTracker.ViewModels;
+using BoardGameTracker.ViewModels.Enums;
+using BoardGameTracker.ViewModels.Filters;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;

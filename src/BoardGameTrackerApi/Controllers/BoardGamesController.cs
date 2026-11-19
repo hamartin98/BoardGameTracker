@@ -1,5 +1,5 @@
-using BoardGameTracker.Api.ViewModels;
-using BoardGameTracker.Api.ViewModels.Filters;
+using BoardGameTracker.ViewModels;
+using BoardGameTracker.ViewModels.Filters;
 using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;

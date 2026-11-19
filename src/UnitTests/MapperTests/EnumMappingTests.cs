@@ -1,4 +1,4 @@
-using BoardGameTracker.Api.ViewModels.Enums;
+using BoardGameTracker.ViewModels.Enums;
 using BoardGameTracker.Mappers;
 using BoardGameTracker.Models.Enums;
 

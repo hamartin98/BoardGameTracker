@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using BoardGameTracker.Api.ViewModels.Enums;
 using BoardGameTracker.Utils;
+using BoardGameTracker.ViewModels.Enums;
 
-namespace BoardGameTracker.Api.ViewModels;
+namespace BoardGameTracker.ViewModels;
 
 public class BoardGameBaseVM : IValidatableObject
 {
