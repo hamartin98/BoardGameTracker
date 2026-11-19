@@ -42,11 +42,11 @@ public class BoardGameFilter : AbstractFilter<BoardGame>
         {
             filtered = filtered.Where(e => e.MaxPlayerCount <= MaxPlayerCount);
         }
-        if (Types.Any())
+        if (Types.Count != 0)
         {
             filtered = filtered.Where(e => Types.Contains(e.Type));
         }
-        if (Categories is not null)
+        if (Categories.Count != 0)
         {
             long combinedFlags = Categories.Aggregate(0L, (acc, category) => acc | (long)category);
             filtered = filtered.Where(e => ((long)e.Categories & combinedFlags) != 0);
