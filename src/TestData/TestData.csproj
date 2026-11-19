@@ -7,8 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../Models/Models.csproj" />
-    <!-- <ProjectReference Include="../BoardGameTrackerApi/BoardGameTrackerApi.csproj" /> -->
+    <ProjectReference Include="../ViewModels/ViewModels.csproj" />
   </ItemGroup>
 
 </Project>

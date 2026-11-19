@@ -1,4 +1,4 @@
-using System.Reflection;
+using BoardGameTracker.Mappers;
 using Mapster;
 using MapsterMapper;
 
@@ -13,7 +13,7 @@ public partial class MappingTests
     public MappingTests()
     {
         Config = new TypeAdapterConfig();
-        Config.Scan(Assembly.GetExecutingAssembly());
+        Config.Scan(typeof(BoardGameMapperConfig).Assembly);
 
         Mapper = new Mapper(Config);
     }

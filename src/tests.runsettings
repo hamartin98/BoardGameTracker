@@ -19,6 +19,7 @@
             **/*.g.cs,
             **/*.generated.cs,
             **/Migrations/**/*.cs,
+            **/TestData/**/*.cs,
             **/Configuration/PostgresConfiguration.cs,
             **/Database/DbDataSeeder.cs
           </ExcludeByFile>
