@@ -42,3 +42,25 @@ bash run_tests.sh -c true
 ```
 
 The generated html report can be found at: [index.html](src/coveragereport/index.html)
+
+## Docker
+
+### Dockerize
+
+From main directory run:
+
+```bash
+docker build -t board_game_tracker_api -f docker/Dockerfile .
+```
+
+### Run dockerized application
+
+```bash
+docker run \
+	--name board_game_tracker \
+	-e DatabaseType=IN_MEMORY \
+	-p 8080:8080 \
+	-d board_game_tracker_api
+```
+
+Swagger can be accessed with ASPNETCORE_ENVIRONMENT=Development set
