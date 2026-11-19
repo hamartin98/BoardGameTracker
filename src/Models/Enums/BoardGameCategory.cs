@@ -7,6 +7,7 @@ namespace BoardGameTracker.Models.Enums;
 [Flags]
 public enum BoardGameCategory : long
 {
+    NONE = 0,
     ABSTRACT = 1,
     ANIMALS = 2,
     AVIATION = 4,
