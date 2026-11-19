@@ -5,5 +5,8 @@
   <Project Path="Migrations/Migrations.csproj" />
   <Project Path="Models/Models.csproj" />
   <Project Path="Services/Services.csproj" />
+  <Project Path="TestData/TestData.csproj" />
+  <Project Path="UnitTests/UnitTests.csproj" />
   <Project Path="Utils/Utils.csproj" />
+  <Project Path="ViewModels/ViewModels.csproj" />
 </Solution>

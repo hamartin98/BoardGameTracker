@@ -1,7 +1,7 @@
 using System.ComponentModel;
-using BoardGameTracker.Api.ViewModels.Enums;
+using BoardGameTracker.ViewModels.Enums;
 
-namespace BoardGameTracker.Api.ViewModels.Filters;
+namespace BoardGameTracker.ViewModels.Filters;
 
 public abstract class AbstractFilterVM
 {

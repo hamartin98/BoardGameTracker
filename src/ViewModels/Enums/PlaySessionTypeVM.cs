@@ -1,4 +1,4 @@
-namespace BoardGameTracker.Api.ViewModels.Enums;
+namespace BoardGameTracker.ViewModels.Enums;
 
 /// <summary>
 /// Type of the play session

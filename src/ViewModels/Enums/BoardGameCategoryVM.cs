@@ -1,4 +1,4 @@
-namespace BoardGameTracker.Api.ViewModels.Enums;
+namespace BoardGameTracker.ViewModels.Enums;
 
 /// <summary>
 /// Some of the more important board game categories from:
