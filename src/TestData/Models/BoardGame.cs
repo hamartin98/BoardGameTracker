@@ -69,6 +69,34 @@ public partial class ModelsTestData
             };
     }
 
+    public static BoardGame ScytheUppercase
+    {
+        get =>
+            new()
+            {
+                Name = "SCYTHE",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 5,
+                MinPlayTime = new TimeSpan(1, 55, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                Type = BoardGameType.BASE_GAME,
+            };
+    }
+
+    public static BoardGame DeletedBoardGameRecreated
+    {
+        get =>
+            new()
+            {
+                Name = DeletedBoardGame.Name,
+                MinPlayerCount = 1,
+                MaxPlayerCount = 2,
+                MinPlayTime = new TimeSpan(0, 30, 0),
+                MaxPlayTime = new TimeSpan(1, 0, 0),
+                Type = BoardGameType.BASE_GAME,
+            };
+    }
+
     public static void CheckBoardGame(BoardGame expected, BoardGame actual)
     {
         Assert.Equal(expected.Name, actual.Name);

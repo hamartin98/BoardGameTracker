@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using BoardGameTracker.Database;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
@@ -101,6 +102,26 @@ public abstract class AbstractService<EntityType, FilterType>
             .Set<Type>()
             .FindAsync([id, cancellationToken], cancellationToken: cancellationToken)
             is not null;
+    }
+
+    /// <summary>
+    /// Throws InvalidOperationException (422) when another non-deleted entity matches the predicate
+    /// </summary>
+    protected async Task ThrowIfDuplicateAsync(
+        Expression<Func<EntityType, bool>> predicate,
+        Guid? excludedId,
+        string message,
+        CancellationToken cancellationToken
+    )
+    {
+        bool duplicate = await Context
+            .Set<EntityType>()
+            .Where(predicate)
+            .AnyAsync(e => e.Id != excludedId, cancellationToken);
+        if (duplicate)
+        {
+            throw new InvalidOperationException(message);
+        }
     }
 
     protected async Task ThrowIfNotExists<Type>(Guid id, CancellationToken cancellationToken)

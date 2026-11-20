@@ -20,6 +20,7 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
 
     public async Task<BoardGame> CreateAsync(BoardGame model, CancellationToken cancellationToken)
     {
+        await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
         await CheckParentAsync(model, cancellationToken);
         BoardGame result = await CreateEntityAsync(model, cancellationToken);
         return result;
@@ -53,9 +54,25 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         CancellationToken cancellationToken
     )
     {
+        await ThrowIfNameTakenAsync(model.Name, id, cancellationToken);
         await CheckParentAsync(model, cancellationToken);
         BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
         return entity;
+    }
+
+    private Task ThrowIfNameTakenAsync(
+        string name,
+        Guid? excludedId,
+        CancellationToken cancellationToken
+    )
+    {
+        string normalizedName = name.ToLower();
+        return ThrowIfDuplicateAsync(
+            bg => bg.NormalizedName == normalizedName,
+            excludedId,
+            "A board game with this name already exists.",
+            cancellationToken
+        );
     }
 
     private async Task CheckParentAsync(BoardGame boardGame, CancellationToken cancellationToken)

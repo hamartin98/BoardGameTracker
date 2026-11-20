@@ -17,7 +17,7 @@ public static partial class ModelBuilderExtensions
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(e => e.NormalizedName).IsUnique();
+            entity.HasIndex(e => e.NormalizedName).IsUnique().HasFilter("is_deleted = false");
         });
     }
 }
