@@ -14,7 +14,7 @@ public class PlaySessionMapperConfig : IRegister
             .Ignore(dest => dest.BoardGame);
         config
             .NewConfig<PlaySession, PlaySessionResponseVM>()
-            .Map(dest => dest.MetaData, src => src.Adapt<ResponseMetaDataVM>())
+            .Map(dest => dest.MetaData, src => src)
             .Map(
                 dest => dest.UsedExpansionIds,
                 src => src.UsedExpansions.Select(e => e.Id).ToList()

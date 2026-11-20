@@ -11,6 +11,8 @@ Entities, VMs, service interfaces, DI registrations and basic mapper configs alr
 
 ## Steps
 
+For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`, `NamedEntityFilter<T>` and `NamedEntityService<T, TFilter>` instead of the `Abstract*` classes. You then get `NormalizedName`, name search and the duplicate-name check (422) for free; only `DuplicateNameMessage` needs to be set. See `Player`.
+
 1. **Entity configuration.** Copy `Database/EntityConfigurations/BoardGameConfiguration.cs`.
    - Add a `Configure<Entity>(this ModelBuilder)` extension in the same `partial class ModelBuilderExtensions`. It must call `AbstractEntityConfiguration.Configure<TEntity>(modelBuilder)` first; that sets the key, the `Version` concurrency token, the soft-delete query filter and indexes.
    - Configure relationships and indexes there, not with attributes.
@@ -18,19 +20,18 @@ Entities, VMs, service interfaces, DI registrations and basic mapper configs alr
 2. **Filter.**
    - Derive the model filter from `AbstractFilter<TEntity>` (`Models/Filters/BoardGameFilter.cs`). Override `FilterQuery`, call `base.FilterQuery(source)` first, then add conditions.
    - Add `ViewModels/Filters/<Entity>FilterVM.cs` deriving from `AbstractFilterVM`.
-3. **Service.** Make the class derive from `AbstractService<TEntity, TFilter>` and keep its interface (`Services/BoardGameService.cs`).
-   - Implement `LoadRelations` to eager-load the navigations a get-by-id response or a cascading delete needs.
-   - Check foreign keys before create/update with `ThrowIfNotExists<TReferenced>(id, ct)`.
+3. **Service.** Make the class derive from `AbstractService<TEntity, TFilter>` and keep its interface (`Services/PlayerService.cs`). `AbstractService` implements the CRUD methods, so delete the stub methods.
+   - Put extra checks in `ValidateCreateAsync(model)` / `ValidateUpdateAsync(existing, model)`. The update one runs after the version check, with the stored entity loaded, so don't load it again.
+   - Override `LoadRelations` (a no-op by default) to eager-load the navigations a get-by-id response or a cascading delete needs.
+   - Check foreign keys before create/update with `ThrowIfNotExistsAsync<TReferenced>(id, ct)`.
    - Throw `BusinessRuleException` for business-rule violations (→ 422); `ThrowIfDuplicateAsync` already does for uniqueness. Don't use `InvalidOperationException`: it maps to 500, since EF throws it for internal failures. The middleware maps the other exception types.
 4. **DI.** Confirm the registration in `BoardGameTrackerApi/Setup/ServiceSetupExtensions.cs`.
 5. **Mapping.** Extend the `IRegister` class in `BoardGameTrackerApi/Mappers/Configs/` (`BoardGameMapperConfig.cs`).
    - Map `MetaData` from the entity for response VMs.
    - Map FilterVM → Filter and `PaginatedResponse<T>` → `<Entities>ResponseVM`.
    - `MapperConfigTests` compiles with `RequireDestinationMemberSource = true`, so every destination member needs a source or an explicit `Ignore`.
-6. **Controller.** Copy `BoardGameTrackerApi/Controllers/BoardGamesController.cs`, including its XML doc comments and `ProducesResponseType` attributes.
-   - Update and delete take `[FromQuery] int version`.
-   - Create returns `CreatedAtAction(nameof(GetById), ...)`.
-   - Give the get-by-id route a unique `Name`. `"GetById"` is already taken by BoardGames.
+6. **Controller.** Derive from `CrudController<TEntity, TFilter, TCreateVM, TUpdateVM, TResponseVM, TListResponseVM, TFilterVM>` with `[Route("[controller]")]`, like `BoardGameTrackerApi/Controllers/PlayersController.cs`. It provides create / get-by-id / list / update / delete (update and delete take `?version=`).
+   - Add extra endpoints to the derived controller with an XML doc comment and `ProducesResponseType`, like `GetExpansions` in `BoardGamesController.cs`.
 7. **Tests.**
    - Every object a test maps from or compares against lives in TestData, never inline in the test. That covers entities, create/update VMs, filter VMs and expected filters.
      - Models and model filters go in `TestData/Models/<Entity>.cs` (`partial class ModelsTestData`).

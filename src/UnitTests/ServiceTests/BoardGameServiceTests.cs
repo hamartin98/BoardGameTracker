@@ -168,4 +168,39 @@ public class BoardGameServiceTests
                 .UpdateAsync(ModelsTestData.Scythe, Guid.NewGuid(), 1, CancellationToken.None)
         );
     }
+
+    [Fact]
+    public async Task UpdateWithStaleVersionThrowsBeforeRuleChecksTest()
+    {
+        await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
+
+        await Assert.ThrowsAsync<VersionMismatchException>(() =>
+            CreateService()
+                .UpdateAsync(
+                    ModelsTestData.ScytheWithParent,
+                    ModelsTestData.Scythe.Id,
+                    2,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task CreateExpansionWithoutParentThrowsTest()
+    {
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .CreateAsync(ModelsTestData.ExpansionWithoutParent, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task CreateBaseGameWithParentThrowsTest()
+    {
+        await SeedAsync(ModelsTestData.ScytheFenris);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService().CreateAsync(ModelsTestData.ScytheWithParent, CancellationToken.None)
+        );
+    }
 }

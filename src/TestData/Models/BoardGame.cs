@@ -143,6 +143,16 @@ public partial class ModelsTestData
         }
     }
 
+    public static BoardGame ExpansionWithoutParent
+    {
+        get
+        {
+            var boardGame = ExpansionOfExpansion;
+            boardGame.ExpansionOfId = null;
+            return boardGame;
+        }
+    }
+
     public static void CheckBoardGame(BoardGame expected, BoardGame actual)
     {
         Assert.Equal(expected.Name, actual.Name);

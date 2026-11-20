@@ -5,22 +5,8 @@ namespace BoardGameTracker.Models.Entities;
 /// <summary>
 /// Board game information
 /// </summary>
-public class BoardGame : AbstractEntity
+public class BoardGame : NamedEntity
 {
-    /// <summary>
-    /// Name of the board game
-    /// </summary>
-    public required string Name { get; set; }
-
-    /// <summary>
-    /// Normalized name for search
-    /// </summary>
-    public string NormalizedName
-    {
-        get => Name.ToLowerInvariant();
-        set { }
-    }
-
     /// <summary>
     /// Minimum play time
     /// </summary>

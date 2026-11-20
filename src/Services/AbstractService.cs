@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using BoardGameTracker.Database;
+using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
@@ -7,40 +8,80 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public abstract class AbstractService<EntityType, FilterType>
+public abstract class AbstractService<EntityType, FilterType> : ICrudService<EntityType, FilterType>
     where EntityType : AbstractEntity
     where FilterType : AbstractFilter<EntityType>
 {
-    private readonly BoardGameContext Context;
+    protected readonly BoardGameContext Context;
 
     public AbstractService(BoardGameContext context)
     {
         Context = context;
     }
 
-    protected async Task<EntityType> FindByIdAsync(Guid id, CancellationToken cancellationToken)
+    public virtual async Task<EntityType> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        EntityType result =
-            await Context.Set<EntityType>().FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
-            ?? throw new EntityNotFoundException<EntityType>();
+        EntityType result = await FindByIdAsync(id, cancellationToken);
+        await LoadRelations(result, cancellationToken);
         return result;
     }
 
-    protected async Task<EntityType> CreateEntityAsync(
+    public virtual async Task<EntityType> CreateAsync(
         EntityType model,
         CancellationToken cancellationToken
     )
     {
+        await ValidateCreateAsync(model, cancellationToken);
         var entity = await Context.Set<EntityType>().AddAsync(model, cancellationToken);
         await Context.SaveChangesAsync(cancellationToken);
         return entity.Entity;
     }
 
-    protected async Task DeleteEntityAsync(
+    public virtual async Task<EntityType> UpdateAsync(
+        EntityType model,
         Guid id,
         int version,
         CancellationToken cancellationToken
     )
+    {
+        EntityType entity = await FindByIdAsync(id, cancellationToken);
+        if (entity.Version != version)
+        {
+            throw new VersionMismatchException();
+        }
+
+        await ValidateUpdateAsync(entity, model, cancellationToken);
+
+        // Keep stored metadata; the interceptors update Version and UpdatedAt on save
+        model.Id = entity.Id;
+        model.CreatedAt = entity.CreatedAt;
+        model.UpdatedAt = entity.UpdatedAt;
+        model.Version = entity.Version;
+        model.IsDeleted = entity.IsDeleted;
+
+        Context.Entry(entity).CurrentValues.SetValues(model);
+        await SaveVersionedChangesAsync(cancellationToken);
+
+        return entity;
+    }
+
+    public virtual async Task<PaginatedResponse<EntityType>> GetAllAsync(
+        FilterType filter,
+        CancellationToken cancellationToken
+    )
+    {
+        var query = Context.Set<EntityType>().AsQueryable().AsNoTracking();
+        query = filter.FilterQuery(query);
+        var result = await PaginatedResponse<EntityType>.CreateAsync(
+            query,
+            filter.Page,
+            filter.PageSize,
+            cancellationToken
+        );
+        return result;
+    }
+
+    public virtual async Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
     {
         EntityType entity = await FindByIdAsync(id, cancellationToken);
 
@@ -54,29 +95,12 @@ public abstract class AbstractService<EntityType, FilterType>
         await SaveVersionedChangesAsync(cancellationToken);
     }
 
-    protected async Task<EntityType> UpdateEntityAsync(
-        Guid id,
-        EntityType model,
-        int version,
-        CancellationToken cancellationToken
-    )
+    protected async Task<EntityType> FindByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        EntityType entity = await FindByIdAsync(id, cancellationToken);
-        if (entity.Version != version)
-        {
-            throw new VersionMismatchException();
-        }
-        // Keep stored metadata; the interceptors update Version and UpdatedAt on save
-        model.Id = entity.Id;
-        model.CreatedAt = entity.CreatedAt;
-        model.UpdatedAt = entity.UpdatedAt;
-        model.Version = entity.Version;
-        model.IsDeleted = entity.IsDeleted;
-
-        Context.Entry(entity).CurrentValues.SetValues(model);
-        await SaveVersionedChangesAsync(cancellationToken);
-
-        return entity;
+        EntityType result =
+            await Context.Set<EntityType>().FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+            ?? throw new EntityNotFoundException<EntityType>();
+        return result;
     }
 
     /// <summary>
@@ -94,26 +118,13 @@ public abstract class AbstractService<EntityType, FilterType>
         }
     }
 
-    protected async Task<PaginatedResponse<EntityType>> GetAllFilteredAsync(
-        FilterType filter,
+    protected async Task<bool> ExistsAsync<TReferenced>(
+        Guid id,
         CancellationToken cancellationToken
     )
+        where TReferenced : AbstractEntity
     {
-        var query = Context.Set<EntityType>().AsQueryable().AsNoTracking();
-        query = filter.FilterQuery(query);
-        var result = await PaginatedResponse<EntityType>.CreateAsync(
-            query,
-            filter.Page,
-            filter.PageSize,
-            cancellationToken
-        );
-        return result;
-    }
-
-    protected async Task<bool> Exists<Type>(Guid id, CancellationToken cancellationToken)
-        where Type : AbstractEntity
-    {
-        return await Context.Set<Type>().FindAsync([id], cancellationToken) is not null;
+        return await Context.Set<TReferenced>().FindAsync([id], cancellationToken) is not null;
     }
 
     /// <summary>
@@ -136,14 +147,46 @@ public abstract class AbstractService<EntityType, FilterType>
         }
     }
 
-    protected async Task ThrowIfNotExists<Type>(Guid id, CancellationToken cancellationToken)
-        where Type : AbstractEntity
+    protected async Task ThrowIfNotExistsAsync<TReferenced>(
+        Guid id,
+        CancellationToken cancellationToken
+    )
+        where TReferenced : AbstractEntity
     {
-        if (!await Exists<Type>(id, cancellationToken))
+        if (!await ExistsAsync<TReferenced>(id, cancellationToken))
         {
-            throw new EntityNotFoundException<Type>();
+            throw new EntityNotFoundException<TReferenced>();
         }
     }
 
-    protected abstract Task LoadRelations(EntityType entity, CancellationToken cancellationToken);
+    /// <summary>
+    /// Runs before a new entity is saved
+    /// </summary>
+    protected virtual Task ValidateCreateAsync(
+        EntityType model,
+        CancellationToken cancellationToken
+    )
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Runs after the stored entity is loaded and its version checked, before the update is applied
+    /// </summary>
+    protected virtual Task ValidateUpdateAsync(
+        EntityType existing,
+        EntityType model,
+        CancellationToken cancellationToken
+    )
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Loads the navigations needed by get-by-id responses and cascading deletes
+    /// </summary>
+    protected virtual Task LoadRelations(EntityType entity, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 }

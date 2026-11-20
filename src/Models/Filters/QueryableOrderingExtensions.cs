@@ -4,15 +4,37 @@ using BoardGameTracker.Models.Enums;
 
 namespace BoardGameTracker.Models.Filters;
 
-public static class IOrderedQueryable
+public static class QueryableOrderingExtensions
 {
+    private static readonly IReadOnlyDictionary<string, MethodInfo> OrderingMethods = new[]
+    {
+        nameof(Queryable.OrderBy),
+        nameof(Queryable.OrderByDescending),
+        nameof(Queryable.ThenBy),
+        nameof(Queryable.ThenByDescending),
+    }.ToDictionary(
+        name => name,
+        name =>
+            typeof(Queryable)
+                .GetMethods()
+                .Single(method =>
+                    method.Name == name
+                    && method.IsGenericMethodDefinition
+                    && method.GetGenericArguments().Length == 2
+                    && method.GetParameters().Length == 2
+                )
+    );
+
     public static IOrderedQueryable<EntityType> OrderBy<EntityType>(
         this IQueryable<EntityType> source,
         string property,
         OrderByDirection direction = OrderByDirection.ASC
     )
     {
-        string method = direction == OrderByDirection.ASC ? "OrderBy" : "OrderByDescending";
+        string method =
+            direction == OrderByDirection.ASC
+                ? nameof(Queryable.OrderBy)
+                : nameof(Queryable.OrderByDescending);
         return ApplyOrder(source, property, method);
     }
 
@@ -22,7 +44,10 @@ public static class IOrderedQueryable
         OrderByDirection direction = OrderByDirection.ASC
     )
     {
-        string method = direction == OrderByDirection.ASC ? "ThenBy" : "ThenByDescending";
+        string method =
+            direction == OrderByDirection.ASC
+                ? nameof(Queryable.ThenBy)
+                : nameof(Queryable.ThenByDescending);
         return ApplyOrder(source, property, method);
     }
 
@@ -55,14 +80,7 @@ public static class IOrderedQueryable
         LambdaExpression lambda = Expression.Lambda(delegateType, expression, parameterExpression);
 
         object result =
-            typeof(Queryable)
-                .GetMethods()
-                .Single(method =>
-                    method.Name == methodName
-                    && method.IsGenericMethodDefinition
-                    && method.GetGenericArguments().Length == 2
-                    && method.GetParameters().Length == 2
-                )
+            OrderingMethods[methodName]
                 .MakeGenericMethod(typeof(EntityType), type)
                 .Invoke(null, [source, lambda])
             ?? throw new InvalidOperationException($"Invalid ordering by {property} property.");

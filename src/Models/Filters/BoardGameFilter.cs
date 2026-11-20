@@ -3,10 +3,8 @@ using BoardGameTracker.Models.Enums;
 
 namespace BoardGameTracker.Models.Filters;
 
-public class BoardGameFilter : AbstractFilter<BoardGame>
+public class BoardGameFilter : NamedEntityFilter<BoardGame>
 {
-    public string? Name { get; set; }
-
     public TimeSpan? MinPlayTime { get; set; }
 
     public TimeSpan? MaxPlayTime { get; set; }
@@ -22,10 +20,6 @@ public class BoardGameFilter : AbstractFilter<BoardGame>
     public override IQueryable<BoardGame> FilterQuery(IQueryable<BoardGame> source)
     {
         var filtered = base.FilterQuery(source);
-        if (Name is not null)
-        {
-            filtered = filtered.Where(e => e.NormalizedName.Contains(Name.ToLowerInvariant()));
-        }
         if (MinPlayTime is not null)
         {
             filtered = filtered.Where(e => e.MinPlayTime >= MinPlayTime);

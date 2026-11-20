@@ -8,97 +8,60 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBoardGameService
+public class BoardGameService : NamedEntityService<BoardGame, BoardGameFilter>, IBoardGameService
 {
-    private readonly BoardGameContext Context;
-
     public BoardGameService(BoardGameContext context)
-        : base(context)
-    {
-        Context = context;
-    }
+        : base(context) { }
 
-    public async Task<BoardGame> CreateAsync(BoardGame model, CancellationToken cancellationToken)
-    {
-        await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
-        await CheckParentAsync(model, cancellationToken);
-        BoardGame result = await CreateEntityAsync(model, cancellationToken);
-        return result;
-    }
+    protected override string DuplicateNameMessage => "A board game with this name already exists.";
 
-    public async Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
-    {
-        await DeleteEntityAsync(id, version, cancellationToken);
-    }
-
-    public async Task<PaginatedResponse<BoardGame>> GetAllAsync(
-        BoardGameFilter filter,
-        CancellationToken cancellationToken
-    )
-    {
-        var result = await GetAllFilteredAsync(filter, cancellationToken);
-        return result;
-    }
-
-    public async Task<BoardGame> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-    {
-        BoardGame result = await FindByIdAsync(id, cancellationToken);
-        await LoadRelations(result, cancellationToken);
-        return result;
-    }
-
-    public async Task<BoardGame> UpdateAsync(
+    protected override async Task ValidateCreateAsync(
         BoardGame model,
-        Guid id,
-        int version,
         CancellationToken cancellationToken
     )
     {
-        BoardGame existing = await FindByIdAsync(id, cancellationToken);
+        await base.ValidateCreateAsync(model, cancellationToken);
+        await CheckExpansionRelationAsync(model, cancellationToken);
+    }
+
+    protected override async Task ValidateUpdateAsync(
+        BoardGame existing,
+        BoardGame model,
+        CancellationToken cancellationToken
+    )
+    {
         model.Type = existing.Type;
-        if (model.Type == BoardGameType.EXPANSION && model.ExpansionOfId is null)
+        await base.ValidateUpdateAsync(existing, model, cancellationToken);
+        await CheckExpansionRelationAsync(model, cancellationToken);
+    }
+
+    private async Task CheckExpansionRelationAsync(
+        BoardGame boardGame,
+        CancellationToken cancellationToken
+    )
+    {
+        if (boardGame.Type == BoardGameType.BASE_GAME)
+        {
+            if (boardGame.ExpansionOfId is not null)
+            {
+                throw new BusinessRuleException(
+                    "A base game should not have an expansionOf relation."
+                );
+            }
+            return;
+        }
+
+        if (boardGame.ExpansionOfId is null)
         {
             throw new BusinessRuleException(
                 "An expansion must have the board game set that it belongs to."
             );
         }
-        if (model.Type == BoardGameType.BASE_GAME && model.ExpansionOfId is not null)
-        {
-            throw new BusinessRuleException("A base game should not have an expansionOf relation.");
-        }
-        await ThrowIfNameTakenAsync(model.Name, id, cancellationToken);
-        await CheckParentAsync(model, cancellationToken);
-        BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
-        return entity;
-    }
 
-    private Task ThrowIfNameTakenAsync(
-        string name,
-        Guid? excludedId,
-        CancellationToken cancellationToken
-    )
-    {
-        string normalizedName = name.ToLowerInvariant();
-        return ThrowIfDuplicateAsync(
-            bg => bg.NormalizedName == normalizedName,
-            excludedId,
-            "A board game with this name already exists.",
-            cancellationToken
-        );
-    }
-
-    private async Task CheckParentAsync(BoardGame boardGame, CancellationToken cancellationToken)
-    {
-        if (boardGame.ExpansionOfId is not null)
+        BoardGame parent = await FindByIdAsync(boardGame.ExpansionOfId.Value, cancellationToken);
+        if (parent.Type != BoardGameType.BASE_GAME)
         {
-            BoardGame parent = await FindByIdAsync(
-                boardGame.ExpansionOfId.Value,
-                cancellationToken
-            );
-            if (parent.Type != BoardGameType.BASE_GAME)
-            {
-                throw new BusinessRuleException("The expansion must belong to a base game.");
-            }
+            throw new BusinessRuleException("The expansion must belong to a base game.");
         }
     }
 
@@ -123,7 +86,7 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         CancellationToken cancellationToken
     )
     {
-        await ThrowIfNotExists<BoardGame>(id, cancellationToken);
+        await ThrowIfNotExistsAsync<BoardGame>(id, cancellationToken);
         var result = await Context
             .Set<BoardGame>()
             .AsQueryable()

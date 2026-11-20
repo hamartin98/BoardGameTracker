@@ -14,6 +14,6 @@ public class PlayerScoreMapperConfig : IRegister
             .Ignore(dest => dest.Player, dest => dest.Session);
         config
             .NewConfig<PlayerScore, PlayerScoreResponseVM>()
-            .Map(dest => dest.MetaData, src => src.Adapt<ResponseMetaDataVM>());
+            .Map(dest => dest.MetaData, src => src);
     }
 }
