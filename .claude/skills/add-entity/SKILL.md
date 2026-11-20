@@ -35,7 +35,9 @@ Entities, VMs, service interfaces, DI registrations and basic mapper configs alr
    - Every object a test maps from or compares against lives in TestData, never inline in the test. That covers entities, create/update VMs, filter VMs and expected filters.
      - Models and model filters go in `TestData/Models/<Entity>.cs` (`partial class ModelsTestData`).
      - VMs and filter VMs go in `TestData/ViewModels/<Entity>VM.cs` (`partial class ViewModelsTestData`).
-     - Expose them as `get => new() { ... }` properties with fixed Guids from `CommonTestData`. See `TestData/Models/Player.cs`.
+     - Expose them as `get => new() { ... }` properties. See `TestData/Models/Player.cs`.
+     - Reuse the shared `CommonTestData.Guid1` / `Guid2` / `DeletedGuid` and `CommonTestData.DateTime` rather than adding per-entity ids. Ids only need to be unique within one entity type.
+     - For response VMs, reuse `ViewModelsTestData.ResponseMetaDataVM1` / `ResponseMetaDataVM2`.
    - Put the assertions in `Check<Type>(expected, actual)` helpers next to the fixtures (e.g. `CheckPlayer`, `CheckPlayerFilter`, `CheckPlayerResponseVM`), not in the test body.
    - Add mapping tests as `public partial class MappingTests` in `UnitTests/MapperTests/<Entity>MappingTests.cs`. Each test only gets `expected`, maps the fixture and calls the `Check*` helper (see `PlayerMappingTests.cs`). Cover entity → response VM, create VM → entity, and filter VM → filter.
    - Add enum mapping cases if the entity has enums.
