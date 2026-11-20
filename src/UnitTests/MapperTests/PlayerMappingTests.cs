@@ -1,11 +1,8 @@
 using BoardGameTracker.Models.Entities;
-using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
 using BoardGameTracker.TestData.Models;
 using BoardGameTracker.TestData.ViewModels;
 using BoardGameTracker.ViewModels;
-using BoardGameTracker.ViewModels.Enums;
-using BoardGameTracker.ViewModels.Filters;
 
 namespace BoardGameTracker.UnitTests.MapperTests;
 
@@ -24,31 +21,20 @@ public partial class MappingTests
     [Fact]
     public void PlayerCreateToModelMappingTest()
     {
-        var createVM = new PlayerCreateVM { Name = "Alice" };
+        var expected = ModelsTestData.Alice;
 
-        var actual = Mapper.Map<Player>(createVM);
+        var actual = Mapper.Map<Player>(ViewModelsTestData.AliceCreateVM);
 
-        ModelsTestData.CheckPlayer(ModelsTestData.Alice, actual);
+        ModelsTestData.CheckPlayer(expected, actual);
     }
 
     [Fact]
     public void PlayerFilterMappingTest()
     {
-        var filterVM = new PlayerFilterVM
-        {
-            Name = "ali",
-            Page = 2,
-            PageSize = 20,
-            OrderBy = "name",
-            OrderDirection = OrderByDirectionVM.DESC,
-        };
+        var expected = ModelsTestData.AliFilter;
 
-        var actual = Mapper.Map<PlayerFilter>(filterVM);
+        var actual = Mapper.Map<PlayerFilter>(ViewModelsTestData.AliFilterVM);
 
-        Assert.Equal("ali", actual.Name);
-        Assert.Equal(2, actual.Page);
-        Assert.Equal(20, actual.PageSize);
-        Assert.Equal("name", actual.OrderBy);
-        Assert.Equal(OrderByDirection.DESC, actual.OrderDirection);
+        ModelsTestData.CheckPlayerFilter(expected, actual);
     }
 }

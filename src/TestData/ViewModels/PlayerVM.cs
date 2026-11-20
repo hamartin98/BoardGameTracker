@@ -1,4 +1,6 @@
 using BoardGameTracker.ViewModels;
+using BoardGameTracker.ViewModels.Enums;
+using BoardGameTracker.ViewModels.Filters;
 using Xunit;
 
 namespace BoardGameTracker.TestData.ViewModels;
@@ -19,6 +21,24 @@ public partial class ViewModelsTestData
                     IsDeleted = false,
                 },
                 Name = "Alice",
+            };
+    }
+
+    public static PlayerCreateVM AliceCreateVM
+    {
+        get => new() { Name = "Alice" };
+    }
+
+    public static PlayerFilterVM AliFilterVM
+    {
+        get =>
+            new()
+            {
+                Name = "ali",
+                Page = 2,
+                PageSize = 20,
+                OrderBy = "name",
+                OrderDirection = OrderByDirectionVM.DESC,
             };
     }
 
