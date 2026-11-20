@@ -34,13 +34,42 @@ public abstract class AbstractFilter<EntityType>
         set => pageSize = Math.Clamp(value, MinPageSize, MaxPageSize);
     }
 
-    public DateTime? CreatedAtFrom { get; set; }
+    private DateTime? createdAtFrom;
+    private DateTime? createdAtTo;
 
-    public DateTime? CreatedAtTo { get; set; }
+    /// <summary>
+    /// Stored as UTC; a value without a timezone is treated as UTC
+    /// </summary>
+    public DateTime? CreatedAtFrom
+    {
+        get => createdAtFrom;
+        set => createdAtFrom = ToUtc(value);
+    }
+
+    /// <summary>
+    /// Stored as UTC; a value without a timezone is treated as UTC
+    /// </summary>
+    public DateTime? CreatedAtTo
+    {
+        get => createdAtTo;
+        set => createdAtTo = ToUtc(value);
+    }
 
     public string? OrderBy { get; set; }
 
     public OrderByDirection OrderDirection { get; set; } = OrderByDirection.ASC;
+
+    // Npgsql only accepts UTC DateTimes for timestamp with time zone columns
+    private static DateTime? ToUtc(DateTime? value)
+    {
+        return value?.Kind switch
+        {
+            null => null,
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => value.Value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(value.Value, DateTimeKind.Utc),
+        };
+    }
 
     public virtual IQueryable<EntityType> FilterQuery(IQueryable<EntityType> source)
     {

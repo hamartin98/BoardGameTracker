@@ -1,4 +1,5 @@
 using BoardGameTracker.Models.Filters;
+using BoardGameTracker.TestData;
 using BoardGameTracker.ViewModels.Filters;
 using MapsterMapper;
 
@@ -62,5 +63,39 @@ public class AbstractFilterTests
 
         Assert.Equal(expectedPage, actual.Page);
         Assert.Equal(expectedPageSize, actual.PageSize);
+    }
+
+    public class CreatedAtTestData : TheoryData<DateTime, DateTime>
+    {
+        public CreatedAtTestData()
+        {
+            Add(CommonTestData.DateTime, CommonTestData.DateTime);
+            Add(CommonTestData.DateTime.ToLocalTime(), CommonTestData.DateTime);
+            Add(
+                DateTime.SpecifyKind(CommonTestData.DateTime, DateTimeKind.Unspecified),
+                CommonTestData.DateTime
+            );
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(CreatedAtTestData))]
+    public void CreatedAtIsStoredAsUtcTest(DateTime value, DateTime expected)
+    {
+        var filter = new PlayerFilter { CreatedAtFrom = value, CreatedAtTo = value };
+
+        Assert.Equal(expected, filter.CreatedAtFrom);
+        Assert.Equal(DateTimeKind.Utc, filter.CreatedAtFrom?.Kind);
+        Assert.Equal(expected, filter.CreatedAtTo);
+        Assert.Equal(DateTimeKind.Utc, filter.CreatedAtTo?.Kind);
+    }
+
+    [Fact]
+    public void CreatedAtNullStaysNullTest()
+    {
+        var filter = new PlayerFilter { CreatedAtFrom = null, CreatedAtTo = null };
+
+        Assert.Null(filter.CreatedAtFrom);
+        Assert.Null(filter.CreatedAtTo);
     }
 }
