@@ -45,9 +45,6 @@ public partial class ModelsTestData
             };
     }
 
-    /// <summary>
-    /// Second page (size 2) of 5 players in total
-    /// </summary>
     public static PaginatedResponse<Player> PlayersPage2
     {
         get => new([Alice, Bob], count: 5, page: 2, pageSize: 2);

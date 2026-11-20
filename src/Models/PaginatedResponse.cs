@@ -1,12 +1,11 @@
-namespace BoardGameTracker.Models;
-
-using BoardGameTracker.Models.Filters;
 using Microsoft.EntityFrameworkCore;
+
+namespace BoardGameTracker.Models;
 
 public class PaginatedResponse<EntityType> : List<EntityType>
 {
     /// <summary>
-    /// 1-based page number. Named Page so Mapster maps it to PaginatedResponseVM.Page.
+    /// 1-based page number
     /// </summary>
     public int Page { get; set; }
 
