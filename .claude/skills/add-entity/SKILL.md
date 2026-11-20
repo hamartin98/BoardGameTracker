@@ -30,10 +30,8 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
    - Map `MetaData` from the entity for response VMs.
    - Map FilterVM → Filter and `PaginatedResponse<T>` → `<Entities>ResponseVM`.
    - `MapperConfigTests` compiles with `RequireDestinationMemberSource = true`, so every destination member needs a source or an explicit `Ignore`.
-6. **Controller.** Copy `BoardGameTrackerApi/Controllers/BoardGamesController.cs`, including its XML doc comments and `ProducesResponseType` attributes.
-   - Update and delete take `[FromQuery] int version`.
-   - Create returns `CreatedAtAction(nameof(GetById), ...)`.
-   - Give the get-by-id route a unique `Name`. `"GetById"` is already taken by BoardGames.
+6. **Controller.** Derive from `CrudController<TEntity, TFilter, TCreateVM, TUpdateVM, TResponseVM, TListResponseVM, TFilterVM>` with `[Route("[controller]")]`, like `BoardGameTrackerApi/Controllers/PlayersController.cs`. It provides create / get-by-id / list / update / delete (update and delete take `?version=`).
+   - Add extra endpoints to the derived controller with an XML doc comment and `ProducesResponseType`, like `GetExpansions` in `BoardGamesController.cs`.
 7. **Tests.**
    - Every object a test maps from or compares against lives in TestData, never inline in the test. That covers entities, create/update VMs, filter VMs and expected filters.
      - Models and model filters go in `TestData/Models/<Entity>.cs` (`partial class ModelsTestData`).
