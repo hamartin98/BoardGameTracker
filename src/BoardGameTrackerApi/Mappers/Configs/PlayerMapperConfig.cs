@@ -11,7 +11,10 @@ public class PlayerMapperConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<PlayerCreateVM, Player>();
+        config
+            .NewConfig<PlayerCreateVM, Player>()
+            .IgnoreEntityMetadata()
+            .Ignore(dest => dest.NormalizedName);
         config
             .NewConfig<Player, PlayerResponseVM>()
             .Map(dest => dest.MetaData, src => src.Adapt<ResponseMetaDataVM>());

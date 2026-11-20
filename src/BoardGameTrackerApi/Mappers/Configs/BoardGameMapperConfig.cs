@@ -31,6 +31,8 @@ public class BoardGameMapperConfig : IRegister
     {
         config
             .NewConfig<BoardGameCreateVM, BoardGame>()
+            .IgnoreEntityMetadata()
+            .Ignore(dest => dest.NormalizedName, dest => dest.ExpansionOf)
             .Map(dest => dest.Categories, src => MapBoardGameCategory(src.Categories));
         config
             .NewConfig<BoardGame, BoardGameResponseVM>()
