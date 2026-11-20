@@ -32,13 +32,18 @@ Entities, VMs, service interfaces, DI registrations and basic mapper configs alr
    - Create returns `CreatedAtAction(nameof(GetById), ...)`.
    - Give the get-by-id route a unique `Name`. `"GetById"` is already taken by BoardGames.
 7. **Tests.**
-   - Add test fixtures under `TestData/Models` and `TestData/ViewModels`, using fixed Guids like `CommonTestData`.
-   - Add mapping tests as `public partial class MappingTests` in `UnitTests/MapperTests/`.
+   - Every object a test maps from or compares against lives in TestData, never inline in the test. That covers entities, create/update VMs, filter VMs and expected filters.
+     - Models and model filters go in `TestData/Models/<Entity>.cs` (`partial class ModelsTestData`).
+     - VMs and filter VMs go in `TestData/ViewModels/<Entity>VM.cs` (`partial class ViewModelsTestData`).
+     - Expose them as `get => new() { ... }` properties with fixed Guids from `CommonTestData`. See `TestData/Models/Player.cs`.
+   - Put the assertions in `Check<Type>(expected, actual)` helpers next to the fixtures (e.g. `CheckPlayer`, `CheckPlayerFilter`, `CheckPlayerResponseVM`), not in the test body.
+   - Add mapping tests as `public partial class MappingTests` in `UnitTests/MapperTests/<Entity>MappingTests.cs`. Each test only gets `expected`, maps the fixture and calls the `Check*` helper (see `PlayerMappingTests.cs`). Cover entity → response VM, create VM → entity, and filter VM → filter.
    - Add enum mapping cases if the entity has enums.
 8. **Seed data (optional).** For manual testing, add fixtures to `Database/DbDataSeeder.cs`.
 9. **Migration.** Use the `ef-migration` skill.
 10. **Verify.**
-    - Run `dotnet build`, `dotnet test` and `dotnet csharpier format .` from `src/`.
+    - Run `dotnet build` and `dotnet test` from `src/`.
+    - Format only the files this change touched (`dotnet csharpier format <files>`), not the whole tree. Formatting everything rewrites unrelated files.
     - Then use the `smoke-test-api` skill for create / get / update with `?version=` / delete, and for a 404 and a 409.
 
 ## Gotchas
