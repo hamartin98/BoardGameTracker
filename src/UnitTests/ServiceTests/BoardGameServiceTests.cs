@@ -26,7 +26,7 @@ public class BoardGameServiceTests
     {
         await SeedAsync(ModelsTestData.Scythe);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
             CreateService().CreateAsync(ModelsTestData.ScytheUppercase, CancellationToken.None)
         );
     }
@@ -64,7 +64,7 @@ public class BoardGameServiceTests
         var other = ModelsTestData.DeletedBoardGameRecreated;
         await SeedAsync(ModelsTestData.Scythe, other);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
             CreateService()
                 .UpdateAsync(ModelsTestData.ScytheUppercase, other.Id, 1, CancellationToken.None)
         );
@@ -97,6 +97,16 @@ public class BoardGameServiceTests
         await Assert.ThrowsAsync<EntityNotFoundException<BoardGame>>(() =>
             CreateService()
                 .GetExpansionsAsync(ModelsTestData.DeletedBoardGame.Id, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task CreateExpansionOfExpansionThrowsTest()
+    {
+        await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService().CreateAsync(ModelsTestData.ExpansionOfExpansion, CancellationToken.None)
         );
     }
 }

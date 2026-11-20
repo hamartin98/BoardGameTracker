@@ -85,7 +85,7 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
             );
             if (parent.Type != BoardGameType.BASE_GAME)
             {
-                throw new InvalidOperationException("The expansion must belong to a base game.");
+                throw new BusinessRuleException("The expansion must belong to a base game.");
             }
         }
     }

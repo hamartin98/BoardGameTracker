@@ -45,3 +45,9 @@ public class InvalidOrderByException : ApplicationException
     public InvalidOrderByException(string property)
         : base($"Cannot order by '{property}'.") { }
 }
+
+public class BusinessRuleException : Exception
+{
+    public BusinessRuleException(string message)
+        : base(message) { }
+}

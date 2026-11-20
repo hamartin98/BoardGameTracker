@@ -21,7 +21,7 @@ Entities, VMs, service interfaces, DI registrations and basic mapper configs alr
 3. **Service.** Make the class derive from `AbstractService<TEntity, TFilter>` and keep its interface (`Services/BoardGameService.cs`).
    - Implement `LoadRelations` to eager-load the navigations a get-by-id response or a cascading delete needs.
    - Check foreign keys before create/update with `ThrowIfNotExists<TReferenced>(id, ct)`.
-   - Throw `InvalidOperationException` for business-rule violations (→ 422). The middleware maps the other exception types.
+   - Throw `BusinessRuleException` for business-rule violations (→ 422); `ThrowIfDuplicateAsync` already does for uniqueness. Don't use `InvalidOperationException`: it maps to 500, since EF throws it for internal failures. The middleware maps the other exception types.
 4. **DI.** Confirm the registration in `BoardGameTrackerApi/Setup/ServiceSetupExtensions.cs`.
 5. **Mapping.** Extend the `IRegister` class in `BoardGameTrackerApi/Mappers/Configs/` (`BoardGameMapperConfig.cs`).
    - Map `MetaData` from the entity for response VMs.

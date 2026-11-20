@@ -97,6 +97,21 @@ public partial class ModelsTestData
             };
     }
 
+    public static BoardGame ExpansionOfExpansion
+    {
+        get =>
+            new()
+            {
+                Name = "Expansion of an expansion",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 5,
+                MinPlayTime = new TimeSpan(1, 0, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                Type = BoardGameType.EXPANSION,
+                ExpansionOfId = ScytheFenris.Id,
+            };
+    }
+
     public static void CheckBoardGame(BoardGame expected, BoardGame actual)
     {
         Assert.Equal(expected.Name, actual.Name);

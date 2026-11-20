@@ -117,7 +117,7 @@ public abstract class AbstractService<EntityType, FilterType>
     }
 
     /// <summary>
-    /// Throws InvalidOperationException (422) when another non-deleted entity matches the predicate
+    /// Throws BusinessRuleException (422) when another non-deleted entity matches the predicate
     /// </summary>
     protected async Task ThrowIfDuplicateAsync(
         Expression<Func<EntityType, bool>> predicate,
@@ -132,7 +132,7 @@ public abstract class AbstractService<EntityType, FilterType>
             .AnyAsync(e => e.Id != excludedId, cancellationToken);
         if (duplicate)
         {
-            throw new InvalidOperationException(message);
+            throw new BusinessRuleException(message);
         }
     }
 

@@ -22,7 +22,7 @@ description: Run the BoardGameTracker API against the in-memory database and cal
    - 400: `ApplicationException`
    - 404: not found / invalid foreign key
    - 409: wrong `?version=`
-   - 422: `InvalidOperationException`
+   - 422: `BusinessRuleException`
    - 500: anything else (a 500 is a bug to report)
 
    Update and delete require `?version=<current version>`. Read it from the `metaData.version` of a GET.
