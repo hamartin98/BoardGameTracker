@@ -36,3 +36,9 @@ public class InvalidForeignKeyException<ReferencedEntityType> : InvalidForeignKe
     public InvalidForeignKeyException()
         : base($"Invalid foreign key reference for {typeof(ReferencedEntityType).Name}.") { }
 }
+
+public class InvalidOrderByException : ApplicationException
+{
+    public InvalidOrderByException(string property)
+        : base($"Cannot order by '{property}'.") { }
+}

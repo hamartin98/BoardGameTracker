@@ -38,10 +38,16 @@ public static class IOrderedQueryable
         Expression expression = parameterExpression;
         foreach (string prop in props)
         {
+            if (string.IsNullOrWhiteSpace(prop))
+            {
+                throw new InvalidOrderByException(property);
+            }
             // use reflection (not ComponentModel) to mirror LINQ
-            string propertyName = GetPropertyName(prop);
             PropertyInfo propertyInfo =
-                type.GetProperty(propertyName) ?? throw new ArgumentException(property);
+                type.GetProperty(
+                    prop,
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase
+                ) ?? throw new InvalidOrderByException(property);
             expression = Expression.Property(expression, propertyInfo);
             type = propertyInfo.PropertyType;
         }
@@ -61,10 +67,5 @@ public static class IOrderedQueryable
                 .Invoke(null, [source, lambda])
             ?? throw new InvalidOperationException($"Invalid ordering by {property} property.");
         return (IOrderedQueryable<EntityType>)result;
-    }
-
-    private static string GetPropertyName(string propertyName)
-    {
-        return string.Concat(propertyName[0].ToString().ToUpper(), propertyName.AsSpan(1));
     }
 }
