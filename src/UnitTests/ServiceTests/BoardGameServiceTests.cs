@@ -184,4 +184,23 @@ public class BoardGameServiceTests
                 )
         );
     }
+
+    [Fact]
+    public async Task CreateExpansionWithoutParentThrowsTest()
+    {
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .CreateAsync(ModelsTestData.ExpansionWithoutParent, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task CreateBaseGameWithParentThrowsTest()
+    {
+        await SeedAsync(ModelsTestData.ScytheFenris);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService().CreateAsync(ModelsTestData.ScytheWithParent, CancellationToken.None)
+        );
+    }
 }

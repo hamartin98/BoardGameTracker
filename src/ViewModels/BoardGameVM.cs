@@ -58,7 +58,7 @@ public class BoardGameBaseVM : IValidatableObject
     /// <example>null</example>
     public Guid? ExpansionOfId { get; set; }
 
-    public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         List<ValidationResult> result = [];
 
@@ -132,22 +132,6 @@ public class BoardGameCreateVM : BoardGameBaseVM
     /// <example>BASE_GAME</example>
     [Required]
     public required BoardGameTypeVM Type { get; set; } = BoardGameTypeVM.BASE_GAME;
-
-    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        List<ValidationResult> result = [.. base.Validate(validationContext)];
-
-        if (Type == BoardGameTypeVM.EXPANSION && ExpansionOfId is null)
-        {
-            result.Add(new("An expansion must have the board game set that it belongs to."));
-        }
-        else if (Type == BoardGameTypeVM.BASE_GAME && ExpansionOfId is not null)
-        {
-            result.Add(new("A base game should not have an expansionOf relation."));
-        }
-
-        return result;
-    }
 }
 
 /// <summary>

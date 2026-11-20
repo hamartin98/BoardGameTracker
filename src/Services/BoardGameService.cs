@@ -19,7 +19,7 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
     )
     {
         await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
-        await CheckParentAsync(model, cancellationToken);
+        await CheckExpansionRelationAsync(model, cancellationToken);
     }
 
     protected override async Task ValidateUpdateAsync(
@@ -29,18 +29,8 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
     )
     {
         model.Type = existing.Type;
-        if (model.Type == BoardGameType.EXPANSION && model.ExpansionOfId is null)
-        {
-            throw new BusinessRuleException(
-                "An expansion must have the board game set that it belongs to."
-            );
-        }
-        if (model.Type == BoardGameType.BASE_GAME && model.ExpansionOfId is not null)
-        {
-            throw new BusinessRuleException("A base game should not have an expansionOf relation.");
-        }
         await ThrowIfNameTakenAsync(model.Name, existing.Id, cancellationToken);
-        await CheckParentAsync(model, cancellationToken);
+        await CheckExpansionRelationAsync(model, cancellationToken);
     }
 
     private Task ThrowIfNameTakenAsync(
@@ -58,18 +48,33 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         );
     }
 
-    private async Task CheckParentAsync(BoardGame boardGame, CancellationToken cancellationToken)
+    private async Task CheckExpansionRelationAsync(
+        BoardGame boardGame,
+        CancellationToken cancellationToken
+    )
     {
-        if (boardGame.ExpansionOfId is not null)
+        if (boardGame.Type == BoardGameType.BASE_GAME)
         {
-            BoardGame parent = await FindByIdAsync(
-                boardGame.ExpansionOfId.Value,
-                cancellationToken
-            );
-            if (parent.Type != BoardGameType.BASE_GAME)
+            if (boardGame.ExpansionOfId is not null)
             {
-                throw new BusinessRuleException("The expansion must belong to a base game.");
+                throw new BusinessRuleException(
+                    "A base game should not have an expansionOf relation."
+                );
             }
+            return;
+        }
+
+        if (boardGame.ExpansionOfId is null)
+        {
+            throw new BusinessRuleException(
+                "An expansion must have the board game set that it belongs to."
+            );
+        }
+
+        BoardGame parent = await FindByIdAsync(boardGame.ExpansionOfId.Value, cancellationToken);
+        if (parent.Type != BoardGameType.BASE_GAME)
+        {
+            throw new BusinessRuleException("The expansion must belong to a base game.");
         }
     }
 
