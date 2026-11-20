@@ -22,6 +22,25 @@ namespace Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BoardGamePlaySession", b =>
+                {
+                    b.Property<Guid>("PlaySessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("play_session_id");
+
+                    b.Property<Guid>("UsedExpansionsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("used_expansions_id");
+
+                    b.HasKey("PlaySessionId", "UsedExpansionsId")
+                        .HasName("pk_play_session_expansions");
+
+                    b.HasIndex("UsedExpansionsId")
+                        .HasDatabaseName("ix_play_session_expansions_used_expansions_id");
+
+                    b.ToTable("play_session_expansions", (string)null);
+                });
+
             modelBuilder.Entity("BoardGameTracker.Models.Entities.BoardGame", b =>
                 {
                     b.Property<Guid>("Id")
@@ -75,10 +94,6 @@ namespace Migrations.Migrations
                         .HasColumnType("text")
                         .HasColumnName("normalized_name");
 
-                    b.Property<Guid?>("PlaySessionId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("play_session_id");
-
                     b.Property<byte>("Type")
                         .HasColumnType("smallint")
                         .HasColumnName("type");
@@ -109,9 +124,6 @@ namespace Migrations.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_board_games_normalized_name")
                         .HasFilter("is_deleted = false");
-
-                    b.HasIndex("PlaySessionId")
-                        .HasDatabaseName("ix_board_games_play_session_id");
 
                     b.ToTable("board_games", (string)null);
                 });
@@ -156,6 +168,7 @@ namespace Migrations.Migrations
                         .HasColumnName("updated_at");
 
                     b.Property<int>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("integer")
                         .HasColumnName("version");
 
@@ -164,6 +177,16 @@ namespace Migrations.Migrations
 
                     b.HasIndex("BoardGameId")
                         .HasDatabaseName("ix_play_sessions_board_game_id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_play_sessions_created_at");
+
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("ix_play_sessions_is_deleted")
+                        .HasFilter("is_deleted = false");
+
+                    b.HasIndex("StartTime")
+                        .HasDatabaseName("ix_play_sessions_start_time");
 
                     b.ToTable("play_sessions", (string)null);
                 });
@@ -275,6 +298,23 @@ namespace Migrations.Migrations
                     b.ToTable("player_scores", (string)null);
                 });
 
+            modelBuilder.Entity("BoardGamePlaySession", b =>
+                {
+                    b.HasOne("BoardGameTracker.Models.Entities.PlaySession", null)
+                        .WithMany()
+                        .HasForeignKey("PlaySessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_play_session_expansions_play_sessions_play_session_id");
+
+                    b.HasOne("BoardGameTracker.Models.Entities.BoardGame", null)
+                        .WithMany()
+                        .HasForeignKey("UsedExpansionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_play_session_expansions_board_games_used_expansions_id");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Models.Entities.BoardGame", b =>
                 {
                     b.HasOne("BoardGameTracker.Models.Entities.BoardGame", "ExpansionOf")
@@ -282,11 +322,6 @@ namespace Migrations.Migrations
                         .HasForeignKey("ExpansionOfId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_board_games_board_games_expansion_of_id");
-
-                    b.HasOne("BoardGameTracker.Models.Entities.PlaySession", null)
-                        .WithMany("UsedExpansions")
-                        .HasForeignKey("PlaySessionId")
-                        .HasConstraintName("fk_board_games_play_sessions_play_session_id");
 
                     b.Navigation("ExpansionOf");
                 });
@@ -332,8 +367,6 @@ namespace Migrations.Migrations
             modelBuilder.Entity("BoardGameTracker.Models.Entities.PlaySession", b =>
                 {
                     b.Navigation("PlayerScores");
-
-                    b.Navigation("UsedExpansions");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Models.Entities.Player", b =>
