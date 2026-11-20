@@ -1,3 +1,4 @@
+using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Services;
 using BoardGameTracker.TestData.Models;
@@ -66,6 +67,36 @@ public class BoardGameServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             CreateService()
                 .UpdateAsync(ModelsTestData.ScytheUppercase, other.Id, 1, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task GetExpansionsReturnsExpansionsTest()
+    {
+        await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
+
+        var expansions = await CreateService()
+            .GetExpansionsAsync(ModelsTestData.Scythe.Id, CancellationToken.None);
+
+        Assert.Equal([ModelsTestData.ScytheFenris.Id], expansions.Select(e => e.Id));
+    }
+
+    [Fact]
+    public async Task GetExpansionsOfUnknownGameThrowsTest()
+    {
+        await Assert.ThrowsAsync<EntityNotFoundException<BoardGame>>(() =>
+            CreateService().GetExpansionsAsync(Guid.NewGuid(), CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task GetExpansionsOfDeletedGameThrowsTest()
+    {
+        await SeedAsync(ModelsTestData.DeletedBoardGame);
+
+        await Assert.ThrowsAsync<EntityNotFoundException<BoardGame>>(() =>
+            CreateService()
+                .GetExpansionsAsync(ModelsTestData.DeletedBoardGame.Id, CancellationToken.None)
         );
     }
 }

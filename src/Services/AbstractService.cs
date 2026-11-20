@@ -98,10 +98,7 @@ public abstract class AbstractService<EntityType, FilterType>
     protected async Task<bool> Exists<Type>(Guid id, CancellationToken cancellationToken)
         where Type : AbstractEntity
     {
-        return await Context
-            .Set<Type>()
-            .FindAsync([id, cancellationToken], cancellationToken: cancellationToken)
-            is not null;
+        return await Context.Set<Type>().FindAsync([id], cancellationToken) is not null;
     }
 
     /// <summary>
