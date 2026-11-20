@@ -8,17 +8,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBoardGameService
+public class BoardGameService : NamedEntityService<BoardGame, BoardGameFilter>, IBoardGameService
 {
     public BoardGameService(BoardGameContext context)
         : base(context) { }
+
+    protected override string DuplicateNameMessage => "A board game with this name already exists.";
 
     protected override async Task ValidateCreateAsync(
         BoardGame model,
         CancellationToken cancellationToken
     )
     {
-        await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
+        await base.ValidateCreateAsync(model, cancellationToken);
         await CheckExpansionRelationAsync(model, cancellationToken);
     }
 
@@ -29,23 +31,8 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
     )
     {
         model.Type = existing.Type;
-        await ThrowIfNameTakenAsync(model.Name, existing.Id, cancellationToken);
+        await base.ValidateUpdateAsync(existing, model, cancellationToken);
         await CheckExpansionRelationAsync(model, cancellationToken);
-    }
-
-    private Task ThrowIfNameTakenAsync(
-        string name,
-        Guid? excludedId,
-        CancellationToken cancellationToken
-    )
-    {
-        string normalizedName = name.ToLowerInvariant();
-        return ThrowIfDuplicateAsync(
-            bg => bg.NormalizedName == normalizedName,
-            excludedId,
-            "A board game with this name already exists.",
-            cancellationToken
-        );
     }
 
     private async Task CheckExpansionRelationAsync(

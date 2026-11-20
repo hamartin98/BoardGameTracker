@@ -11,6 +11,8 @@ Entities, VMs, service interfaces, DI registrations and basic mapper configs alr
 
 ## Steps
 
+For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`, `NamedEntityFilter<T>` and `NamedEntityService<T, TFilter>` instead of the `Abstract*` classes. You then get `NormalizedName`, name search and the duplicate-name check (422) for free; only `DuplicateNameMessage` needs to be set. See `Player`.
+
 1. **Entity configuration.** Copy `Database/EntityConfigurations/BoardGameConfiguration.cs`.
    - Add a `Configure<Entity>(this ModelBuilder)` extension in the same `partial class ModelBuilderExtensions`. It must call `AbstractEntityConfiguration.Configure<TEntity>(modelBuilder)` first; that sets the key, the `Version` concurrency token, the soft-delete query filter and indexes.
    - Configure relationships and indexes there, not with attributes.
