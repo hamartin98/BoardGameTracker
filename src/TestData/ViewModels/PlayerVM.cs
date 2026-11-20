@@ -9,19 +9,7 @@ public partial class ViewModelsTestData
 {
     public static PlayerResponseVM AliceVM
     {
-        get =>
-            new()
-            {
-                MetaData = new()
-                {
-                    Id = CommonTestData.PlayerGuid1,
-                    CreatedAt = CommonTestData.DateTime,
-                    UpdatedAt = CommonTestData.DateTime,
-                    Version = 1,
-                    IsDeleted = false,
-                },
-                Name = "Alice",
-            };
+        get => new() { MetaData = ResponseMetaDataVM1, Name = "Alice" };
     }
 
     public static PlayerCreateVM AliceCreateVM

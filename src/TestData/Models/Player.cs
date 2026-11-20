@@ -12,7 +12,7 @@ public partial class ModelsTestData
         get =>
             new()
             {
-                Id = CommonTestData.PlayerGuid1,
+                Id = CommonTestData.Guid1,
                 Name = "Alice",
                 CreatedAt = CommonTestData.DateTime,
                 UpdatedAt = CommonTestData.DateTime,
@@ -24,7 +24,7 @@ public partial class ModelsTestData
         get =>
             new()
             {
-                Id = CommonTestData.PlayerGuid2,
+                Id = CommonTestData.Guid2,
                 Name = "Bob",
                 CreatedAt = CommonTestData.DateTime,
                 UpdatedAt = CommonTestData.DateTime,
