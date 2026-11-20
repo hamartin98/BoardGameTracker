@@ -17,7 +17,7 @@ public class BoardGame : AbstractEntity
     /// </summary>
     public string NormalizedName
     {
-        get => Name.ToLower();
+        get => Name.ToLowerInvariant();
         set { }
     }
 

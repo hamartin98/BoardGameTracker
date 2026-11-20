@@ -15,7 +15,7 @@ public class Player : AbstractEntity
     /// </summary>
     public string NormalizedName
     {
-        get => Name.ToLower();
+        get => Name.ToLowerInvariant();
         set { }
     }
 

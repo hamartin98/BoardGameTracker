@@ -56,7 +56,7 @@ public class PlayerService : AbstractService<Player, PlayerFilter>, IPlayerServi
         CancellationToken cancellationToken
     )
     {
-        string normalizedName = name.ToLower();
+        string normalizedName = name.ToLowerInvariant();
         return ThrowIfDuplicateAsync(
             p => p.NormalizedName == normalizedName,
             excludedId,

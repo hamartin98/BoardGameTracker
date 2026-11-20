@@ -13,7 +13,7 @@ public class PostgresConfigurationTests
     [InlineData(" padded ")]
     public void PasswordRoundTripsThroughConnectionStringTest(string password)
     {
-        var config = new PostgresConfguration { Password = password };
+        var config = new PostgresConfiguration { Password = password };
 
         var parsed = new NpgsqlConnectionStringBuilder(config.GetConnectionString());
 

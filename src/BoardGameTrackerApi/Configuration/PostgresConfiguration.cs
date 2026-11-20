@@ -3,7 +3,7 @@ using Npgsql;
 
 namespace BoardGameTracker.Api.Configuration;
 
-public class PostgresConfguration
+public class PostgresConfiguration
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 

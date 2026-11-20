@@ -24,7 +24,7 @@ public class BoardGameFilter : AbstractFilter<BoardGame>
         var filtered = base.FilterQuery(source);
         if (Name is not null)
         {
-            filtered = filtered.Where(e => e.NormalizedName.Contains(Name.ToLower()));
+            filtered = filtered.Where(e => e.NormalizedName.Contains(Name.ToLowerInvariant()));
         }
         if (MinPlayTime is not null)
         {

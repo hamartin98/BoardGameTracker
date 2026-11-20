@@ -11,7 +11,7 @@ public class PlayerFilter : AbstractFilter<Player>
         var filtered = base.FilterQuery(source);
         if (Name is not null)
         {
-            filtered = filtered.Where(e => e.NormalizedName.Contains(Name.ToLower()));
+            filtered = filtered.Where(e => e.NormalizedName.Contains(Name.ToLowerInvariant()));
         }
         return filtered;
     }

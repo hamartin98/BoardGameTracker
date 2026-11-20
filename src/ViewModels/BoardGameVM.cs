@@ -87,7 +87,7 @@ public class BoardGameBaseVM : IValidatableObject
             if (MinPlayTime < minPlayTime || MinPlayTime > maxPlayTime)
             {
                 result.Add(
-                    new($"MinPlayTime should be int the range {minPlayTime} - {maxPlayTime}.")
+                    new($"MinPlayTime should be in the range {minPlayTime} - {maxPlayTime}.")
                 );
             }
             if (MaxPlayTime < minPlayTime || MaxPlayTime > maxPlayTime)

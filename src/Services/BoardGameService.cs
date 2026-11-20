@@ -71,7 +71,7 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         CancellationToken cancellationToken
     )
     {
-        string normalizedName = name.ToLower();
+        string normalizedName = name.ToLowerInvariant();
         return ThrowIfDuplicateAsync(
             bg => bg.NormalizedName == normalizedName,
             excludedId,
