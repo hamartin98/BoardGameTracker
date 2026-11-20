@@ -5,7 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 public class PaginatedResponse<EntityType> : List<EntityType>
 {
-    public int CurrentPage { get; set; }
+    /// <summary>
+    /// 1-based page number. Named Page so Mapster maps it to PaginatedResponseVM.Page.
+    /// </summary>
+    public int Page { get; set; }
 
     public int TotalPages { get; set; }
 
@@ -20,7 +23,7 @@ public class PaginatedResponse<EntityType> : List<EntityType>
         int pageSize
     )
     {
-        CurrentPage = page;
+        Page = page;
         TotalPages = (int)Math.Ceiling(count / (double)pageSize);
         PageSize = pageSize;
         TotalCount = count;
@@ -36,7 +39,7 @@ public class PaginatedResponse<EntityType> : List<EntityType>
     {
         var count = await source.CountAsync(cancellationToken);
         var items = await source
-            .Skip(page * pageSize)
+            .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
         return new PaginatedResponse<EntityType>(items, count, page, pageSize);

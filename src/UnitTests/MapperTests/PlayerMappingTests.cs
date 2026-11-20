@@ -29,6 +29,16 @@ public partial class MappingTests
     }
 
     [Fact]
+    public void PlayersPageToResponseMappingTest()
+    {
+        var expected = ViewModelsTestData.PlayersPage2VM;
+
+        var actual = Mapper.Map<PlayersResponseVM>(ModelsTestData.PlayersPage2);
+
+        ViewModelsTestData.CheckPlayersResponseVM(expected, actual);
+    }
+
+    [Fact]
     public void PlayerFilterMappingTest()
     {
         var expected = ModelsTestData.AliFilter;

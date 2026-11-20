@@ -3,9 +3,9 @@ namespace BoardGameTracker.ViewModels;
 public class PaginatedResponseVM<ResponseType>
 {
     /// <summary>
-    /// Current page number
+    /// Current page number (1-based)
     /// </summary>
-    /// <example>0</example>
+    /// <example>1</example>
     public int Page { get; set; }
 
     /// <summary>
