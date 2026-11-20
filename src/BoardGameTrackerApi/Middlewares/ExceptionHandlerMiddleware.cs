@@ -20,8 +20,8 @@ internal sealed class ExceptionHandler(
         httpContext.Response.StatusCode = exception switch
         {
             ApplicationException => StatusCodes.Status400BadRequest,
-            EntityNotFoundException<object> => StatusCodes.Status404NotFound,
-            InvalidForeignKeyException<object> => StatusCodes.Status404NotFound,
+            EntityNotFoundException => StatusCodes.Status404NotFound,
+            InvalidForeignKeyException => StatusCodes.Status404NotFound,
             VersionMismatchException => StatusCodes.Status409Conflict,
             InvalidOperationException => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status500InternalServerError,
