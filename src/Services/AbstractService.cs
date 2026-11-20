@@ -31,6 +31,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
         CancellationToken cancellationToken
     )
     {
+        await ValidateCreateAsync(model, cancellationToken);
         var entity = await Context.Set<EntityType>().AddAsync(model, cancellationToken);
         await Context.SaveChangesAsync(cancellationToken);
         return entity.Entity;
@@ -48,6 +49,8 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
         {
             throw new VersionMismatchException();
         }
+
+        await ValidateUpdateAsync(entity, model, cancellationToken);
 
         // Keep stored metadata; the interceptors update Version and UpdatedAt on save
         model.Id = entity.Id;
@@ -154,6 +157,29 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
         {
             throw new EntityNotFoundException<TReferenced>();
         }
+    }
+
+    /// <summary>
+    /// Runs before a new entity is saved
+    /// </summary>
+    protected virtual Task ValidateCreateAsync(
+        EntityType model,
+        CancellationToken cancellationToken
+    )
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Runs after the stored entity is loaded and its version checked, before the update is applied
+    /// </summary>
+    protected virtual Task ValidateUpdateAsync(
+        EntityType existing,
+        EntityType model,
+        CancellationToken cancellationToken
+    )
+    {
+        return Task.CompletedTask;
     }
 
     /// <summary>

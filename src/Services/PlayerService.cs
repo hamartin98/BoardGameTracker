@@ -10,24 +10,18 @@ public class PlayerService : AbstractService<Player, PlayerFilter>, IPlayerServi
     public PlayerService(BoardGameContext context)
         : base(context) { }
 
-    public override async Task<Player> CreateAsync(
-        Player model,
-        CancellationToken cancellationToken
-    )
+    protected override Task ValidateCreateAsync(Player model, CancellationToken cancellationToken)
     {
-        await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
-        return await base.CreateAsync(model, cancellationToken);
+        return ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
     }
 
-    public override async Task<Player> UpdateAsync(
+    protected override Task ValidateUpdateAsync(
+        Player existing,
         Player model,
-        Guid id,
-        int version,
         CancellationToken cancellationToken
     )
     {
-        await ThrowIfNameTakenAsync(model.Name, id, cancellationToken);
-        return await base.UpdateAsync(model, id, version, cancellationToken);
+        return ThrowIfNameTakenAsync(model.Name, existing.Id, cancellationToken);
     }
 
     private Task ThrowIfNameTakenAsync(

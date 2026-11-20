@@ -168,4 +168,20 @@ public class BoardGameServiceTests
                 .UpdateAsync(ModelsTestData.Scythe, Guid.NewGuid(), 1, CancellationToken.None)
         );
     }
+
+    [Fact]
+    public async Task UpdateWithStaleVersionThrowsBeforeRuleChecksTest()
+    {
+        await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
+
+        await Assert.ThrowsAsync<VersionMismatchException>(() =>
+            CreateService()
+                .UpdateAsync(
+                    ModelsTestData.ScytheWithParent,
+                    ModelsTestData.Scythe.Id,
+                    2,
+                    CancellationToken.None
+                )
+        );
+    }
 }

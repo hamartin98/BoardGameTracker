@@ -13,24 +13,21 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
     public BoardGameService(BoardGameContext context)
         : base(context) { }
 
-    public override async Task<BoardGame> CreateAsync(
+    protected override async Task ValidateCreateAsync(
         BoardGame model,
         CancellationToken cancellationToken
     )
     {
         await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
         await CheckParentAsync(model, cancellationToken);
-        return await base.CreateAsync(model, cancellationToken);
     }
 
-    public override async Task<BoardGame> UpdateAsync(
+    protected override async Task ValidateUpdateAsync(
+        BoardGame existing,
         BoardGame model,
-        Guid id,
-        int version,
         CancellationToken cancellationToken
     )
     {
-        BoardGame existing = await FindByIdAsync(id, cancellationToken);
         model.Type = existing.Type;
         if (model.Type == BoardGameType.EXPANSION && model.ExpansionOfId is null)
         {
@@ -42,9 +39,8 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         {
             throw new BusinessRuleException("A base game should not have an expansionOf relation.");
         }
-        await ThrowIfNameTakenAsync(model.Name, id, cancellationToken);
+        await ThrowIfNameTakenAsync(model.Name, existing.Id, cancellationToken);
         await CheckParentAsync(model, cancellationToken);
-        return await base.UpdateAsync(model, id, version, cancellationToken);
     }
 
     private Task ThrowIfNameTakenAsync(
