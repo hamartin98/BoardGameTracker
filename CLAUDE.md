@@ -22,13 +22,9 @@ dotnet tool restore
 dotnet csharpier format .
 ```
 
-EF Core migrations live in the separate `Migrations` project. Run from `src/BoardGameTrackerApi/` (see `docs/ef_commands.md`):
+EF Core migrations (separate `Migrations` project, needs Postgres): use the `ef-migration` skill.
 
-```bash
-dotnet ef migrations add MIGRATION_NAME --project ../Migrations/Migrations.csproj
-dotnet ef database update
-dotnet ef migrations remove --project ../Migrations/Migrations.csproj   # add -f to also revert the DB
-```
+To run the API and check endpoints with curl, use the `smoke-test-api` skill (port 5135 is fixed by `launchSettings.json`).
 
 Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Dockerfile .`, then run with `-e DatabaseType=IN_MEMORY -p 8080:8080`.
 
@@ -48,4 +44,4 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 
 ## Current state
 
-Only `BoardGame` is fully wired (controller + entity configuration). `Player`, `PlaySession`, and `PlayerScore` have entities, services, interfaces and VMs but no controllers or `ModelBuilder` configuration yet. When adding one, follow the BoardGame pattern end to end: entity config registered in `BoardGameContext.OnModelCreating`, service + DI registration, mapper config, controller, and a migration.
+Only `BoardGame` is fully wired (controller + entity configuration). `Player`, `PlaySession`, and `PlayerScore` have entities, interfaces, VMs and stub services, but no controllers or `ModelBuilder` configuration yet. Use the `add-entity` skill to wire one up.
