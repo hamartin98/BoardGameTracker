@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Models;
 
-public class PaginatedResponse<EntityType> : List<EntityType>
+public class PaginatedResponse<EntityType>
 {
+    public List<EntityType> Items { get; }
+
     /// <summary>
     /// 1-based page number
     /// </summary>
@@ -26,7 +28,7 @@ public class PaginatedResponse<EntityType> : List<EntityType>
         TotalPages = (int)Math.Ceiling(count / (double)pageSize);
         PageSize = pageSize;
         TotalCount = count;
-        AddRange(currentPageItems);
+        Items = [.. currentPageItems];
     }
 
     public static async Task<PaginatedResponse<EntityType>> CreateAsync(

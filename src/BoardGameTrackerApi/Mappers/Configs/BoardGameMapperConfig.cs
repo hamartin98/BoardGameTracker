@@ -50,8 +50,6 @@ public class BoardGameMapperConfig : IRegister
         config
             .NewConfig<BoardGameFilterVM, BoardGameFilter>()
             .Map(dest => dest.Types, src => src.Type);
-        config
-            .NewConfig<PaginatedResponse<BoardGame>, BoardGamesResponseVM>()
-            .Map(dest => dest.Items, src => src);
+        config.NewConfig<PaginatedResponse<BoardGame>, BoardGamesResponseVM>();
     }
 }
