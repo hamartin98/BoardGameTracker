@@ -65,7 +65,12 @@ public abstract class AbstractService<EntityType, FilterType>
         {
             throw new VersionMismatchException();
         }
+        // Keep stored metadata; the interceptors update Version and UpdatedAt on save
         model.Id = entity.Id;
+        model.CreatedAt = entity.CreatedAt;
+        model.UpdatedAt = entity.UpdatedAt;
+        model.Version = entity.Version;
+        model.IsDeleted = entity.IsDeleted;
 
         Context.Entry(entity).CurrentValues.SetValues(model);
         await Context.SaveChangesAsync(cancellationToken);
