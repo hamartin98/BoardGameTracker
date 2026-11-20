@@ -1,3 +1,4 @@
+using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
@@ -42,6 +43,11 @@ public partial class ModelsTestData
                 OrderBy = "name",
                 OrderDirection = OrderByDirection.DESC,
             };
+    }
+
+    public static PaginatedResponse<Player> PlayersPage2
+    {
+        get => new([Alice, Bob], count: 5, page: 2, pageSize: 2);
     }
 
     public static void CheckPlayer(Player expected, Player actual)
