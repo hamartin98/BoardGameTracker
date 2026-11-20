@@ -1,5 +1,5 @@
-using BoardGameTracker.ViewModels;
 using BoardGameTracker.Models.Entities;
+using BoardGameTracker.ViewModels;
 using Mapster;
 
 namespace BoardGameTracker.Mappers.Configs;

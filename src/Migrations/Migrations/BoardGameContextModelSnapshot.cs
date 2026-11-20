@@ -187,16 +187,34 @@ namespace Migrations.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("normalized_name");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
                     b.Property<int>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("integer")
                         .HasColumnName("version");
 
                     b.HasKey("Id")
                         .HasName("pk_players");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_players_created_at");
+
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("ix_players_is_deleted")
+                        .HasFilter("is_deleted = false");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_players_normalized_name")
+                        .HasFilter("is_deleted = false");
 
                     b.ToTable("players", (string)null);
                 });

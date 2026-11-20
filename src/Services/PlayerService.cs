@@ -1,42 +1,87 @@
+using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public class PlayerService : IPlayerService
+public class PlayerService : AbstractService<Player, PlayerFilter>, IPlayerService
 {
-    public Task<Player> CreateAsync(Player model, CancellationToken cancellationToken)
+    private readonly BoardGameContext Context;
+
+    public PlayerService(BoardGameContext context)
+        : base(context)
     {
-        throw new NotImplementedException();
+        Context = context;
     }
 
-    public Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
+    public async Task<Player> CreateAsync(Player model, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
+        Player result = await CreateEntityAsync(model, cancellationToken);
+        return result;
     }
 
-    public Task<PaginatedResponse<Player>> GetAllAsync(
+    public async Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
+    {
+        await DeleteEntityAsync(id, version, cancellationToken);
+    }
+
+    public async Task<PaginatedResponse<Player>> GetAllAsync(
         PlayerFilter filter,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        var result = await GetAllFilteredAsync(filter, cancellationToken);
+        return result;
     }
 
-    public Task<Player> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Player> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        Player result = await FindByIdAsync(id, cancellationToken);
+        return result;
     }
 
-    public Task<Player> UpdateAsync(
+    public async Task<Player> UpdateAsync(
         Player model,
         Guid id,
         int version,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        await ThrowIfNameTakenAsync(model.Name, id, cancellationToken);
+        Player entity = await UpdateEntityAsync(id, model, version, cancellationToken);
+        return entity;
+    }
+
+    /// <summary>
+    /// Checked in code because the in-memory provider does not enforce unique indexes,
+    /// and a Postgres unique violation would otherwise surface as a 500.
+    /// </summary>
+    private async Task ThrowIfNameTakenAsync(
+        string name,
+        Guid? excludedId,
+        CancellationToken cancellationToken
+    )
+    {
+        string normalizedName = name.ToLower();
+        bool taken = await Context
+            .Set<Player>()
+            .AnyAsync(
+                p => p.NormalizedName == normalizedName && p.Id != excludedId,
+                cancellationToken
+            );
+        if (taken)
+        {
+            throw new InvalidOperationException("A player with this name already exists.");
+        }
+    }
+
+    protected override Task LoadRelations(Player entity, CancellationToken cancellationToken)
+    {
+        // Scores are not part of the player response, so nothing to load.
+        return Task.CompletedTask;
     }
 }
