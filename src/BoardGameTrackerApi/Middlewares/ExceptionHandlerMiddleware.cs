@@ -34,7 +34,7 @@ internal sealed class ExceptionHandler(
                 Exception = exception,
                 ProblemDetails = new ProblemDetails
                 {
-                    Type = exception.GetType().Name,
+                    Type = exception.GetType().Name.Split('`')[0],
                     Title = "An error occured",
                     Detail = exception.Message,
                 },
