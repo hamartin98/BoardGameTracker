@@ -112,6 +112,28 @@ public partial class ModelsTestData
             };
     }
 
+    public static BoardGame ScytheAsExpansion
+    {
+        get
+        {
+            var boardGame = Scythe;
+            boardGame.Type = BoardGameType.EXPANSION;
+            boardGame.ExpansionOfId = CommonTestData.Guid2;
+            return boardGame;
+        }
+    }
+
+    public static BoardGame ScytheFenrisAsBaseGame
+    {
+        get
+        {
+            var boardGame = ScytheFenris;
+            boardGame.Type = BoardGameType.BASE_GAME;
+            boardGame.ExpansionOfId = null;
+            return boardGame;
+        }
+    }
+
     public static void CheckBoardGame(BoardGame expected, BoardGame actual)
     {
         Assert.Equal(expected.Name, actual.Name);

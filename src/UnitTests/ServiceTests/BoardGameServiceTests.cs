@@ -109,4 +109,45 @@ public class BoardGameServiceTests
             CreateService().CreateAsync(ModelsTestData.ExpansionOfExpansion, CancellationToken.None)
         );
     }
+
+    [Fact]
+    public async Task UpdateBaseGameToExpansionThrowsTest()
+    {
+        await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .UpdateAsync(
+                    ModelsTestData.ScytheAsExpansion,
+                    ModelsTestData.Scythe.Id,
+                    1,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task UpdateExpansionToBaseGameThrowsTest()
+    {
+        await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .UpdateAsync(
+                    ModelsTestData.ScytheFenrisAsBaseGame,
+                    ModelsTestData.ScytheFenris.Id,
+                    1,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task UpdateUnknownBoardGameThrowsNotFoundTest()
+    {
+        await Assert.ThrowsAsync<EntityNotFoundException<BoardGame>>(() =>
+            CreateService()
+                .UpdateAsync(ModelsTestData.Scythe, Guid.NewGuid(), 1, CancellationToken.None)
+        );
+    }
 }

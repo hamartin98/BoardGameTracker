@@ -54,6 +54,11 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         CancellationToken cancellationToken
     )
     {
+        BoardGame existing = await FindByIdAsync(id, cancellationToken);
+        if (existing.Type != model.Type)
+        {
+            throw new BusinessRuleException("The type of a board game cannot be changed.");
+        }
         await ThrowIfNameTakenAsync(model.Name, id, cancellationToken);
         await CheckParentAsync(model, cancellationToken);
         BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
