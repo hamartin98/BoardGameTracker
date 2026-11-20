@@ -32,6 +32,16 @@ public partial class ModelsTestData
             };
     }
 
+    public static Player AliceRenamed
+    {
+        get => new() { Name = "Alice Renamed" };
+    }
+
+    public static Player AliceRenamedAgain
+    {
+        get => new() { Name = "Alice Renamed Again" };
+    }
+
     public static PlayerFilter AliFilter
     {
         get =>
