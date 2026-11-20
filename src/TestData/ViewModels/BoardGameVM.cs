@@ -56,6 +56,30 @@ public partial class ViewModelsTestData
             };
     }
 
+    public static BoardGameUpdateVM ScytheFenrisUpdateVM
+    {
+        get =>
+            new()
+            {
+                Name = "Scythe: The Rise of Fenris",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 5,
+                MinPlayTime = new TimeSpan(1, 55, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                BggUrl =
+                    "https://boardgamegeek.com/boardgameexpansion/242277/scythe-the-rise-of-fenris",
+                Categories =
+                [
+                    BoardGameCategoryVM.EXPLORATION,
+                    BoardGameCategoryVM.FIGHTING,
+                    BoardGameCategoryVM.ECONOMIC,
+                    BoardGameCategoryVM.SCIENCE_FICTION,
+                    BoardGameCategoryVM.CIVILIZATION,
+                ],
+                ExpansionOfId = CommonTestData.Guid1,
+            };
+    }
+
     public static void CheckBoardGameResponseVM(
         BoardGameResponseVM expected,
         BoardGameResponseVM actual

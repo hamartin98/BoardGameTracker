@@ -55,9 +55,16 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
     )
     {
         BoardGame existing = await FindByIdAsync(id, cancellationToken);
-        if (existing.Type != model.Type)
+        model.Type = existing.Type;
+        if (model.Type == BoardGameType.EXPANSION && model.ExpansionOfId is null)
         {
-            throw new BusinessRuleException("The type of a board game cannot be changed.");
+            throw new BusinessRuleException(
+                "An expansion must have the board game set that it belongs to."
+            );
+        }
+        if (model.Type == BoardGameType.BASE_GAME && model.ExpansionOfId is not null)
+        {
+            throw new BusinessRuleException("A base game should not have an expansionOf relation.");
         }
         await ThrowIfNameTakenAsync(model.Name, id, cancellationToken);
         await CheckParentAsync(model, cancellationToken);

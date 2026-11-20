@@ -112,23 +112,32 @@ public partial class ModelsTestData
             };
     }
 
-    public static BoardGame ScytheAsExpansion
+    public static BoardGame ScytheWithParent
     {
         get
         {
             var boardGame = Scythe;
-            boardGame.Type = BoardGameType.EXPANSION;
             boardGame.ExpansionOfId = CommonTestData.Guid2;
             return boardGame;
         }
     }
 
-    public static BoardGame ScytheFenrisAsBaseGame
+    public static BoardGame ScytheFenrisUpdate
     {
         get
         {
             var boardGame = ScytheFenris;
-            boardGame.Type = BoardGameType.BASE_GAME;
+            boardGame.Id = default;
+            boardGame.Type = default;
+            return boardGame;
+        }
+    }
+
+    public static BoardGame ScytheFenrisUpdateWithoutParent
+    {
+        get
+        {
+            var boardGame = ScytheFenrisUpdate;
             boardGame.ExpansionOfId = null;
             return boardGame;
         }

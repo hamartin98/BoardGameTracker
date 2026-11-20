@@ -1,5 +1,6 @@
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
+using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Services;
 using BoardGameTracker.TestData.Models;
 
@@ -111,14 +112,31 @@ public class BoardGameServiceTests
     }
 
     [Fact]
-    public async Task UpdateBaseGameToExpansionThrowsTest()
+    public async Task UpdateKeepsStoredTypeTest()
+    {
+        await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
+
+        var updated = await CreateService()
+            .UpdateAsync(
+                ModelsTestData.ScytheFenrisUpdate,
+                ModelsTestData.ScytheFenris.Id,
+                1,
+                CancellationToken.None
+            );
+
+        Assert.Equal(BoardGameType.EXPANSION, updated.Type);
+        Assert.Equal(ModelsTestData.Scythe.Id, updated.ExpansionOfId);
+    }
+
+    [Fact]
+    public async Task UpdateBaseGameWithParentThrowsTest()
     {
         await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
 
         await Assert.ThrowsAsync<BusinessRuleException>(() =>
             CreateService()
                 .UpdateAsync(
-                    ModelsTestData.ScytheAsExpansion,
+                    ModelsTestData.ScytheWithParent,
                     ModelsTestData.Scythe.Id,
                     1,
                     CancellationToken.None
@@ -127,14 +145,14 @@ public class BoardGameServiceTests
     }
 
     [Fact]
-    public async Task UpdateExpansionToBaseGameThrowsTest()
+    public async Task UpdateExpansionWithoutParentThrowsTest()
     {
         await SeedAsync(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
 
         await Assert.ThrowsAsync<BusinessRuleException>(() =>
             CreateService()
                 .UpdateAsync(
-                    ModelsTestData.ScytheFenrisAsBaseGame,
+                    ModelsTestData.ScytheFenrisUpdateWithoutParent,
                     ModelsTestData.ScytheFenris.Id,
                     1,
                     CancellationToken.None
