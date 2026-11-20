@@ -8,7 +8,7 @@ description: Run the BoardGameTracker API against the in-memory database and cal
 1. **Build** from `src/`: `dotnet build`. Stop if it fails.
 2. **Start** in the background. Log to a scratch file, not the repo:
    ```bash
-   DatabaseType=IN_MEMORY dotnet run --no-build --project BoardGameTrackerApi > "$LOG" 2>&1 &
+   P=Board; DatabaseType=IN_MEMORY dotnet run --no-build --project "${P}GameTrackerApi" > "$LOG" 2>&1 &
    ```
    - The port is **5135**. `Properties/launchSettings.json` sets it and overrides `ASPNETCORE_URLS`, so don't pass a different port.
    - The environment is Development, so Swagger is at `/swagger`.
@@ -26,6 +26,6 @@ description: Run the BoardGameTracker API against the in-memory database and cal
    - 500: anything else (a 500 is a bug to report)
 
    Update and delete require `?version=<current version>`. Read it from the `metaData.version` of a GET.
-5. **Stop** the server every time, even after failures: `pkill -f BoardGameTrackerApi`. That command's own exit code can be non-zero; ignore it.
+5. **Stop** the server every time, even after failures: `pkill -f "${P}GameTrackerApi"`. Never write the literal project name in a command that also runs `pkill -f`: the pattern then matches the shell running it, which gets killed (exit code 144) and skips every later command in that call.
 
 Report each request with its status code and the relevant part of the body. The in-memory database resets on every start.
