@@ -23,9 +23,20 @@ public class PlaySession : AbstractEntity
     public ICollection<BoardGame> UsedExpansions { get; } = [];
 
     /// <summary>
+    /// Requested expansion ids; resolved into UsedExpansions by the service and not stored
+    /// </summary>
+    public ICollection<Guid> UsedExpansionIds { get; set; } = [];
+
+    /// <summary>
     /// Starting date and time of the play session
     /// </summary>
-    public DateTime? StartTime { get; set; }
+    public DateTime? StartTime
+    {
+        get => startTime;
+        set => startTime = value.ToUtc();
+    }
+
+    private DateTime? startTime;
 
     /// <summary>
     /// Total duration of the play session

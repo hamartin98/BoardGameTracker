@@ -60,6 +60,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
         model.IsDeleted = entity.IsDeleted;
 
         Context.Entry(entity).CurrentValues.SetValues(model);
+        await UpdateRelationsAsync(entity, model, cancellationToken);
         await SaveVersionedChangesAsync(cancellationToken);
 
         return entity;
@@ -70,7 +71,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
         CancellationToken cancellationToken
     )
     {
-        var query = Context.Set<EntityType>().AsQueryable().AsNoTracking();
+        var query = IncludeListRelations(Context.Set<EntityType>().AsNoTracking());
         query = filter.FilterQuery(query);
         var result = await PaginatedResponse<EntityType>.CreateAsync(
             query,
@@ -180,6 +181,26 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     )
     {
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Runs after the scalar values of an update are applied, before saving; for collection navigations
+    /// </summary>
+    protected virtual Task UpdateRelationsAsync(
+        EntityType existing,
+        EntityType model,
+        CancellationToken cancellationToken
+    )
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Includes the navigations needed by list responses
+    /// </summary>
+    protected virtual IQueryable<EntityType> IncludeListRelations(IQueryable<EntityType> query)
+    {
+        return query;
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ description: Wire a domain entity (e.g. Player, PlaySession, PlayerScore) end to
 
 `BoardGame` is the reference implementation. For each step, open the BoardGame file named and mirror it. Paths are relative to `src/`.
 
-Entities, VMs, service interfaces, DI registrations and basic mapper configs already exist for `Player`, `PlaySession` and `PlayerScore`. Their services are `NotImplementedException` stubs. Check what exists before creating anything.
+`BoardGame`, `Player` and `PlaySession` are fully wired. `PlayerScore` has an entity, VMs, service interface, DI registration and basic mapper config, but its service is a `NotImplementedException` stub. Check what exists before creating anything.
 
 ## Steps
 
@@ -24,6 +24,7 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
    - Put extra checks in `ValidateCreateAsync(model)` / `ValidateUpdateAsync(existing, model)`. The update one runs after the version check, with the stored entity loaded, so don't load it again.
    - Override `LoadRelations` (a no-op by default) to eager-load the navigations a get-by-id response or a cascading delete needs.
    - Check foreign keys before create/update with `ThrowIfNotExistsAsync<TReferenced>(id, ct)`.
+   - For a collection set from ids in the request (see `PlaySessionService` and `PlaySession.UsedExpansionIds`): keep the requested ids in a property that the EF config ignores. Resolve them in `ValidateCreateAsync`, sync the collection in `UpdateRelationsAsync` (mark the entity `Modified` when it changes, so the version bumps), and include it for list responses in `IncludeListRelations`.
    - Throw `BusinessRuleException` for business-rule violations (→ 422); `ThrowIfDuplicateAsync` already does for uniqueness. Don't use `InvalidOperationException`: it maps to 500, since EF throws it for internal failures. The middleware maps the other exception types.
 4. **DI.** Confirm the registration in `BoardGameTrackerApi/Setup/ServiceSetupExtensions.cs`.
 5. **Mapping.** Extend the `IRegister` class in `BoardGameTrackerApi/Mappers/Configs/` (`BoardGameMapperConfig.cs`).
@@ -53,6 +54,6 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
 
 - Never set `Version`, `UpdatedAt` or `IsDeleted` in services. `UpdateInterceptor` and `SoftDeleteInterceptor` own them, and `Remove()` becomes a soft delete.
 - Column names are snake_case in Postgres (`EFCore.NamingConventions`). Raw filters and `HasFilter(...)` strings must use snake_case.
-- A required navigation to an entity with a soft-delete query filter triggers EF's "global query filter ... required end of a relationship" warning (already logged for `BoardGame` ↔ `PlaySession`). Make the navigation optional, or make sure both sides have matching filters.
+- A required navigation to an entity with a soft-delete query filter triggers EF's "global query filter ... required end of a relationship" warning (currently logged for `Player` ↔ `PlayerScore`). Make the navigation optional, or make sure both sides have matching filters.
 - Flag enums are stored as one value and exposed as a list of VM enums. Follow the `BoardGameCategory` mapping in `BoardGameMapperConfig`.
 - Throw the generic `EntityNotFoundException<T>` / `InvalidForeignKeyException<T>`. The middleware matches their non-generic bases.

@@ -43,7 +43,7 @@ public abstract class AbstractFilter<EntityType>
     public DateTime? CreatedAtFrom
     {
         get => createdAtFrom;
-        set => createdAtFrom = ToUtc(value);
+        set => createdAtFrom = value.ToUtc();
     }
 
     /// <summary>
@@ -52,24 +52,12 @@ public abstract class AbstractFilter<EntityType>
     public DateTime? CreatedAtTo
     {
         get => createdAtTo;
-        set => createdAtTo = ToUtc(value);
+        set => createdAtTo = value.ToUtc();
     }
 
     public string? OrderBy { get; set; }
 
     public OrderByDirection OrderDirection { get; set; } = OrderByDirection.ASC;
-
-    // Npgsql only accepts UTC DateTimes for timestamp with time zone columns
-    private static DateTime? ToUtc(DateTime? value)
-    {
-        return value?.Kind switch
-        {
-            null => null,
-            DateTimeKind.Utc => value,
-            DateTimeKind.Local => value.Value.ToUniversalTime(),
-            _ => DateTime.SpecifyKind(value.Value, DateTimeKind.Utc),
-        };
-    }
 
     public virtual IQueryable<EntityType> FilterQuery(IQueryable<EntityType> source)
     {
