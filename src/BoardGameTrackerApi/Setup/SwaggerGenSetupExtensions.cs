@@ -8,9 +8,17 @@ internal static class SwaggerGenSetupExtensions
     {
         services.AddSwaggerGen(config =>
         {
-            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            config.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+            Assembly[] documentedAssemblies =
+            [
+                Assembly.GetExecutingAssembly(),
+                typeof(BoardGameTracker.ViewModels.BoardGameResponseVM).Assembly,
+            ];
+            foreach (var assembly in documentedAssemblies)
+            {
+                var xmlFile = $"{assembly.GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                config.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+            }
         });
         return services;
     }
