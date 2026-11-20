@@ -18,8 +18,9 @@ Entities, VMs, service interfaces, DI registrations and basic mapper configs alr
 2. **Filter.**
    - Derive the model filter from `AbstractFilter<TEntity>` (`Models/Filters/BoardGameFilter.cs`). Override `FilterQuery`, call `base.FilterQuery(source)` first, then add conditions.
    - Add `ViewModels/Filters/<Entity>FilterVM.cs` deriving from `AbstractFilterVM`.
-3. **Service.** Make the class derive from `AbstractService<TEntity, TFilter>` and keep its interface (`Services/BoardGameService.cs`).
-   - Implement `LoadRelations` to eager-load the navigations a get-by-id response or a cascading delete needs.
+3. **Service.** Make the class derive from `AbstractService<TEntity, TFilter>` and keep its interface (`Services/PlayerService.cs`). `AbstractService` implements the CRUD methods, so delete the stub methods.
+   - Override `CreateAsync` / `UpdateAsync` only to add checks, then call `base`.
+   - Override `LoadRelations` (a no-op by default) to eager-load the navigations a get-by-id response or a cascading delete needs.
    - Check foreign keys before create/update with `ThrowIfNotExistsAsync<TReferenced>(id, ct)`.
    - Throw `BusinessRuleException` for business-rule violations (→ 422); `ThrowIfDuplicateAsync` already does for uniqueness. Don't use `InvalidOperationException`: it maps to 500, since EF throws it for internal failures. The middleware maps the other exception types.
 4. **DI.** Confirm the registration in `BoardGameTrackerApi/Setup/ServiceSetupExtensions.cs`.

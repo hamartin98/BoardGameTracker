@@ -10,44 +10,20 @@ namespace BoardGameTracker.Services;
 
 public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBoardGameService
 {
-    private readonly BoardGameContext Context;
-
     public BoardGameService(BoardGameContext context)
-        : base(context)
-    {
-        Context = context;
-    }
+        : base(context) { }
 
-    public async Task<BoardGame> CreateAsync(BoardGame model, CancellationToken cancellationToken)
-    {
-        await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
-        await CheckParentAsync(model, cancellationToken);
-        BoardGame result = await CreateEntityAsync(model, cancellationToken);
-        return result;
-    }
-
-    public async Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
-    {
-        await DeleteEntityAsync(id, version, cancellationToken);
-    }
-
-    public async Task<PaginatedResponse<BoardGame>> GetAllAsync(
-        BoardGameFilter filter,
+    public override async Task<BoardGame> CreateAsync(
+        BoardGame model,
         CancellationToken cancellationToken
     )
     {
-        var result = await GetAllFilteredAsync(filter, cancellationToken);
-        return result;
+        await ThrowIfNameTakenAsync(model.Name, null, cancellationToken);
+        await CheckParentAsync(model, cancellationToken);
+        return await base.CreateAsync(model, cancellationToken);
     }
 
-    public async Task<BoardGame> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-    {
-        BoardGame result = await FindByIdAsync(id, cancellationToken);
-        await LoadRelations(result, cancellationToken);
-        return result;
-    }
-
-    public async Task<BoardGame> UpdateAsync(
+    public override async Task<BoardGame> UpdateAsync(
         BoardGame model,
         Guid id,
         int version,
@@ -68,8 +44,7 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         }
         await ThrowIfNameTakenAsync(model.Name, id, cancellationToken);
         await CheckParentAsync(model, cancellationToken);
-        BoardGame entity = await UpdateEntityAsync(id, model, version, cancellationToken);
-        return entity;
+        return await base.UpdateAsync(model, id, version, cancellationToken);
     }
 
     private Task ThrowIfNameTakenAsync(
