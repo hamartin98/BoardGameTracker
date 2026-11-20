@@ -23,7 +23,7 @@ internal sealed class ExceptionHandler(
             EntityNotFoundException => StatusCodes.Status404NotFound,
             InvalidForeignKeyException => StatusCodes.Status404NotFound,
             VersionMismatchException => StatusCodes.Status409Conflict,
-            InvalidOperationException => StatusCodes.Status422UnprocessableEntity,
+            BusinessRuleException => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status500InternalServerError,
         };
 

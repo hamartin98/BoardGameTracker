@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using BoardGameTracker.Database;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
@@ -50,7 +51,7 @@ public abstract class AbstractService<EntityType, FilterType>
 
         await LoadRelations(entity, cancellationToken);
         Context.Remove(entity);
-        await Context.SaveChangesAsync(cancellationToken);
+        await SaveVersionedChangesAsync(cancellationToken);
     }
 
     protected async Task<EntityType> UpdateEntityAsync(
@@ -73,9 +74,24 @@ public abstract class AbstractService<EntityType, FilterType>
         model.IsDeleted = entity.IsDeleted;
 
         Context.Entry(entity).CurrentValues.SetValues(model);
-        await Context.SaveChangesAsync(cancellationToken);
+        await SaveVersionedChangesAsync(cancellationToken);
 
         return entity;
+    }
+
+    /// <summary>
+    /// Saves an update or delete; a concurrent change to the same row becomes a VersionMismatchException
+    /// </summary>
+    private async Task SaveVersionedChangesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new VersionMismatchException(innerException: exception);
+        }
     }
 
     protected async Task<PaginatedResponse<EntityType>> GetAllFilteredAsync(
@@ -97,10 +113,27 @@ public abstract class AbstractService<EntityType, FilterType>
     protected async Task<bool> Exists<Type>(Guid id, CancellationToken cancellationToken)
         where Type : AbstractEntity
     {
-        return await Context
-            .Set<Type>()
-            .FindAsync([id, cancellationToken], cancellationToken: cancellationToken)
-            is not null;
+        return await Context.Set<Type>().FindAsync([id], cancellationToken) is not null;
+    }
+
+    /// <summary>
+    /// Throws BusinessRuleException (422) when another non-deleted entity matches the predicate
+    /// </summary>
+    protected async Task ThrowIfDuplicateAsync(
+        Expression<Func<EntityType, bool>> predicate,
+        Guid? excludedId,
+        string message,
+        CancellationToken cancellationToken
+    )
+    {
+        bool duplicate = await Context
+            .Set<EntityType>()
+            .Where(predicate)
+            .AnyAsync(e => e.Id != excludedId, cancellationToken);
+        if (duplicate)
+        {
+            throw new BusinessRuleException(message);
+        }
     }
 
     protected async Task ThrowIfNotExists<Type>(Guid id, CancellationToken cancellationToken)

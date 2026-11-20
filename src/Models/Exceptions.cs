@@ -2,8 +2,11 @@ namespace BoardGameTracker.Models;
 
 public class VersionMismatchException : Exception
 {
-    public VersionMismatchException(string? message = "Version mismatch.")
-        : base(message) { }
+    public VersionMismatchException(
+        string? message = "Version mismatch.",
+        Exception? innerException = null
+    )
+        : base(message, innerException) { }
 }
 
 /// <summary>
@@ -35,4 +38,16 @@ public class InvalidForeignKeyException<ReferencedEntityType> : InvalidForeignKe
 {
     public InvalidForeignKeyException()
         : base($"Invalid foreign key reference for {typeof(ReferencedEntityType).Name}.") { }
+}
+
+public class InvalidOrderByException : ApplicationException
+{
+    public InvalidOrderByException(string property)
+        : base($"Cannot order by '{property}'.") { }
+}
+
+public class BusinessRuleException : Exception
+{
+    public BusinessRuleException(string message)
+        : base(message) { }
 }

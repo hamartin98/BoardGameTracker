@@ -3,19 +3,13 @@ using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
-using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
 public class PlayerService : AbstractService<Player, PlayerFilter>, IPlayerService
 {
-    private readonly BoardGameContext Context;
-
     public PlayerService(BoardGameContext context)
-        : base(context)
-    {
-        Context = context;
-    }
+        : base(context) { }
 
     public async Task<Player> CreateAsync(Player model, CancellationToken cancellationToken)
     {
@@ -56,27 +50,19 @@ public class PlayerService : AbstractService<Player, PlayerFilter>, IPlayerServi
         return entity;
     }
 
-    /// <summary>
-    /// Checked in code because the in-memory provider does not enforce unique indexes,
-    /// and a Postgres unique violation would otherwise surface as a 500.
-    /// </summary>
-    private async Task ThrowIfNameTakenAsync(
+    private Task ThrowIfNameTakenAsync(
         string name,
         Guid? excludedId,
         CancellationToken cancellationToken
     )
     {
-        string normalizedName = name.ToLower();
-        bool taken = await Context
-            .Set<Player>()
-            .AnyAsync(
-                p => p.NormalizedName == normalizedName && p.Id != excludedId,
-                cancellationToken
-            );
-        if (taken)
-        {
-            throw new InvalidOperationException("A player with this name already exists.");
-        }
+        string normalizedName = name.ToLowerInvariant();
+        return ThrowIfDuplicateAsync(
+            p => p.NormalizedName == normalizedName,
+            excludedId,
+            "A player with this name already exists.",
+            cancellationToken
+        );
     }
 
     protected override Task LoadRelations(Player entity, CancellationToken cancellationToken)

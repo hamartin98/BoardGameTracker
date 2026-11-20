@@ -1,8 +1,9 @@
 using NLog;
+using Npgsql;
 
 namespace BoardGameTracker.Api.Configuration;
 
-public class PostgresConfguration
+public class PostgresConfiguration
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -23,6 +24,13 @@ public class PostgresConfguration
 
     public string GetConnectionString()
     {
-        return $"Host={Host};Port={Port};Password={Password};Username={Username};Database={Database}";
+        return new NpgsqlConnectionStringBuilder
+        {
+            Host = Host,
+            Port = Port,
+            Username = Username,
+            Password = Password,
+            Database = Database,
+        }.ConnectionString;
     }
 }

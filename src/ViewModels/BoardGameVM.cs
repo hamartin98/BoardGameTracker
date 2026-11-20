@@ -48,13 +48,6 @@ public class BoardGameBaseVM : IValidatableObject
     public string? BggUrl { get; set; }
 
     /// <summary>
-    /// Type of the board game
-    /// </summary>
-    /// <example>BASE_GAME</example>
-    [Required]
-    public required BoardGameTypeVM Type { get; set; } = BoardGameTypeVM.BASE_GAME;
-
-    /// <summary>
     /// Categories of the board game
     /// </summary>
     public List<BoardGameCategoryVM> Categories { get; set; } = [];
@@ -65,19 +58,9 @@ public class BoardGameBaseVM : IValidatableObject
     /// <example>null</example>
     public Guid? ExpansionOfId { get; set; }
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         List<ValidationResult> result = [];
-
-        // Type & expansion
-        if (Type == BoardGameTypeVM.EXPANSION && ExpansionOfId is null)
-        {
-            result.Add(new("An expansion must have the board game set that it belongs to."));
-        }
-        else if (Type == BoardGameTypeVM.BASE_GAME && ExpansionOfId is not null)
-        {
-            result.Add(new("A base game should not have an expansionOf relation."));
-        }
 
         // MinPlayTime && MaxPlayTime
         {
@@ -87,7 +70,7 @@ public class BoardGameBaseVM : IValidatableObject
             if (MinPlayTime < minPlayTime || MinPlayTime > maxPlayTime)
             {
                 result.Add(
-                    new($"MinPlayTime should be int the range {minPlayTime} - {maxPlayTime}.")
+                    new($"MinPlayTime should be in the range {minPlayTime} - {maxPlayTime}.")
                 );
             }
             if (MaxPlayTime < minPlayTime || MaxPlayTime > maxPlayTime)
@@ -141,9 +124,36 @@ public class BoardGameBaseVM : IValidatableObject
     }
 }
 
-public class BoardGameCreateVM : BoardGameBaseVM { }
+public class BoardGameCreateVM : BoardGameBaseVM
+{
+    /// <summary>
+    /// Type of the board game
+    /// </summary>
+    /// <example>BASE_GAME</example>
+    [Required]
+    public required BoardGameTypeVM Type { get; set; } = BoardGameTypeVM.BASE_GAME;
 
-public class BoardGameUpdateVM : BoardGameCreateVM { }
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        List<ValidationResult> result = [.. base.Validate(validationContext)];
+
+        if (Type == BoardGameTypeVM.EXPANSION && ExpansionOfId is null)
+        {
+            result.Add(new("An expansion must have the board game set that it belongs to."));
+        }
+        else if (Type == BoardGameTypeVM.BASE_GAME && ExpansionOfId is not null)
+        {
+            result.Add(new("A base game should not have an expansionOf relation."));
+        }
+
+        return result;
+    }
+}
+
+/// <summary>
+/// Board game update request; the type cannot be changed
+/// </summary>
+public class BoardGameUpdateVM : BoardGameBaseVM { }
 
 public class BoardGameResponseVM : BoardGameCreateVM
 {

@@ -46,7 +46,7 @@ internal static class DatabaseSetupExtensions
         string connectionString = string.Empty;
         if (databaseType == DatabaseType.POSTGRES)
         {
-            PostgresConfguration pgConfig = new();
+            PostgresConfiguration pgConfig = new();
             builder.Configuration.GetSection("PostgresConfig").Bind(pgConfig);
             pgConfig.Print();
             connectionString = pgConfig.GetConnectionString();

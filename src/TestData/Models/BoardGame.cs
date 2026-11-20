@@ -69,6 +69,80 @@ public partial class ModelsTestData
             };
     }
 
+    public static BoardGame ScytheUppercase
+    {
+        get =>
+            new()
+            {
+                Name = "SCYTHE",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 5,
+                MinPlayTime = new TimeSpan(1, 55, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                Type = BoardGameType.BASE_GAME,
+            };
+    }
+
+    public static BoardGame DeletedBoardGameRecreated
+    {
+        get =>
+            new()
+            {
+                Name = DeletedBoardGame.Name,
+                MinPlayerCount = 1,
+                MaxPlayerCount = 2,
+                MinPlayTime = new TimeSpan(0, 30, 0),
+                MaxPlayTime = new TimeSpan(1, 0, 0),
+                Type = BoardGameType.BASE_GAME,
+            };
+    }
+
+    public static BoardGame ExpansionOfExpansion
+    {
+        get =>
+            new()
+            {
+                Name = "Expansion of an expansion",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 5,
+                MinPlayTime = new TimeSpan(1, 0, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                Type = BoardGameType.EXPANSION,
+                ExpansionOfId = ScytheFenris.Id,
+            };
+    }
+
+    public static BoardGame ScytheWithParent
+    {
+        get
+        {
+            var boardGame = Scythe;
+            boardGame.ExpansionOfId = CommonTestData.Guid2;
+            return boardGame;
+        }
+    }
+
+    public static BoardGame ScytheFenrisUpdate
+    {
+        get
+        {
+            var boardGame = ScytheFenris;
+            boardGame.Id = default;
+            boardGame.Type = default;
+            return boardGame;
+        }
+    }
+
+    public static BoardGame ScytheFenrisUpdateWithoutParent
+    {
+        get
+        {
+            var boardGame = ScytheFenrisUpdate;
+            boardGame.ExpansionOfId = null;
+            return boardGame;
+        }
+    }
+
     public static void CheckBoardGame(BoardGame expected, BoardGame actual)
     {
         Assert.Equal(expected.Name, actual.Name);

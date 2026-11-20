@@ -66,4 +66,37 @@ public class PlayerServiceTests
             UpdateAsync(ModelsTestData.AliceRenamedAgain, alice.Id, 1)
         );
     }
+
+    [Fact]
+    public async Task ConcurrentUpdateThrowsVersionMismatchTest()
+    {
+        var alice = await SeedAliceAsync();
+        using var staleContext = ContextFactory.Create();
+        await staleContext.Players.FindAsync(alice.Id);
+
+        await UpdateAsync(ModelsTestData.AliceRenamed, alice.Id, 1);
+
+        await Assert.ThrowsAsync<VersionMismatchException>(() =>
+            new PlayerService(staleContext).UpdateAsync(
+                ModelsTestData.AliceRenamedAgain,
+                alice.Id,
+                1,
+                CancellationToken.None
+            )
+        );
+    }
+
+    [Fact]
+    public async Task ConcurrentDeleteThrowsVersionMismatchTest()
+    {
+        var alice = await SeedAliceAsync();
+        using var staleContext = ContextFactory.Create();
+        await staleContext.Players.FindAsync(alice.Id);
+
+        await UpdateAsync(ModelsTestData.AliceRenamed, alice.Id, 1);
+
+        await Assert.ThrowsAsync<VersionMismatchException>(() =>
+            new PlayerService(staleContext).DeleteAsync(alice.Id, 1, CancellationToken.None)
+        );
+    }
 }

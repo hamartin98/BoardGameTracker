@@ -107,7 +107,8 @@ namespace Migrations.Migrations
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("ix_board_games_normalized_name");
+                        .HasDatabaseName("ix_board_games_normalized_name")
+                        .HasFilter("is_deleted = false");
 
                     b.HasIndex("PlaySessionId")
                         .HasDatabaseName("ix_board_games_play_session_id");
