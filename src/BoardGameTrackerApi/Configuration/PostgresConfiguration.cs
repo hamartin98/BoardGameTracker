@@ -4,7 +4,7 @@ namespace BoardGameTracker.Api.Configuration;
 
 public class PostgresConfguration
 {
-    private static Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public string Host { get; set; } = "localhost";
     public int Port { get; set; } = 5432;

@@ -2,6 +2,8 @@ using BoardGameTracker.Models;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
+namespace BoardGameTracker.Api.Middlewares;
+
 internal sealed class ExceptionHandler(
     IProblemDetailsService problemDetailsService,
     ILogger<ExceptionHandler> logger
