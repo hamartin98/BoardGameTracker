@@ -10,11 +10,9 @@ ASP.NET Core (.NET 10) Web API for tracking a board game collection and play ses
 
 ```bash
 # from src/
-dotnet build
 dotnet run --project BoardGameTrackerApi          # Swagger UI only when ASPNETCORE_ENVIRONMENT=Development
 DatabaseType=IN_MEMORY dotnet run --project BoardGameTrackerApi   # no Postgres needed; seeds sample data
 
-dotnet test                                        # all tests (xUnit, UnitTests project)
 dotnet test --filter "FullyQualifiedName~BoardGameMappingTests"   # single class
 dotnet test --filter "FullyQualifiedName~BoardGameMappingTests.SomeTestName"  # single test
 bash run_tests.sh -c true                          # tests + coverage; HTML report in src/coveragereport/ (needs reportgenerator)
@@ -39,22 +37,7 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 - `DatabaseType` (`IN_MEMORY` | `POSTGRES`) selects the provider in `Setup/DatabaseSetupExtensions.cs`. `IN_MEMORY` also triggers `DbDataSeeder.Seed` at startup.
 - Postgres settings come from the `PostgresConfig` section (`Configuration/PostgresConfiguration.cs`). Npgsql is configured with `MigrationsAssembly("Migrations")` and snake_case naming (`EFCore.NamingConventions`), so DB column names are snake_case (e.g. query filters/index filters use `is_deleted`).
 
-## Architecture
-
-Layered projects (dependencies flow downward):
-
-- **BoardGameTrackerApi** – controllers, Mapster configs (`Mappers/Configs`), exception handler, and DI wiring. `Program.cs` only calls `Setup/*Extensions` methods; register new services in `Setup/ServiceSetupExtensions.cs`.
-- **ViewModels** – API request/response DTOs (`*CreateVM`, `*UpdateVM`, `*ResponseVM`, `*FilterVM`) and API-facing enum copies (`*VM` enums). Controllers never expose entities directly.
-- **Interfaces** – service interfaces; `ICrudService<TModel, TFilter>` defines the standard CRUD shape.
-- **Services** – implementations derive from `AbstractService<TEntity, TFilter>`, which provides find/create/update/delete/paginated-list helpers and requires a `LoadRelations` override (used for eager-loading related entities before get/delete).
-- **Models** – EF entities (all inherit `AbstractEntity`), domain enums, filters, `PaginatedResponse<T>`, and custom exceptions.
-- **Database** – `BoardGameContext`, entity configurations (`ModelBuilder` extension methods, each calling `AbstractEntityConfiguration.Configure<T>`), save-changes interceptors, seeder.
-- **Migrations** – EF migrations only.
-- **Utils**, **TestData**, **UnitTests** – helpers, shared test fixtures, xUnit tests.
-
-Request flow: controller maps VM → entity/filter with Mapster `IMapper`, calls the service, maps result back to a response VM.
-
-### Cross-cutting conventions
+## Cross-cutting conventions
 
 - **Optimistic concurrency via `Version`**: every entity has an integer `Version` (concurrency token). Update and delete endpoints take `?version=` as a query parameter; the service throws `VersionMismatchException` (→ 409) if it doesn't match.
 - **Interceptors manage audit fields**: `UpdateInterceptor` increments `Version` and sets `UpdatedAt` on modified entities; `SoftDeleteInterceptor` turns deletes into `IsDeleted = true`. A global query filter hides soft-deleted rows. Don't set these fields manually in services.
@@ -63,6 +46,6 @@ Request flow: controller maps VM → entity/filter with Mapster `IMapper`, calls
 - **Mapster configs** are `IRegister` classes discovered by assembly scan in `Setup/MapperSetupExtensions.cs`. `MapperConfigTests` compiles configs with `RequireDestinationMemberSource = true`, so every destination member needs a source.
 - **Errors**: services throw exceptions; `Middlewares/ExceptionHandlerMiddleware.cs` maps them to ProblemDetails status codes (`ApplicationException` 400, not-found 404, `VersionMismatchException` 409, `InvalidOperationException` 422, else 500).
 
-### Current state
+## Current state
 
 Only `BoardGame` is fully wired (controller + entity configuration). `Player`, `PlaySession`, and `PlayerScore` have entities, services, interfaces and VMs but no controllers or `ModelBuilder` configuration yet. When adding one, follow the BoardGame pattern end to end: entity config registered in `BoardGameContext.OnModelCreating`, service + DI registration, mapper config, controller, and a migration.
