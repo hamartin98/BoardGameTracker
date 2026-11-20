@@ -8,7 +8,7 @@ public class ResponseMetaDataVM
     /// <summary>
     /// Id of the entity
     /// </summary>
-    /// <example>77934a16-a70a-4ac3-9c0e-000000000001</example> 
+    /// <example>77934a16-a70a-4ac3-9c0e-000000000001</example>
     public Guid Id { get; set; }
 
     /// <summary>

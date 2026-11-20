@@ -16,6 +16,7 @@ public static class DbDataSeeder
         }
 
         await context.BoardGames.AddRangeAsync(GetSeededBoardGames());
+        await context.Players.AddRangeAsync(GetSeededPlayers());
 
         await context.SaveChangesAsync();
     }
@@ -28,5 +29,10 @@ public static class DbDataSeeder
             ModelsTestData.ScytheFenris,
             ModelsTestData.DeletedBoardGame,
         ];
+    }
+
+    public static List<Player> GetSeededPlayers()
+    {
+        return [ModelsTestData.Alice, ModelsTestData.Bob];
     }
 }

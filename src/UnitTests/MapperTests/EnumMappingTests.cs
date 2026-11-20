@@ -1,6 +1,6 @@
-using BoardGameTracker.ViewModels.Enums;
 using BoardGameTracker.Mappers;
 using BoardGameTracker.Models.Enums;
+using BoardGameTracker.ViewModels.Enums;
 
 namespace BoardGameTracker.UnitTests.MapperTests;
 

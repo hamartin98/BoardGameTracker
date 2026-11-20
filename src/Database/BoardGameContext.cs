@@ -20,5 +20,6 @@ public class BoardGameContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ConfigureBoardGame();
+        modelBuilder.ConfigurePlayer();
     }
 }
