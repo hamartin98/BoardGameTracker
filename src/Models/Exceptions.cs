@@ -2,8 +2,11 @@ namespace BoardGameTracker.Models;
 
 public class VersionMismatchException : Exception
 {
-    public VersionMismatchException(string? message = "Version mismatch.")
-        : base(message) { }
+    public VersionMismatchException(
+        string? message = "Version mismatch.",
+        Exception? innerException = null
+    )
+        : base(message, innerException) { }
 }
 
 /// <summary>

@@ -51,7 +51,7 @@ public abstract class AbstractService<EntityType, FilterType>
 
         await LoadRelations(entity, cancellationToken);
         Context.Remove(entity);
-        await Context.SaveChangesAsync(cancellationToken);
+        await SaveVersionedChangesAsync(cancellationToken);
     }
 
     protected async Task<EntityType> UpdateEntityAsync(
@@ -74,9 +74,24 @@ public abstract class AbstractService<EntityType, FilterType>
         model.IsDeleted = entity.IsDeleted;
 
         Context.Entry(entity).CurrentValues.SetValues(model);
-        await Context.SaveChangesAsync(cancellationToken);
+        await SaveVersionedChangesAsync(cancellationToken);
 
         return entity;
+    }
+
+    /// <summary>
+    /// Saves an update or delete; a concurrent change to the same row becomes a VersionMismatchException
+    /// </summary>
+    private async Task SaveVersionedChangesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new VersionMismatchException(innerException: exception);
+        }
     }
 
     protected async Task<PaginatedResponse<EntityType>> GetAllFilteredAsync(
