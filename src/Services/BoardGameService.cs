@@ -123,7 +123,7 @@ public class BoardGameService : AbstractService<BoardGame, BoardGameFilter>, IBo
         CancellationToken cancellationToken
     )
     {
-        await ThrowIfNotExists<BoardGame>(id, cancellationToken);
+        await ThrowIfNotExistsAsync<BoardGame>(id, cancellationToken);
         var result = await Context
             .Set<BoardGame>()
             .AsQueryable()

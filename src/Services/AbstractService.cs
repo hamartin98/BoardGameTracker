@@ -110,10 +110,13 @@ public abstract class AbstractService<EntityType, FilterType>
         return result;
     }
 
-    protected async Task<bool> Exists<Type>(Guid id, CancellationToken cancellationToken)
-        where Type : AbstractEntity
+    protected async Task<bool> ExistsAsync<TReferenced>(
+        Guid id,
+        CancellationToken cancellationToken
+    )
+        where TReferenced : AbstractEntity
     {
-        return await Context.Set<Type>().FindAsync([id], cancellationToken) is not null;
+        return await Context.Set<TReferenced>().FindAsync([id], cancellationToken) is not null;
     }
 
     /// <summary>
@@ -136,12 +139,15 @@ public abstract class AbstractService<EntityType, FilterType>
         }
     }
 
-    protected async Task ThrowIfNotExists<Type>(Guid id, CancellationToken cancellationToken)
-        where Type : AbstractEntity
+    protected async Task ThrowIfNotExistsAsync<TReferenced>(
+        Guid id,
+        CancellationToken cancellationToken
+    )
+        where TReferenced : AbstractEntity
     {
-        if (!await Exists<Type>(id, cancellationToken))
+        if (!await ExistsAsync<TReferenced>(id, cancellationToken))
         {
-            throw new EntityNotFoundException<Type>();
+            throw new EntityNotFoundException<TReferenced>();
         }
     }
 
