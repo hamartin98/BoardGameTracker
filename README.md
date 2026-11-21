@@ -88,6 +88,13 @@ From src directory run:
 dotnet test
 ```
 
+This runs both test projects:
+
+- `UnitTests`: mappings, filters and services in isolation.
+- `IntegrationTests`: the full API in memory. Each test starts its own instance with a freshly seeded in-memory database and calls the endpoints over HTTP.
+
+To run only one of them, pass the project, e.g. `dotnet test IntegrationTests`.
+
 Or
 
 ```bash
@@ -96,7 +103,7 @@ bash run_tests.sh
 
 ### Coverage report
 
-To generate coverage report with html output run:
+To generate a coverage report (merged over both test projects) with html output run:
 
 ```bash
 bash run_tests.sh -c true

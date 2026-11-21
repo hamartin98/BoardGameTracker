@@ -11,10 +11,8 @@ if [ "$COVERAGE" = true ]; then
 	base_dir=./TestResults
 	rm -rf $base_dir/*
 	dotnet test --collect:"XPlat Code Coverage" --settings:"tests.runsettings"
-	report_files=$(find ${base_dir} -name "coverage.cobertura.xml")
-	# TODO: Handle multiple report files
-	report_file=${report_files[0]}
-	reportgenerator -reports:"$report_file" -targetdir:"coveragereport" -reporttypes:Html
+	# One report per test project (unit and integration tests); reportgenerator merges them
+	reportgenerator -reports:"${base_dir}/**/coverage.cobertura.xml" -targetdir:"coveragereport" -reporttypes:Html
 else
 	echo "Running tests without coverage"
 	dotnet test

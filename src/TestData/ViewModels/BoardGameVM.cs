@@ -80,6 +80,184 @@ public partial class ViewModelsTestData
             };
     }
 
+    public static BoardGameCreateVM AzulCreateVM
+    {
+        get =>
+            new()
+            {
+                Name = "Azul",
+                MinPlayerCount = 2,
+                MaxPlayerCount = 4,
+                MinPlayTime = new TimeSpan(0, 30, 0),
+                MaxPlayTime = new TimeSpan(0, 45, 0),
+                BggUrl = "https://boardgamegeek.com/boardgame/230802/azul",
+                Categories = [BoardGameCategoryVM.ABSTRACT],
+                Type = BoardGameTypeVM.BASE_GAME,
+            };
+    }
+
+    public static BoardGameResponseVM AzulVM
+    {
+        get =>
+            new()
+            {
+                MetaData = ResponseMetaDataVM1,
+                Name = "Azul",
+                MinPlayerCount = 2,
+                MaxPlayerCount = 4,
+                MinPlayTime = new TimeSpan(0, 30, 0),
+                MaxPlayTime = new TimeSpan(0, 45, 0),
+                BggUrl = "https://boardgamegeek.com/boardgame/230802/azul",
+                Categories = [BoardGameCategoryVM.ABSTRACT],
+                Type = BoardGameTypeVM.BASE_GAME,
+            };
+    }
+
+    public static BoardGameCreateVM AzulInvalidPlayTimeCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MinPlayTime = new TimeSpan(0, 1, 0);
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulWithParentCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.ExpansionOfId = CommonTestData.Guid1;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM ScytheUppercaseCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.Name = "SCYTHE";
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM ScytheInvadersCreateVM
+    {
+        get =>
+            new()
+            {
+                Name = "Scythe: Invaders from Afar",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 7,
+                MinPlayTime = new TimeSpan(1, 55, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                Categories = [BoardGameCategoryVM.FIGHTING],
+                Type = BoardGameTypeVM.EXPANSION,
+                ExpansionOfId = CommonTestData.Guid1,
+            };
+    }
+
+    public static BoardGameResponseVM ScytheInvadersVM
+    {
+        get =>
+            new()
+            {
+                MetaData = ResponseMetaDataVM1,
+                Name = "Scythe: Invaders from Afar",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 7,
+                MinPlayTime = new TimeSpan(1, 55, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                Categories = [BoardGameCategoryVM.FIGHTING],
+                Type = BoardGameTypeVM.EXPANSION,
+                ExpansionOfId = CommonTestData.Guid1,
+            };
+    }
+
+    public static BoardGameCreateVM ExpansionOfFenrisCreateVM
+    {
+        get
+        {
+            var boardGame = ScytheInvadersCreateVM;
+            boardGame.ExpansionOfId = CommonTestData.Guid2;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM ExpansionOfDeletedGameCreateVM
+    {
+        get
+        {
+            var boardGame = ScytheInvadersCreateVM;
+            boardGame.ExpansionOfId = CommonTestData.DeletedGuid;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameUpdateVM ScytheUpdateVM
+    {
+        get =>
+            new()
+            {
+                Name = "Scythe",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 7,
+                MinPlayTime = new TimeSpan(1, 30, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                BggUrl = "https://boardgamegeek.com/boardgame/169786/scythe",
+                Categories = [BoardGameCategoryVM.ECONOMIC],
+            };
+    }
+
+    public static BoardGameResponseVM ScytheUpdatedVM
+    {
+        get =>
+            new()
+            {
+                MetaData = ResponseMetaDataVM1,
+                Name = "Scythe",
+                MinPlayerCount = 1,
+                MaxPlayerCount = 7,
+                MinPlayTime = new TimeSpan(1, 30, 0),
+                MaxPlayTime = new TimeSpan(2, 0, 0),
+                BggUrl = "https://boardgamegeek.com/boardgame/169786/scythe",
+                Categories = [BoardGameCategoryVM.ECONOMIC],
+                Type = BoardGameTypeVM.BASE_GAME,
+            };
+    }
+
+    public static BoardGameUpdateVM ScytheRenamedToFenrisUpdateVM
+    {
+        get
+        {
+            var boardGame = ScytheUpdateVM;
+            boardGame.Name = "scythe: the rise of FENRIS";
+            return boardGame;
+        }
+    }
+
+    public static BoardGameUpdateVM ScytheWithParentUpdateVM
+    {
+        get
+        {
+            var boardGame = ScytheUpdateVM;
+            boardGame.ExpansionOfId = CommonTestData.Guid2;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameUpdateVM ScytheFenrisWithoutParentUpdateVM
+    {
+        get
+        {
+            var boardGame = ScytheFenrisUpdateVM;
+            boardGame.ExpansionOfId = null;
+            return boardGame;
+        }
+    }
+
     public static void CheckBoardGameResponseVM(
         BoardGameResponseVM expected,
         BoardGameResponseVM actual

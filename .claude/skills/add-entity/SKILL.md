@@ -43,10 +43,15 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
    - Put the assertions in `Check<Type>(expected, actual)` helpers next to the fixtures (e.g. `CheckPlayer`, `CheckPlayerFilter`, `CheckPlayerResponseVM`), not in the test body.
    - Add mapping tests as `public partial class MappingTests` in `UnitTests/MapperTests/<Entity>MappingTests.cs`. Each test only gets `expected`, maps the fixture and calls the `Check*` helper (see `PlayerMappingTests.cs`). Cover entity → response VM, create VM → entity, and filter VM → filter.
    - Add enum mapping cases if the entity has enums.
-8. **Seed data (optional).** For manual testing, add fixtures to `Database/DbDataSeeder.cs`.
+8. **Seed data.** Add fixtures to `Database/DbDataSeeder.cs`. The integration tests use the seed data as their test data, and it's also what manual testing sees.
+   - **Integration tests.** Add `IntegrationTests/ControllerTests/<Entities>ControllerTests.cs` deriving from `IntegrationTestBase`, like `BoardGamesControllerTests.cs`. Each test gets its own app and freshly seeded in-memory database, so tests may create, update and delete freely.
+     - Call every endpoint, covering both success and each error status (400 / 404 / 409 / 422). Use `AssertProblemAsync(response, status, "ExceptionType")` for errors.
+     - Start from the seeded entities, using `CommonTestData` ids in URLs. Request bodies and expected responses come from `ViewModelsTestData`, compared with the `Check*` helpers, as in the unit tests.
+     - After a write, read the entity back to check it was stored, not just the write response.
+     - Sanity check: temporarily break one rule in the service and confirm the matching test fails.
 9. **Migration.** Use the `ef-migration` skill.
 10. **Verify.**
-    - Run `dotnet build` and `dotnet test` from `src/`.
+    - Run `dotnet build` and `dotnet test` from `src/`. This runs both the unit and integration tests.
     - Format only the files this change touched (`dotnet csharpier format <files>`), not the whole tree. Formatting everything rewrites unrelated files.
     - Then use the `smoke-test-api` skill for create / get / update with `?version=` / delete, and for a 404 and a 409.
 
