@@ -38,6 +38,18 @@ public partial class ModelsTestData
             };
     }
 
+    public static PlaySession ScytheSessionStart
+    {
+        get =>
+            new()
+            {
+                BoardGameId = CommonTestData.Guid1,
+                UsedExpansionIds = [CommonTestData.Guid2],
+                SessionType = PlaySessionType.COMPETITIVE,
+                Notes = "First game",
+            };
+    }
+
     public static PlaySession ScytheSessionWithoutExpansions
     {
         get =>

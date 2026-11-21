@@ -22,6 +22,10 @@ public class PlaySessionMapperConfig : IRegister
         MapRequestFields(config.NewConfig<PlaySessionCreateVM, PlaySession>());
         MapRequestFields(config.NewConfig<PlaySessionUpdateVM, PlaySession>());
         config
+            .NewConfig<PlaySessionStartVM, PlaySession>()
+            .IgnoreEntityMetadata()
+            .Ignore(dest => dest.BoardGame, dest => dest.StartTime, dest => dest.Duration);
+        config
             .NewConfig<PlaySession, PlaySessionResponseVM>()
             .Map(dest => dest.MetaData, src => src)
             .Map(

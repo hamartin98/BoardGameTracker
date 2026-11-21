@@ -12,8 +12,20 @@ public class PlaySessionService
     : AbstractService<PlaySession, PlaySessionFilter>,
         IPlaySessionService
 {
-    public PlaySessionService(BoardGameContext context)
-        : base(context) { }
+    private readonly TimeProvider TimeProvider;
+
+    public PlaySessionService(BoardGameContext context, TimeProvider timeProvider)
+        : base(context)
+    {
+        TimeProvider = timeProvider;
+    }
+
+    public Task<PlaySession> StartAsync(PlaySession model, CancellationToken cancellationToken)
+    {
+        model.StartTime = TimeProvider.GetUtcNow().UtcDateTime;
+        model.Duration = null;
+        return CreateAsync(model, cancellationToken);
+    }
 
     protected override async Task ValidateCreateAsync(
         PlaySession model,

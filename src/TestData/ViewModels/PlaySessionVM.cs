@@ -36,6 +36,18 @@ public partial class ViewModelsTestData
             };
     }
 
+    public static PlaySessionStartVM ScytheSessionStartVM
+    {
+        get =>
+            new()
+            {
+                BoardGameId = CommonTestData.Guid1,
+                UsedExpansionIds = [CommonTestData.Guid2],
+                SessionType = PlaySessionTypeVM.COMPETITIVE,
+                Notes = "First game",
+            };
+    }
+
     public static PlaySessionUpdateVM ScytheSessionUpdateVM
     {
         get =>
