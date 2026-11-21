@@ -91,7 +91,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
             throw new VersionMismatchException();
         }
 
-        await LoadRelations(entity, cancellationToken);
+        await LoadDeleteRelationsAsync(entity, cancellationToken);
         Context.Remove(entity);
         await SaveVersionedChangesAsync(cancellationToken);
     }
@@ -204,10 +204,21 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     }
 
     /// <summary>
-    /// Loads the navigations needed by get-by-id responses and cascading deletes
+    /// Loads the navigations needed by get-by-id responses
     /// </summary>
     protected virtual Task LoadRelations(EntityType entity, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Loads the dependents that a delete should soft-delete too; only loaded dependents are cascaded
+    /// </summary>
+    protected virtual Task LoadDeleteRelationsAsync(
+        EntityType entity,
+        CancellationToken cancellationToken
+    )
+    {
+        return LoadRelations(entity, cancellationToken);
     }
 }

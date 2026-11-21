@@ -81,6 +81,20 @@ public class BoardGameService : NamedEntityService<BoardGame, BoardGameFilter>, 
         }
     }
 
+    protected override async Task LoadDeleteRelationsAsync(
+        BoardGame entity,
+        CancellationToken cancellationToken
+    )
+    {
+        await LoadRelations(entity, cancellationToken);
+        // Tracked sessions (and their scores) are cascaded by the delete
+        await Context
+            .Set<PlaySession>()
+            .Where(e => e.BoardGameId == entity.Id)
+            .Include(e => e.PlayerScores)
+            .LoadAsync(cancellationToken);
+    }
+
     public async Task<List<BoardGame>> GetExpansionsAsync(
         Guid id,
         CancellationToken cancellationToken

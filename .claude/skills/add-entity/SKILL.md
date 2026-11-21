@@ -22,7 +22,7 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
    - Add `ViewModels/Filters/<Entity>FilterVM.cs` deriving from `AbstractFilterVM`.
 3. **Service.** Make the class derive from `AbstractService<TEntity, TFilter>` and keep its interface (`Services/PlayerService.cs`). `AbstractService` implements the CRUD methods, so delete the stub methods.
    - Put extra checks in `ValidateCreateAsync(model)` / `ValidateUpdateAsync(existing, model)`. The update one runs after the version check, with the stored entity loaded, so don't load it again.
-   - Override `LoadRelations` (a no-op by default) to eager-load the navigations a get-by-id response or a cascading delete needs.
+   - Override `LoadRelations` (a no-op by default) to eager-load the navigations a get-by-id response needs. Override `LoadDeleteRelationsAsync` (defaults to `LoadRelations`) to load the dependents a delete must cascade to.
    - Check foreign keys before create/update with `ThrowIfNotExistsAsync<TReferenced>(id, ct)`.
    - For a collection set from ids in the request (see `PlaySessionService` and `PlaySession.UsedExpansionIds`): keep the requested ids in a property that the EF config ignores. Resolve them in `ValidateCreateAsync`, sync the collection in `UpdateRelationsAsync` (mark the entity `Modified` when it changes, so the version bumps), and include it for list responses in `IncludeListRelations`.
    - Throw `BusinessRuleException` for business-rule violations (→ 422); `ThrowIfDuplicateAsync` already does for uniqueness. Don't use `InvalidOperationException`: it maps to 500, since EF throws it for internal failures. The middleware maps the other exception types.
@@ -55,6 +55,6 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
 - Never set `Version`, `UpdatedAt` or `IsDeleted` in services. `UpdateInterceptor` and `SoftDeleteInterceptor` own them, and `Remove()` becomes a soft delete.
 - Column names are snake_case in Postgres (`EFCore.NamingConventions`). Raw filters and `HasFilter(...)` strings must use snake_case.
 - A required navigation to an entity with a soft-delete query filter triggers EF's "global query filter ... required end of a relationship" warning at startup unless the dependent entity has the filter too, which step 1 adds. None are logged today, so a new one means a missing configuration.
-- If deleting the principal should also soft-delete the dependents, load them in the principal's `LoadRelations`. Only loaded dependents are cascaded (see `PlayerService`, `PlaySessionService`).
+- If deleting the principal should also soft-delete the dependents, load them in the principal's `LoadDeleteRelationsAsync`, including dependents of dependents (see `BoardGameService`, which loads sessions with their scores). Only tracked dependents are cascaded; anything not loaded stays visible.
 - Flag enums are stored as one value and exposed as a list of VM enums. Follow the `BoardGameCategory` mapping in `BoardGameMapperConfig`.
 - Throw the generic `EntityNotFoundException<T>` / `InvalidForeignKeyException<T>`. The middleware matches their non-generic bases.

@@ -62,6 +62,7 @@ See [docs/ef_commands.md](docs/ef_commands.md) for creating and reverting migrat
 - **Soft delete**: deleted entities are hidden from all endpoints but kept in the database.
 - **Names**: board game and player names are unique, ignoring case. A deleted entity's name can be reused.
 - **Player scores**: a player has at most one score per play session. A score's player and session are set on creation and cannot be changed. Deleting a player or a play session also deletes its scores.
+- **Deleting a board game** also deletes its expansions, its play sessions and their scores.
 - **Board game types**: a board game's type (`BASE_GAME` or `EXPANSION`) is set on creation and cannot be changed. An expansion must belong to a base game.
 - **Errors** are returned as ProblemDetails:
 
