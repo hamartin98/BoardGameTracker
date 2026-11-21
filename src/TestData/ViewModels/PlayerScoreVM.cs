@@ -58,6 +58,39 @@ public partial class ViewModelsTestData
             };
     }
 
+    public static PlayerScoreResponseVM AliceScytheScoreUpdatedVM
+    {
+        get
+        {
+            var score = AliceScytheScoreVM;
+            score.MetaData.Version = 2;
+            score.Score = 81;
+            score.Win = false;
+            score.Notes = "Polania, recounted";
+            return score;
+        }
+    }
+
+    public static PlayerScoreCreateVM UnknownPlayerScytheScoreCreateVM
+    {
+        get
+        {
+            var score = AliceScytheScoreCreateVM;
+            score.PlayerId = CommonTestData.DeletedGuid;
+            return score;
+        }
+    }
+
+    public static PlayerScoreCreateVM AliceUnknownSessionScoreCreateVM
+    {
+        get
+        {
+            var score = AliceScytheScoreCreateVM;
+            score.SessionId = CommonTestData.DeletedGuid;
+            return score;
+        }
+    }
+
     public static PlayerScoreFilterVM AliceWinsFilterVM
     {
         get =>
@@ -71,6 +104,15 @@ public partial class ViewModelsTestData
             };
     }
 
+    public static void CheckPlayerScoreVM(PlayerScoreCreateVM expected, PlayerScoreCreateVM actual)
+    {
+        Assert.Equal(expected.PlayerId, actual.PlayerId);
+        Assert.Equal(expected.SessionId, actual.SessionId);
+        Assert.Equal(expected.Score, actual.Score);
+        Assert.Equal(expected.Win, actual.Win);
+        Assert.Equal(expected.Notes, actual.Notes);
+    }
+
     public static void CheckPlayerScoreResponseVM(
         PlayerScoreResponseVM expected,
         PlayerScoreResponseVM actual
@@ -78,10 +120,6 @@ public partial class ViewModelsTestData
     {
         Assert.Equal(expected.MetaData.Id, actual.MetaData.Id);
         Assert.Equal(expected.MetaData.Version, actual.MetaData.Version);
-        Assert.Equal(expected.PlayerId, actual.PlayerId);
-        Assert.Equal(expected.SessionId, actual.SessionId);
-        Assert.Equal(expected.Score, actual.Score);
-        Assert.Equal(expected.Win, actual.Win);
-        Assert.Equal(expected.Notes, actual.Notes);
+        CheckPlayerScoreVM(expected, actual);
     }
 }

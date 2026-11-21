@@ -52,4 +52,4 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 
 ## Current state
 
-All entities (`BoardGame`, `Player`, `PlaySession`, `PlayerScore`) are fully wired. Use the `add-entity` skill to add a new one. Integration tests exist for `BoardGame`, `Player` and `PlaySession` so far (`IntegrationTests/ControllerTests/`).
+All entities (`BoardGame`, `Player`, `PlaySession`, `PlayerScore`) are fully wired. Use the `add-entity` skill to add a new one. Every controller has integration tests in `IntegrationTests/ControllerTests/`.
