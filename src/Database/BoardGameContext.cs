@@ -22,5 +22,6 @@ public class BoardGameContext : DbContext
         modelBuilder.ConfigureBoardGame();
         modelBuilder.ConfigurePlayer();
         modelBuilder.ConfigurePlaySession();
+        modelBuilder.ConfigurePlayerScore();
     }
 }
