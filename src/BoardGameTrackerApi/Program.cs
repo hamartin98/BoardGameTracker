@@ -59,7 +59,8 @@ try
 
     app.Run();
 }
-catch (Exception exception)
+// EF Core design-time tools (dotnet ef) abort the host on purpose after Build()
+catch (Exception exception) when (exception is not HostAbortedException)
 {
     logger.Error(exception, "Stopped program because of exception");
     throw;
