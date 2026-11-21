@@ -12,9 +12,11 @@ public class PlayerService : NamedEntityService<Player, PlayerFilter>, IPlayerSe
 
     protected override string DuplicateNameMessage => "A player with this name already exists.";
 
-    protected override async Task LoadRelations(Player entity, CancellationToken cancellationToken)
+    protected override async Task LoadDeleteRelationsAsync(
+        Player entity,
+        CancellationToken cancellationToken
+    )
     {
-        // Loaded so that deleting a player also soft-deletes its scores
         await Context.Entry(entity).Collection(e => e.PlayerScores).LoadAsync(cancellationToken);
     }
 }

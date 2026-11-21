@@ -1,6 +1,7 @@
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Services;
+using BoardGameTracker.TestData;
 using BoardGameTracker.TestData.Models;
 
 namespace BoardGameTracker.UnitTests.ServiceTests;
@@ -105,7 +106,7 @@ public class PlayerScoreServiceTests
     {
         await SeedAsync(ModelsTestData.AliceScytheScore, ModelsTestData.BobScytheScore);
 
-        await new PlaySessionService(ContextFactory.Create()).DeleteAsync(
+        await new PlaySessionService(ContextFactory.Create(), TimeProvider.System).DeleteAsync(
             ModelsTestData.ScytheSession.Id,
             1,
             CancellationToken.None
@@ -128,5 +129,50 @@ public class PlayerScoreServiceTests
 
         using var context = ContextFactory.Create();
         Assert.Equal([ModelsTestData.BobScytheScore.Id], context.PlayerScores.Select(e => e.Id));
+    }
+
+    [Fact]
+    public async Task GetSessionPlayerScoresTest()
+    {
+        await SeedAsync(ModelsTestData.BobScytheScore, ModelsTestData.AliceScytheScore);
+
+        var scores = await new PlaySessionService(
+            ContextFactory.Create(),
+            TimeProvider.System
+        ).GetPlayerScoresAsync(ModelsTestData.ScytheSession.Id, CancellationToken.None);
+
+        Assert.Equal(
+            [ModelsTestData.AliceScytheScore.Id, ModelsTestData.BobScytheScore.Id],
+            scores.Select(e => e.Id)
+        );
+    }
+
+    [Fact]
+    public async Task GetPlayerScoresOfUnknownSessionThrowsNotFoundTest()
+    {
+        await Assert.ThrowsAsync<EntityNotFoundException<PlaySession>>(() =>
+            new PlaySessionService(
+                ContextFactory.Create(),
+                TimeProvider.System
+            ).GetPlayerScoresAsync(CommonTestData.DeletedGuid, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task GetPlayerScoresOfDeletedSessionThrowsNotFoundTest()
+    {
+        await SeedAsync(ModelsTestData.AliceScytheScore);
+        await new PlaySessionService(ContextFactory.Create(), TimeProvider.System).DeleteAsync(
+            ModelsTestData.ScytheSession.Id,
+            1,
+            CancellationToken.None
+        );
+
+        await Assert.ThrowsAsync<EntityNotFoundException<PlaySession>>(() =>
+            new PlaySessionService(
+                ContextFactory.Create(),
+                TimeProvider.System
+            ).GetPlayerScoresAsync(ModelsTestData.ScytheSession.Id, CancellationToken.None)
+        );
     }
 }

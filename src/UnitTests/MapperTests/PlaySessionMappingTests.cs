@@ -47,4 +47,21 @@ public partial class MappingTests
 
         ModelsTestData.CheckPlaySessionFilter(expected, actual);
     }
+
+    [Fact]
+    public void PlaySessionStartToModelMappingTest()
+    {
+        var expected = ModelsTestData.ScytheSessionStart;
+
+        var actual = Mapper.Map<PlaySession>(ViewModelsTestData.ScytheSessionStartVM);
+
+        ModelsTestData.CheckPlaySession(expected, actual);
+    }
+
+    [Fact]
+    public void PlaySessionStartVMHasNoStartTimeOrDurationTest()
+    {
+        Assert.Null(typeof(PlaySessionStartVM).GetProperty(nameof(PlaySessionCreateVM.StartTime)));
+        Assert.Null(typeof(PlaySessionStartVM).GetProperty(nameof(PlaySessionCreateVM.Duration)));
+    }
 }

@@ -45,10 +45,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     )
     {
         EntityType entity = await FindByIdAsync(id, cancellationToken);
-        if (entity.Version != version)
-        {
-            throw new VersionMismatchException();
-        }
+        ThrowIfVersionMismatch(entity, version);
 
         await ValidateUpdateAsync(entity, model, cancellationToken);
 
@@ -86,12 +83,9 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     {
         EntityType entity = await FindByIdAsync(id, cancellationToken);
 
-        if (entity.Version != version)
-        {
-            throw new VersionMismatchException();
-        }
+        ThrowIfVersionMismatch(entity, version);
 
-        await LoadRelations(entity, cancellationToken);
+        await LoadDeleteRelationsAsync(entity, cancellationToken);
         Context.Remove(entity);
         await SaveVersionedChangesAsync(cancellationToken);
     }
@@ -107,7 +101,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     /// <summary>
     /// Saves an update or delete; a concurrent change to the same row becomes a VersionMismatchException
     /// </summary>
-    private async Task SaveVersionedChangesAsync(CancellationToken cancellationToken)
+    protected async Task SaveVersionedChangesAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -116,6 +110,14 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
         catch (DbUpdateConcurrencyException exception)
         {
             throw new VersionMismatchException(innerException: exception);
+        }
+    }
+
+    protected static void ThrowIfVersionMismatch(EntityType entity, int version)
+    {
+        if (entity.Version != version)
+        {
+            throw new VersionMismatchException();
         }
     }
 
@@ -204,10 +206,21 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     }
 
     /// <summary>
-    /// Loads the navigations needed by get-by-id responses and cascading deletes
+    /// Loads the navigations needed by get-by-id responses
     /// </summary>
     protected virtual Task LoadRelations(EntityType entity, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Loads the dependents that a delete should soft-delete too; only loaded dependents are cascaded
+    /// </summary>
+    protected virtual Task LoadDeleteRelationsAsync(
+        EntityType entity,
+        CancellationToken cancellationToken
+    )
+    {
+        return LoadRelations(entity, cancellationToken);
     }
 }

@@ -203,4 +203,26 @@ public class BoardGameServiceTests
             CreateService().CreateAsync(ModelsTestData.ScytheWithParent, CancellationToken.None)
         );
     }
+
+    [Fact]
+    public async Task DeleteCascadesToExpansionsSessionsAndScoresTest()
+    {
+        using (var context = ContextFactory.Create())
+        {
+            context.BoardGames.Add(ModelsTestData.Scythe);
+            context.PlaySessions.Add(ModelsTestData.ScytheSession);
+            context.PlayerScores.AddRange(
+                ModelsTestData.AliceScytheScore,
+                ModelsTestData.BobScytheScore
+            );
+            await context.SaveChangesAsync();
+        }
+
+        await CreateService().DeleteAsync(ModelsTestData.Scythe.Id, 1, CancellationToken.None);
+
+        using var verifyContext = ContextFactory.Create();
+        Assert.Empty(verifyContext.BoardGames);
+        Assert.Empty(verifyContext.PlaySessions);
+        Assert.Empty(verifyContext.PlayerScores);
+    }
 }

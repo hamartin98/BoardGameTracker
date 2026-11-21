@@ -49,6 +49,33 @@ public class PlaySessionBaseVM : IValidatableObject
 
 public class PlaySessionCreateVM : PlaySessionBaseVM { }
 
+/// <summary>
+/// Request to start a play session now; the start time is set by the server and the duration cannot be set
+/// </summary>
+public class PlaySessionStartVM
+{
+    /// <summary>
+    /// Id of the base game played
+    /// </summary>
+    public required Guid BoardGameId { get; set; }
+
+    /// <summary>
+    /// Ids of the expansions of that game used during the session
+    /// </summary>
+    public ICollection<Guid> UsedExpansionIds { get; set; } = [];
+
+    /// <summary>
+    /// Type of the play session
+    /// </summary>
+    /// <example>COMPETITIVE</example>
+    public required PlaySessionTypeVM SessionType { get; set; }
+
+    /// <summary>
+    /// Additional notes about the play session
+    /// </summary>
+    public string? Notes { get; set; }
+}
+
 public class PlaySessionUpdateVM : PlaySessionBaseVM { }
 
 public class PlaySessionResponseVM : PlaySessionBaseVM
