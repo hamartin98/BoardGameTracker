@@ -279,6 +279,7 @@ namespace Migrations.Migrations
                         .HasColumnName("updated_at");
 
                     b.Property<int>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("integer")
                         .HasColumnName("version");
 
@@ -289,11 +290,20 @@ namespace Migrations.Migrations
                     b.HasKey("Id")
                         .HasName("pk_player_scores");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_player_scores_created_at");
+
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("ix_player_scores_is_deleted")
+                        .HasFilter("is_deleted = false");
+
                     b.HasIndex("PlayerId")
                         .HasDatabaseName("ix_player_scores_player_id");
 
-                    b.HasIndex("SessionId")
-                        .HasDatabaseName("ix_player_scores_session_id");
+                    b.HasIndex("SessionId", "PlayerId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_scores_session_id_player_id")
+                        .HasFilter("is_deleted = false");
 
                     b.ToTable("player_scores", (string)null);
                 });

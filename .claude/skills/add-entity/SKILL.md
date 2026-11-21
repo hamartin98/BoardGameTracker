@@ -7,7 +7,7 @@ description: Wire a domain entity (e.g. Player, PlaySession, PlayerScore) end to
 
 `BoardGame` is the reference implementation. For each step, open the BoardGame file named and mirror it. Paths are relative to `src/`.
 
-`BoardGame`, `Player` and `PlaySession` are fully wired. `PlayerScore` has an entity, VMs, service interface, DI registration and basic mapper config, but its service is a `NotImplementedException` stub. Check what exists before creating anything.
+All existing entities are fully wired; for a new one, add the entity, VMs, service interface and DI registration as well. Check what exists before creating anything.
 
 ## Steps
 
@@ -54,6 +54,7 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
 
 - Never set `Version`, `UpdatedAt` or `IsDeleted` in services. `UpdateInterceptor` and `SoftDeleteInterceptor` own them, and `Remove()` becomes a soft delete.
 - Column names are snake_case in Postgres (`EFCore.NamingConventions`). Raw filters and `HasFilter(...)` strings must use snake_case.
-- A required navigation to an entity with a soft-delete query filter triggers EF's "global query filter ... required end of a relationship" warning (currently logged for `Player` ↔ `PlayerScore`). Make the navigation optional, or make sure both sides have matching filters.
+- A required navigation to an entity with a soft-delete query filter triggers EF's "global query filter ... required end of a relationship" warning at startup unless the dependent entity has the filter too, which step 1 adds. None are logged today, so a new one means a missing configuration.
+- If deleting the principal should also soft-delete the dependents, load them in the principal's `LoadRelations`. Only loaded dependents are cascaded (see `PlayerService`, `PlaySessionService`).
 - Flag enums are stored as one value and exposed as a list of VM enums. Follow the `BoardGameCategory` mapping in `BoardGameMapperConfig`.
 - Throw the generic `EntityNotFoundException<T>` / `InvalidForeignKeyException<T>`. The middleware matches their non-generic bases.

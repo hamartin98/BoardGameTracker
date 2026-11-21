@@ -1,42 +1,43 @@
+using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
-using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
 
 namespace BoardGameTracker.Services;
 
-public class PlayerScoreService : IPlayerScoreService
+public class PlayerScoreService
+    : AbstractService<PlayerScore, PlayerScoreFilter>,
+        IPlayerScoreService
 {
-    public Task<PlayerScore> CreateAsync(PlayerScore model, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public PlayerScoreService(BoardGameContext context)
+        : base(context) { }
 
-    public Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<PaginatedResponse<PlayerScore>> GetAllAsync(
-        PlayerScoreFilter filter,
-        CancellationToken cancellationToken
-    )
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<PlayerScore> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<PlayerScore> UpdateAsync(
+    protected override async Task ValidateCreateAsync(
         PlayerScore model,
-        Guid id,
-        int version,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        await ThrowIfNotExistsAsync<Player>(model.PlayerId, cancellationToken);
+        await ThrowIfNotExistsAsync<PlaySession>(model.SessionId, cancellationToken);
+
+        Guid playerId = model.PlayerId;
+        Guid sessionId = model.SessionId;
+        await ThrowIfDuplicateAsync(
+            e => e.PlayerId == playerId && e.SessionId == sessionId,
+            null,
+            "The player already has a score in this play session.",
+            cancellationToken
+        );
+    }
+
+    protected override Task ValidateUpdateAsync(
+        PlayerScore existing,
+        PlayerScore model,
+        CancellationToken cancellationToken
+    )
+    {
+        model.PlayerId = existing.PlayerId;
+        model.SessionId = existing.SessionId;
+        return Task.CompletedTask;
     }
 }

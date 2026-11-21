@@ -44,4 +44,4 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 
 ## Current state
 
-`BoardGame`, `Player` and `PlaySession` are fully wired. `PlayerScore` has an entity, interface, VMs and a stub service, but no controller or `ModelBuilder` configuration yet. Use the `add-entity` skill to wire it up.
+All entities (`BoardGame`, `Player`, `PlaySession`, `PlayerScore`) are fully wired. Use the `add-entity` skill to add a new one.
