@@ -78,6 +78,21 @@ public class PlaySessionService
         await entry.Collection(e => e.PlayerScores).LoadAsync(cancellationToken);
     }
 
+    public async Task<List<PlayerScore>> GetPlayerScoresAsync(
+        Guid id,
+        CancellationToken cancellationToken
+    )
+    {
+        await ThrowIfNotExistsAsync<PlaySession>(id, cancellationToken);
+        return await Context
+            .Set<PlayerScore>()
+            .Where(e => e.SessionId == id)
+            .OrderBy(e => e.CreatedAt)
+            .ThenBy(e => e.Id)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
     private async Task CheckBoardGameAsync(Guid boardGameId, CancellationToken cancellationToken)
     {
         BoardGame boardGame =

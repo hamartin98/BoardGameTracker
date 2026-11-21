@@ -18,4 +18,22 @@ public class PlaySessionsController(IMapper mapper, IPlaySessionService playSess
         PlaySessionResponseVM,
         PlaySessionsResponseVM,
         PlaySessionFilterVM
-    >(mapper, playSessionService);
+    >(mapper, playSessionService)
+{
+    /// <summary>
+    /// Get all player scores of the given play session
+    /// </summary>
+    /// <param name="id">Play session id</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    [HttpGet("{id}/PlayerScores")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Description = "Entities successfully retrieved")]
+    public async Task<ActionResult<List<PlayerScoreResponseVM>>> GetPlayerScores(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await playSessionService.GetPlayerScoresAsync(id, cancellationToken);
+        return Ok(Mapper.Map<List<PlayerScoreResponseVM>>(result));
+    }
+}
