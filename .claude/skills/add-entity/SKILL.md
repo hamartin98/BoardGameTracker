@@ -44,7 +44,7 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
    - Add mapping tests as `public partial class MappingTests` in `UnitTests/MapperTests/<Entity>MappingTests.cs`. Each test only gets `expected`, maps the fixture and calls the `Check*` helper (see `PlayerMappingTests.cs`). Cover entity → response VM, create VM → entity, and filter VM → filter.
    - Add enum mapping cases if the entity has enums.
 8. **Seed data.** Add fixtures to `Database/DbDataSeeder.cs`. The integration tests use the seed data as their test data, and it's also what manual testing sees.
-   - **Integration tests.** Add `IntegrationTests/ControllerTests/<Entities>ControllerTests.cs` deriving from `IntegrationTestBase`, like `BoardGamesControllerTests.cs`. Each test gets its own app and freshly seeded in-memory database, so tests may create, update and delete freely.
+   - **Integration tests.** Add `IntegrationTests/ControllerTests/<Entities>ControllerTests.cs` deriving from `IntegrationTestBase`, like `BoardGamesControllerTests.cs`. Each test gets its own app and freshly seeded in-memory database, so tests may create, update and delete freely. Services get the injected `TimeProvider` from the factory; it starts at `CommonTestData.DateTime`, and tests move it with `Clock.UtcNow`.
      - Call every endpoint, covering both success and each error status (400 / 404 / 409 / 422). Use `AssertProblemAsync(response, status, "ExceptionType")` for errors.
      - Start from the seeded entities, using `CommonTestData` ids in URLs. Request bodies and expected responses come from `ViewModelsTestData`, compared with the `Check*` helpers, as in the unit tests.
      - After a write, read the entity back to check it was stored, not just the write response.

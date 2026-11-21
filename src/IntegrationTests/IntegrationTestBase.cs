@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using BoardGameTracker.TestData;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.IntegrationTests;
@@ -18,6 +19,8 @@ public abstract class IntegrationTestBase : IDisposable
     private readonly BoardGameTrackerApiFactory Factory = new();
 
     protected readonly HttpClient Client;
+
+    protected FixedTimeProvider Clock => Factory.Clock;
 
     protected IntegrationTestBase()
     {

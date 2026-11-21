@@ -20,6 +20,20 @@ public partial class ViewModelsTestData
             };
     }
 
+    public static PlayerScoreResponseVM BobScytheScoreVM
+    {
+        get =>
+            new()
+            {
+                MetaData = ResponseMetaDataVM2,
+                PlayerId = CommonTestData.Guid2,
+                SessionId = CommonTestData.Guid1,
+                Score = 64,
+                Win = false,
+                Notes = "Saxony",
+            };
+    }
+
     public static PlayerScoreCreateVM AliceScytheScoreCreateVM
     {
         get =>
