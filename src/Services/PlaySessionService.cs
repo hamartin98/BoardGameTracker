@@ -27,6 +27,35 @@ public class PlaySessionService
         return CreateAsync(model, cancellationToken);
     }
 
+    public async Task<PlaySession> FinishAsync(
+        Guid id,
+        int version,
+        CancellationToken cancellationToken
+    )
+    {
+        PlaySession session = await FindByIdAsync(id, cancellationToken);
+        ThrowIfVersionMismatch(session, version);
+
+        if (session.Duration is not null)
+        {
+            throw new BusinessRuleException("The play session is already finished.");
+        }
+        if (session.StartTime is null)
+        {
+            throw new BusinessRuleException("The play session has no start time.");
+        }
+        TimeSpan duration = TimeProvider.GetUtcNow().UtcDateTime - session.StartTime.Value;
+        if (duration <= TimeSpan.Zero)
+        {
+            throw new BusinessRuleException("The play session has not started yet.");
+        }
+
+        session.Duration = duration;
+        await SaveVersionedChangesAsync(cancellationToken);
+        await LoadRelations(session, cancellationToken);
+        return session;
+    }
+
     protected override async Task ValidateCreateAsync(
         PlaySession model,
         CancellationToken cancellationToken

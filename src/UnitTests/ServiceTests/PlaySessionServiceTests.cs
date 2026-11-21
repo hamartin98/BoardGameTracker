@@ -162,4 +162,72 @@ public class PlaySessionServiceTests
             CreateService().StartAsync(ModelsTestData.ScytheFenrisSession, CancellationToken.None)
         );
     }
+
+    private async Task SeedSessionAsync(PlaySession session)
+    {
+        using var context = ContextFactory.Create();
+        context.PlaySessions.Add(session);
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task FinishSetsDurationSinceStartTest()
+    {
+        await SeedSessionAsync(ModelsTestData.ScytheSessionInProgress);
+
+        var finished = await CreateService()
+            .FinishAsync(ModelsTestData.ScytheSession.Id, 1, CancellationToken.None);
+
+        Assert.Equal(TimeSpan.FromHours(2), finished.Duration);
+        Assert.Equal(2, finished.Version);
+        Assert.Equal([ModelsTestData.ScytheFenris.Id], finished.UsedExpansions.Select(e => e.Id));
+    }
+
+    [Fact]
+    public async Task FinishAlreadyFinishedSessionThrowsTest()
+    {
+        await SeedSessionAsync(ModelsTestData.ScytheSession);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService().FinishAsync(ModelsTestData.ScytheSession.Id, 1, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task FinishSessionWithoutStartTimeThrowsTest()
+    {
+        await SeedSessionAsync(ModelsTestData.ScytheSessionWithoutStartTime);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService().FinishAsync(ModelsTestData.ScytheSession.Id, 1, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task FinishSessionStartingLaterThrowsTest()
+    {
+        await SeedSessionAsync(ModelsTestData.ScytheSessionStartingLater);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService().FinishAsync(ModelsTestData.ScytheSession.Id, 1, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task FinishWithStaleVersionThrowsTest()
+    {
+        await SeedSessionAsync(ModelsTestData.ScytheSessionInProgress);
+
+        await Assert.ThrowsAsync<VersionMismatchException>(() =>
+            CreateService().FinishAsync(ModelsTestData.ScytheSession.Id, 2, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task FinishUnknownSessionThrowsNotFoundTest()
+    {
+        await Assert.ThrowsAsync<EntityNotFoundException<PlaySession>>(() =>
+            CreateService().FinishAsync(CommonTestData.DeletedGuid, 1, CancellationToken.None)
+        );
+    }
 }

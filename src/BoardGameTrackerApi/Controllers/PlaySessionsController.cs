@@ -47,6 +47,28 @@ public class PlaySessionsController(IMapper mapper, IPlaySessionService playSess
     }
 
     /// <summary>
+    /// Finish a play session; the duration is set to the time elapsed since its start
+    /// </summary>
+    /// <param name="id">Id of the play session to finish</param>
+    /// <param name="version">Version of the play session for concurrency check</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    [HttpPost("{id}/Finish")]
+    [Produces("application/json")]
+    [ProducesResponseType(
+        StatusCodes.Status200OK,
+        Description = "Play session successfully finished"
+    )]
+    public async Task<ActionResult<PlaySessionResponseVM>> Finish(
+        [FromRoute] Guid id,
+        [FromQuery] int version,
+        CancellationToken cancellationToken
+    )
+    {
+        PlaySession result = await playSessionService.FinishAsync(id, version, cancellationToken);
+        return Ok(Mapper.Map<PlaySessionResponseVM>(result));
+    }
+
+    /// <summary>
     /// Get all player scores of the given play session
     /// </summary>
     /// <param name="id">Play session id</param>

@@ -45,10 +45,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     )
     {
         EntityType entity = await FindByIdAsync(id, cancellationToken);
-        if (entity.Version != version)
-        {
-            throw new VersionMismatchException();
-        }
+        ThrowIfVersionMismatch(entity, version);
 
         await ValidateUpdateAsync(entity, model, cancellationToken);
 
@@ -86,10 +83,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     {
         EntityType entity = await FindByIdAsync(id, cancellationToken);
 
-        if (entity.Version != version)
-        {
-            throw new VersionMismatchException();
-        }
+        ThrowIfVersionMismatch(entity, version);
 
         await LoadDeleteRelationsAsync(entity, cancellationToken);
         Context.Remove(entity);
@@ -107,7 +101,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     /// <summary>
     /// Saves an update or delete; a concurrent change to the same row becomes a VersionMismatchException
     /// </summary>
-    private async Task SaveVersionedChangesAsync(CancellationToken cancellationToken)
+    protected async Task SaveVersionedChangesAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -116,6 +110,14 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
         catch (DbUpdateConcurrencyException exception)
         {
             throw new VersionMismatchException(innerException: exception);
+        }
+    }
+
+    protected static void ThrowIfVersionMismatch(EntityType entity, int version)
+    {
+        if (entity.Version != version)
+        {
+            throw new VersionMismatchException();
         }
     }
 

@@ -38,6 +38,37 @@ public partial class ModelsTestData
             };
     }
 
+    public static PlaySession ScytheSessionInProgress
+    {
+        get
+        {
+            var session = ScytheSession;
+            session.StartTime = CommonTestData.DateTime.AddHours(-2);
+            session.Duration = null;
+            return session;
+        }
+    }
+
+    public static PlaySession ScytheSessionWithoutStartTime
+    {
+        get
+        {
+            var session = ScytheSessionInProgress;
+            session.StartTime = null;
+            return session;
+        }
+    }
+
+    public static PlaySession ScytheSessionStartingLater
+    {
+        get
+        {
+            var session = ScytheSessionInProgress;
+            session.StartTime = CommonTestData.DateTime.AddHours(1);
+            return session;
+        }
+    }
+
     public static PlaySession ScytheSessionStart
     {
         get =>
