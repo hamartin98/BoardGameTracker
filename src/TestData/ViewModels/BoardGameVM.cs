@@ -123,6 +123,103 @@ public partial class ViewModelsTestData
         }
     }
 
+    public static BoardGameCreateVM AzulLimitBoundsCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MinPlayTime = new TimeSpan(0, 10, 0);
+            boardGame.MaxPlayTime = new TimeSpan(24, 0, 0);
+            boardGame.MinPlayerCount = 1;
+            boardGame.MaxPlayerCount = 100;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulWithoutBggUrlCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.BggUrl = null;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulTooLongPlayTimeCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MaxPlayTime = new TimeSpan(24, 0, 1);
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulReversedPlayTimeCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MinPlayTime = new TimeSpan(0, 50, 0);
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulNoPlayerCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MinPlayerCount = 0;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulTooManyPlayersCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MaxPlayerCount = 101;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulReversedPlayerCountCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MinPlayerCount = 5;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulInvalidBggUrlCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.BggUrl = "boardgamegeek.com";
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulAllInvalidCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MinPlayTime = new TimeSpan(24, 0, 1);
+            boardGame.MaxPlayTime = new TimeSpan(0, 1, 0);
+            boardGame.MinPlayerCount = 101;
+            boardGame.MaxPlayerCount = 0;
+            boardGame.BggUrl = "boardgamegeek.com";
+            return boardGame;
+        }
+    }
+
     public static BoardGameCreateVM AzulWithParentCreateVM
     {
         get
