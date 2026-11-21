@@ -13,13 +13,15 @@ ASP.NET Core (.NET 10) Web API for tracking a board game collection and play ses
 dotnet run --project BoardGameTrackerApi          # Swagger UI only when ASPNETCORE_ENVIRONMENT=Development
 DatabaseType=IN_MEMORY dotnet run --project BoardGameTrackerApi   # no Postgres needed; seeds sample data
 
+dotnet test                                        # unit + integration tests
+dotnet test IntegrationTests                       # only integration tests (or UnitTests)
 dotnet test --filter "FullyQualifiedName~BoardGameMappingTests"   # single class
 dotnet test --filter "FullyQualifiedName~BoardGameMappingTests.SomeTestName"  # single test
 bash run_tests.sh -c true                          # tests + coverage; HTML report in src/coveragereport/ (needs reportgenerator)
 
 # Formatting (local tool from repo-root dotnet-tools.json)
 dotnet tool restore
-dotnet csharpier format .
+dotnet csharpier format <files>                    # only the files you changed; `.` rewrites unrelated files
 ```
 
 EF Core migrations (separate `Migrations` project, needs Postgres): use the `ef-migration` skill.
@@ -42,6 +44,12 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 - **Mapster configs** are `IRegister` classes discovered by assembly scan in `Setup/MapperSetupExtensions.cs`. `MapperConfigTests` compiles configs with `RequireDestinationMemberSource = true`, so every destination member needs a source.
 - **Errors**: services throw exceptions; `Middlewares/ExceptionHandlerMiddleware.cs` maps them to ProblemDetails status codes (`ApplicationException` 400, not-found 404, `VersionMismatchException` 409, `BusinessRuleException` 422, else 500 — including `InvalidOperationException`).
 
+## Tests
+
+- `UnitTests` test mappings, filters and services directly; services run against an in-memory `BoardGameContext` from `UnitTests/ServiceTests/TestDbContextFactory.cs`.
+- `IntegrationTests` run the real API through `WebApplicationFactory<Program>` (`IntegrationTests/BoardGameTrackerApiFactory.cs`). Every test gets its own app and its own in-memory database (unique `InMemoryDatabaseName` setting), seeded by `DbDataSeeder` at startup. The seed data is the integration test data, so changing a seeded fixture in `TestData` can break integration tests.
+- Fixtures and `Check*` helpers for both live in `TestData`.
+
 ## Current state
 
-All entities (`BoardGame`, `Player`, `PlaySession`, `PlayerScore`) are fully wired. Use the `add-entity` skill to add a new one.
+All entities (`BoardGame`, `Player`, `PlaySession`, `PlayerScore`) are fully wired. Use the `add-entity` skill to add a new one. Every controller has integration tests in `IntegrationTests/ControllerTests/`.

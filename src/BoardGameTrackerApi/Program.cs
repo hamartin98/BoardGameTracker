@@ -69,3 +69,6 @@ finally
 {
     LogManager.Shutdown();
 }
+
+// Lets the integration tests reference the app through WebApplicationFactory<Program>
+public partial class Program;

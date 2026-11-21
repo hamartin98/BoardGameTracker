@@ -58,69 +58,55 @@ public class BoardGameBaseVM : IValidatableObject
     /// <example>null</example>
     public Guid? ExpansionOfId { get; set; }
 
+    private static readonly TimeSpan PlayTimeLowerLimit = new(0, 10, 0);
+    private static readonly TimeSpan PlayTimeUpperLimit = new(24, 0, 0);
+    private const byte PlayerCountLowerLimit = 1;
+    private const byte PlayerCountUpperLimit = 100;
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        List<ValidationResult> result = [];
+        var playTimeErrors = ValidateRange(
+            (nameof(MinPlayTime), MinPlayTime),
+            (nameof(MaxPlayTime), MaxPlayTime),
+            PlayTimeLowerLimit,
+            PlayTimeUpperLimit
+        );
+        var playerCountErrors = ValidateRange(
+            (nameof(MinPlayerCount), MinPlayerCount),
+            (nameof(MaxPlayerCount), MaxPlayerCount),
+            PlayerCountLowerLimit,
+            PlayerCountUpperLimit
+        );
+        var urlErrors =
+            BggUrl is null || Validators.IsUrlValid(BggUrl)
+                ? []
+                : new ValidationResult[] { new("Invalid BggUrl.") };
 
-        // MinPlayTime && MaxPlayTime
+        return [.. playTimeErrors, .. playerCountErrors, .. urlErrors];
+    }
+
+    /// <summary>
+    /// Checks that both bounds are within the limits and that the minimum is not above the maximum
+    /// </summary>
+    private static IEnumerable<ValidationResult> ValidateRange<T>(
+        (string Name, T Value) min,
+        (string Name, T Value) max,
+        T lowerLimit,
+        T upperLimit
+    )
+        where T : IComparable<T>
+    {
+        foreach (var (name, value) in new[] { min, max })
         {
-            TimeSpan minPlayTime = new(0, 10, 0);
-            TimeSpan maxPlayTime = new(24, 0, 0);
-
-            if (MinPlayTime < minPlayTime || MinPlayTime > maxPlayTime)
+            if (value.CompareTo(lowerLimit) < 0 || value.CompareTo(upperLimit) > 0)
             {
-                result.Add(
-                    new($"MinPlayTime should be in the range {minPlayTime} - {maxPlayTime}.")
-                );
-            }
-            if (MaxPlayTime < minPlayTime || MaxPlayTime > maxPlayTime)
-            {
-                result.Add(
-                    new($"MaxPlayTime should be in the range {minPlayTime} - {maxPlayTime}.")
-                );
-            }
-            if (MinPlayTime > MaxPlayTime)
-            {
-                result.Add(new ValidationResult("MinPlayTime should be less than MaxPlayTime."));
+                yield return new($"{name} should be in the range {lowerLimit} - {upperLimit}.");
             }
         }
-
-        // MinPlayerCount && MaxPlayerCount
+        if (min.Value.CompareTo(max.Value) > 0)
         {
-            byte minPlayerCount = 1;
-            byte maxPlayerCount = 100;
-
-            if (MinPlayerCount < minPlayerCount || MinPlayerCount > maxPlayerCount)
-            {
-                result.Add(
-                    new(
-                        $"MinPlayerCount should be in the range {minPlayerCount} - {maxPlayerCount}."
-                    )
-                );
-            }
-            if (MaxPlayerCount < minPlayerCount || MaxPlayerCount > maxPlayerCount)
-            {
-                result.Add(
-                    new(
-                        $"MaxPlayerCount should be in the range {minPlayerCount} - {maxPlayerCount}."
-                    )
-                );
-            }
-            if (MinPlayerCount > MaxPlayerCount)
-            {
-                result.Add(
-                    new ValidationResult("MinPlayerCount should be less than MaxPlayerCount.")
-                );
-            }
+            yield return new($"{min.Name} should be less than {max.Name}.");
         }
-
-        // BggUrl
-        if (BggUrl is not null && !Validators.IsUrlValid(BggUrl))
-        {
-            result.Add(new("Invalid BggUrl."));
-        }
-
-        return result;
     }
 }
 

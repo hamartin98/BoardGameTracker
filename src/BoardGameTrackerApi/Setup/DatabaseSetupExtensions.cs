@@ -14,12 +14,17 @@ internal static class DatabaseSetupExtensions
         string connectionString
     )
     {
+        // Configurable so integration tests can give each test its own database
+        string inMemoryDatabaseName = builder.Configuration.GetValue(
+            "InMemoryDatabaseName",
+            "BoardGameList"
+        )!;
         builder.Services.AddDbContext<BoardGameContext>(
             (serviceProvider, options) =>
             {
                 if (databaseType == DatabaseType.IN_MEMORY)
                 {
-                    options.ConfigureInMemoryOptions();
+                    options.ConfigureInMemoryOptions(inMemoryDatabaseName);
                 }
                 else if (databaseType == DatabaseType.POSTGRES)
                 {
@@ -56,11 +61,12 @@ internal static class DatabaseSetupExtensions
     }
 
     private static DbContextOptionsBuilder ConfigureInMemoryOptions(
-        this DbContextOptionsBuilder optionsBuilder
+        this DbContextOptionsBuilder optionsBuilder,
+        string databaseName
     )
     {
         optionsBuilder
-            .UseInMemoryDatabase("BoardGameList")
+            .UseInMemoryDatabase(databaseName)
             .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning));
         return optionsBuilder;
     }

@@ -1,4 +1,5 @@
 using BoardGameTracker.ViewModels;
+using Xunit;
 
 namespace BoardGameTracker.TestData.ViewModels;
 
@@ -28,5 +29,17 @@ public partial class ViewModelsTestData
                 Version = 1,
                 IsDeleted = false,
             };
+    }
+
+    public static void CheckResponseMetaDataVM(
+        ResponseMetaDataVM expected,
+        ResponseMetaDataVM actual
+    )
+    {
+        Assert.Equal(expected.Id, actual.Id);
+        Assert.Equal(expected.CreatedAt, actual.CreatedAt);
+        Assert.Equal(expected.UpdatedAt, actual.UpdatedAt);
+        Assert.Equal(expected.Version, actual.Version);
+        Assert.Equal(expected.IsDeleted, actual.IsDeleted);
     }
 }

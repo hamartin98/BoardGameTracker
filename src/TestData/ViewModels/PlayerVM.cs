@@ -47,14 +47,45 @@ public partial class ViewModelsTestData
             };
     }
 
-    public static void CheckPlayerResponseVM(PlayerResponseVM expected, PlayerResponseVM actual)
+    public static PlayerCreateVM CarolCreateVM
+    {
+        get => new() { Name = "Carol" };
+    }
+
+    public static PlayerCreateVM AliceUppercaseCreateVM
+    {
+        get => new() { Name = "ALICE" };
+    }
+
+    public static PlayerCreateVM EmptyNameCreateVM
+    {
+        get => new() { Name = "" };
+    }
+
+    public static PlayerUpdateVM AliceRenamedUpdateVM
+    {
+        get => new() { Name = "Alice Renamed" };
+    }
+
+    public static PlayerUpdateVM AliceUppercaseUpdateVM
+    {
+        get => new() { Name = "ALICE" };
+    }
+
+    public static PlayerUpdateVM AliceRenamedToBobUpdateVM
+    {
+        get => new() { Name = "bob" };
+    }
+
+    public static void CheckPlayerVM(PlayerBaseVM expected, PlayerBaseVM actual)
     {
         Assert.Equal(expected.Name, actual.Name);
-        Assert.Equal(expected.MetaData.Id, actual.MetaData.Id);
-        Assert.Equal(expected.MetaData.CreatedAt, actual.MetaData.CreatedAt);
-        Assert.Equal(expected.MetaData.UpdatedAt, actual.MetaData.UpdatedAt);
-        Assert.Equal(expected.MetaData.Version, actual.MetaData.Version);
-        Assert.Equal(expected.MetaData.IsDeleted, actual.MetaData.IsDeleted);
+    }
+
+    public static void CheckPlayerResponseVM(PlayerResponseVM expected, PlayerResponseVM actual)
+    {
+        CheckPlayerVM(expected, actual);
+        CheckResponseMetaDataVM(expected.MetaData, actual.MetaData);
     }
 
     public static void CheckPlayersResponseVM(PlayersResponseVM expected, PlayersResponseVM actual)

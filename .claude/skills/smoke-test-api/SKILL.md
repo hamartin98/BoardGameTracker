@@ -3,6 +3,8 @@ name: smoke-test-api
 description: Run the BoardGameTracker API against the in-memory database and call endpoints with curl to confirm real HTTP behavior (status codes, ProblemDetails, versioning).
 ---
 
+> For repeatable checks, prefer the integration tests in `src/IntegrationTests`, which run every endpoint against the same seeded data. Use this skill for ad-hoc checks, Swagger, or behavior the tests don't cover.
+
 # Smoke-test the API
 
 1. **Build** from `src/`: `dotnet build`. Stop if it fails.
