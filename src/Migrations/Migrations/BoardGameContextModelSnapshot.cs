@@ -159,6 +159,10 @@ namespace Migrations.Migrations
                         .HasColumnType("smallint")
                         .HasColumnName("session_type");
 
+                    b.Property<Guid?>("StartPlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("start_player_id");
+
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_time");
@@ -184,6 +188,9 @@ namespace Migrations.Migrations
                     b.HasIndex("IsDeleted")
                         .HasDatabaseName("ix_play_sessions_is_deleted")
                         .HasFilter("is_deleted = false");
+
+                    b.HasIndex("StartPlayerId")
+                        .HasDatabaseName("ix_play_sessions_start_player_id");
 
                     b.HasIndex("StartTime")
                         .HasDatabaseName("ix_play_sessions_start_time");
@@ -308,6 +315,25 @@ namespace Migrations.Migrations
                     b.ToTable("player_scores", (string)null);
                 });
 
+            modelBuilder.Entity("PlaySessionPlayer", b =>
+                {
+                    b.Property<Guid>("PlaySessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("play_session_id");
+
+                    b.Property<Guid>("PlayersId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("players_id");
+
+                    b.HasKey("PlaySessionId", "PlayersId")
+                        .HasName("pk_play_session_players");
+
+                    b.HasIndex("PlayersId")
+                        .HasDatabaseName("ix_play_session_players_players_id");
+
+                    b.ToTable("play_session_players", (string)null);
+                });
+
             modelBuilder.Entity("BoardGamePlaySession", b =>
                 {
                     b.HasOne("BoardGameTracker.Models.Entities.PlaySession", null)
@@ -345,7 +371,14 @@ namespace Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_play_sessions_board_games_board_game_id");
 
+                    b.HasOne("BoardGameTracker.Models.Entities.Player", "StartPlayer")
+                        .WithMany()
+                        .HasForeignKey("StartPlayerId")
+                        .HasConstraintName("fk_play_sessions_players_start_player_id");
+
                     b.Navigation("BoardGame");
+
+                    b.Navigation("StartPlayer");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Models.Entities.PlayerScore", b =>
@@ -367,6 +400,23 @@ namespace Migrations.Migrations
                     b.Navigation("Player");
 
                     b.Navigation("Session");
+                });
+
+            modelBuilder.Entity("PlaySessionPlayer", b =>
+                {
+                    b.HasOne("BoardGameTracker.Models.Entities.PlaySession", null)
+                        .WithMany()
+                        .HasForeignKey("PlaySessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_play_session_players_play_sessions_play_session_id");
+
+                    b.HasOne("BoardGameTracker.Models.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_play_session_players_players_players_id");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Models.Entities.BoardGame", b =>

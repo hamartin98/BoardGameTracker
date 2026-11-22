@@ -23,6 +23,20 @@ public static partial class ModelBuilderExtensions
 
             entity.Ignore(e => e.UsedExpansionIds);
 
+            entity
+                .HasMany(e => e.Players)
+                .WithMany()
+                .UsingEntity(join => join.ToTable("play_session_players"));
+
+            entity.Ignore(e => e.PlayerIds);
+            entity.Ignore(e => e.RandomStartPlayer);
+
+            entity
+                .HasOne(e => e.StartPlayer)
+                .WithMany()
+                .HasForeignKey(e => e.StartPlayerId)
+                .IsRequired(false);
+
             entity.HasIndex(e => e.StartTime);
         });
     }

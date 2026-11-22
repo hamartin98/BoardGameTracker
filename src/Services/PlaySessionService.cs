@@ -66,6 +66,21 @@ public class PlaySessionService
         {
             model.UsedExpansions.Add(expansion);
         }
+        List<Player> players = await FindPlayersAsync(model, cancellationToken);
+        foreach (Player player in players)
+        {
+            model.Players.Add(player);
+        }
+        if (model.RandomStartPlayer)
+        {
+            if (players.Count == 0)
+            {
+                throw new BusinessRuleException(
+                    "A random start player needs at least one player in the play session."
+                );
+            }
+            model.StartPlayerId = players[Random.Shared.Next(players.Count)].Id;
+        }
     }
 
     protected override Task ValidateUpdateAsync(
@@ -85,28 +100,50 @@ public class PlaySessionService
     {
         await LoadRelations(existing, cancellationToken);
         List<BoardGame> expansions = await FindExpansionsAsync(model, cancellationToken);
-
-        bool changed = !existing
-            .UsedExpansions.Select(e => e.Id)
-            .ToHashSet()
-            .SetEquals(expansions.Select(e => e.Id));
-        if (!changed)
+        List<Player> players = await FindPlayersAsync(model, cancellationToken);
+        HashSet<Guid> playerIds = [.. players.Select(e => e.Id)];
+        if (existing.PlayerScores.Any(e => !playerIds.Contains(e.PlayerId)))
         {
-            return;
+            throw new BusinessRuleException(
+                "A player with a score in the play session cannot be removed."
+            );
         }
 
-        existing.UsedExpansions.Clear();
-        foreach (BoardGame expansion in expansions)
+        bool changed =
+            ReplaceCollection(existing.UsedExpansions, expansions)
+            | ReplaceCollection(existing.Players, players);
+        if (changed)
         {
-            existing.UsedExpansions.Add(expansion);
+            // A change to the collections alone must still bump the version
+            Context.Entry(existing).State = EntityState.Modified;
         }
-        // A change to the expansions alone must still bump the version
-        Context.Entry(existing).State = EntityState.Modified;
+    }
+
+    /// <summary>
+    /// Replaces the items of the collection when its ids differ; returns whether it changed
+    /// </summary>
+    private static bool ReplaceCollection<T>(ICollection<T> existing, List<T> replacement)
+        where T : AbstractEntity
+    {
+        if (existing.Select(e => e.Id).ToHashSet().SetEquals(replacement.Select(e => e.Id)))
+        {
+            return false;
+        }
+
+        existing.Clear();
+        foreach (T item in replacement)
+        {
+            existing.Add(item);
+        }
+        return true;
     }
 
     protected override IQueryable<PlaySession> IncludeListRelations(IQueryable<PlaySession> query)
     {
-        return query.Include(e => e.UsedExpansions).Include(e => e.PlayerScores);
+        return query
+            .Include(e => e.UsedExpansions)
+            .Include(e => e.Players)
+            .Include(e => e.PlayerScores);
     }
 
     protected override async Task LoadRelations(
@@ -116,6 +153,7 @@ public class PlaySessionService
     {
         var entry = Context.Entry(entity);
         await entry.Collection(e => e.UsedExpansions).LoadAsync(cancellationToken);
+        await entry.Collection(e => e.Players).LoadAsync(cancellationToken);
         await entry.Collection(e => e.PlayerScores).LoadAsync(cancellationToken);
     }
 
@@ -173,5 +211,29 @@ public class PlaySessionService
             );
         }
         return expansions;
+    }
+
+    private async Task<List<Player>> FindPlayersAsync(
+        PlaySession model,
+        CancellationToken cancellationToken
+    )
+    {
+        List<Guid> ids = [.. model.PlayerIds.Distinct()];
+        List<Player> players = await Context
+            .Set<Player>()
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(cancellationToken);
+
+        if (players.Count != ids.Count)
+        {
+            throw new EntityNotFoundException<Player>();
+        }
+        if (model.StartPlayerId is Guid startPlayerId && !ids.Contains(startPlayerId))
+        {
+            throw new BusinessRuleException(
+                "The start player must be one of the session's players."
+            );
+        }
+        return players;
     }
 }

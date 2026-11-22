@@ -12,10 +12,11 @@ public class PlaySessionServiceTests
 
     private readonly FixedTimeProvider TimeProvider = new(CommonTestData.DateTime);
 
-    private async Task SeedBoardGamesAsync()
+    private async Task SeedReferencesAsync()
     {
         using var context = ContextFactory.Create();
         context.BoardGames.AddRange(ModelsTestData.Scythe, ModelsTestData.ScytheFenris);
+        context.Players.AddRange(ModelsTestData.Alice, ModelsTestData.Bob);
         await context.SaveChangesAsync();
     }
 
@@ -27,12 +28,88 @@ public class PlaySessionServiceTests
     [Fact]
     public async Task CreateWithExpansionTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
 
         var created = await CreateService()
             .CreateAsync(ModelsTestData.ScytheSessionCreate, CancellationToken.None);
 
         Assert.Equal([ModelsTestData.ScytheFenris.Id], created.UsedExpansions.Select(e => e.Id));
+    }
+
+    [Fact]
+    public async Task CreateWithPlayersTest()
+    {
+        await SeedReferencesAsync();
+
+        var created = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionCreate, CancellationToken.None);
+
+        Assert.Equal(
+            [ModelsTestData.Alice.Id, ModelsTestData.Bob.Id],
+            created.Players.Select(e => e.Id).Order()
+        );
+        Assert.Equal(ModelsTestData.Alice.Id, created.StartPlayerId);
+    }
+
+    [Fact]
+    public async Task CreateWithUnknownPlayerThrowsNotFoundTest()
+    {
+        await SeedReferencesAsync();
+
+        await Assert.ThrowsAsync<EntityNotFoundException<Player>>(() =>
+            CreateService()
+                .CreateAsync(ModelsTestData.ScytheSessionWithUnknownPlayer, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task CreateWithStartPlayerNotPlayingThrowsTest()
+    {
+        await SeedReferencesAsync();
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .CreateAsync(
+                    ModelsTestData.ScytheSessionWithStartPlayerNotPlaying,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task CreateWithRandomStartPlayerPicksSessionPlayerTest()
+    {
+        await SeedReferencesAsync();
+
+        var created = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
+
+        Assert.Contains(created.StartPlayerId!.Value, created.Players.Select(e => e.Id));
+    }
+
+    [Fact]
+    public async Task CreateWithRandomStartPlayerWithoutPlayersThrowsTest()
+    {
+        await SeedReferencesAsync();
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .CreateAsync(
+                    ModelsTestData.ScytheSessionRandomStartPlayerWithoutPlayers,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task StartWithRandomStartPlayerPicksSessionPlayerTest()
+    {
+        await SeedReferencesAsync();
+
+        var started = await CreateService()
+            .StartAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
+
+        Assert.Contains(started.StartPlayerId!.Value, started.Players.Select(e => e.Id));
     }
 
     [Fact]
@@ -46,7 +123,7 @@ public class PlaySessionServiceTests
     [Fact]
     public async Task CreateForExpansionThrowsTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
 
         await Assert.ThrowsAsync<BusinessRuleException>(() =>
             CreateService().CreateAsync(ModelsTestData.ScytheFenrisSession, CancellationToken.None)
@@ -56,7 +133,7 @@ public class PlaySessionServiceTests
     [Fact]
     public async Task CreateWithBaseGameAsExpansionThrowsTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
 
         await Assert.ThrowsAsync<BusinessRuleException>(() =>
             CreateService()
@@ -70,7 +147,7 @@ public class PlaySessionServiceTests
     [Fact]
     public async Task CreateWithUnknownExpansionThrowsNotFoundTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
 
         await Assert.ThrowsAsync<EntityNotFoundException<BoardGame>>(() =>
             CreateService()
@@ -84,7 +161,7 @@ public class PlaySessionServiceTests
     [Fact]
     public async Task UpdateRemovingExpansionsBumpsVersionTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
         var created = await CreateService()
             .CreateAsync(ModelsTestData.ScytheSessionCreate, CancellationToken.None);
 
@@ -103,7 +180,7 @@ public class PlaySessionServiceTests
     [Fact]
     public async Task UpdateAddingExpansionsTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
         var created = await CreateService()
             .CreateAsync(ModelsTestData.ScytheSessionWithoutExpansions, CancellationToken.None);
 
@@ -115,9 +192,69 @@ public class PlaySessionServiceTests
     }
 
     [Fact]
+    public async Task UpdateRemovingPlayersBumpsVersionTest()
+    {
+        await SeedReferencesAsync();
+        var created = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionCreate, CancellationToken.None);
+
+        var updated = await CreateService()
+            .UpdateAsync(
+                ModelsTestData.ScytheSessionWithoutPlayers,
+                created.Id,
+                1,
+                CancellationToken.None
+            );
+
+        Assert.Empty(updated.Players);
+        Assert.Null(updated.StartPlayerId);
+        Assert.Equal(2, updated.Version);
+    }
+
+    [Fact]
+    public async Task UpdateWithStartPlayerNotPlayingThrowsTest()
+    {
+        await SeedReferencesAsync();
+        var created = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionCreate, CancellationToken.None);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .UpdateAsync(
+                    ModelsTestData.ScytheSessionWithStartPlayerNotPlaying,
+                    created.Id,
+                    1,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task UpdateRemovingPlayerWithScoreThrowsTest()
+    {
+        using (var context = ContextFactory.Create())
+        {
+            context.BoardGames.Add(ModelsTestData.Scythe);
+            context.PlaySessions.Add(ModelsTestData.ScytheSession);
+            context.PlayerScores.Add(ModelsTestData.AliceScytheScore);
+            await context.SaveChangesAsync();
+        }
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .UpdateAsync(
+                    ModelsTestData.ScytheSessionWithoutAlice,
+                    ModelsTestData.ScytheSession.Id,
+                    1,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
     public async Task UpdateWithoutChangesKeepsVersionTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
         var created = await CreateService()
             .CreateAsync(ModelsTestData.ScytheSessionCreate, CancellationToken.None);
 
@@ -130,7 +267,7 @@ public class PlaySessionServiceTests
     [Fact]
     public async Task StartSetsStartTimeToUtcNowTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
 
         var started = await CreateService()
             .StartAsync(ModelsTestData.ScytheSessionStart, CancellationToken.None);
@@ -139,12 +276,17 @@ public class PlaySessionServiceTests
         Assert.Equal(DateTimeKind.Utc, started.StartTime?.Kind);
         Assert.Null(started.Duration);
         Assert.Equal([ModelsTestData.ScytheFenris.Id], started.UsedExpansions.Select(e => e.Id));
+        Assert.Equal(
+            [ModelsTestData.Alice.Id, ModelsTestData.Bob.Id],
+            started.Players.Select(e => e.Id).Order()
+        );
+        Assert.Equal(ModelsTestData.Alice.Id, started.StartPlayerId);
     }
 
     [Fact]
     public async Task StartIgnoresStartTimeAndDurationOnModelTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
 
         var started = await CreateService()
             .StartAsync(ModelsTestData.ScytheSessionCreate, CancellationToken.None);
@@ -156,7 +298,7 @@ public class PlaySessionServiceTests
     [Fact]
     public async Task StartForExpansionThrowsTest()
     {
-        await SeedBoardGamesAsync();
+        await SeedReferencesAsync();
 
         await Assert.ThrowsAsync<BusinessRuleException>(() =>
             CreateService().StartAsync(ModelsTestData.ScytheFenrisSession, CancellationToken.None)
@@ -181,6 +323,10 @@ public class PlaySessionServiceTests
         Assert.Equal(TimeSpan.FromHours(2), finished.Duration);
         Assert.Equal(2, finished.Version);
         Assert.Equal([ModelsTestData.ScytheFenris.Id], finished.UsedExpansions.Select(e => e.Id));
+        Assert.Equal(
+            [ModelsTestData.Alice.Id, ModelsTestData.Bob.Id],
+            finished.Players.Select(e => e.Id).Order()
+        );
     }
 
     [Fact]

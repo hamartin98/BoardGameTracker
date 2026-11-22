@@ -15,6 +15,8 @@ public partial class ViewModelsTestData
                 MetaData = ResponseMetaDataVM1,
                 BoardGameId = CommonTestData.Guid1,
                 UsedExpansionIds = [CommonTestData.Guid2],
+                PlayerIds = [CommonTestData.Guid1, CommonTestData.Guid2],
+                StartPlayerId = CommonTestData.Guid1,
                 StartTime = CommonTestData.DateTime,
                 Duration = new TimeSpan(2, 0, 0),
                 SessionType = PlaySessionTypeVM.COMPETITIVE,
@@ -29,6 +31,8 @@ public partial class ViewModelsTestData
             {
                 BoardGameId = CommonTestData.Guid1,
                 UsedExpansionIds = [CommonTestData.Guid2],
+                PlayerIds = [CommonTestData.Guid1, CommonTestData.Guid2],
+                StartPlayerId = CommonTestData.Guid1,
                 StartTime = CommonTestData.DateTime,
                 Duration = new TimeSpan(2, 0, 0),
                 SessionType = PlaySessionTypeVM.COMPETITIVE,
@@ -43,6 +47,8 @@ public partial class ViewModelsTestData
             {
                 BoardGameId = CommonTestData.Guid1,
                 UsedExpansionIds = [CommonTestData.Guid2],
+                PlayerIds = [CommonTestData.Guid1, CommonTestData.Guid2],
+                StartPlayerId = CommonTestData.Guid1,
                 SessionType = PlaySessionTypeVM.COMPETITIVE,
                 Notes = "First game",
             };
@@ -54,6 +60,8 @@ public partial class ViewModelsTestData
             new()
             {
                 BoardGameId = CommonTestData.Guid1,
+                PlayerIds = [CommonTestData.Guid1, CommonTestData.Guid2],
+                StartPlayerId = CommonTestData.Guid1,
                 StartTime = CommonTestData.DateTime,
                 Duration = new TimeSpan(2, 0, 0),
                 SessionType = PlaySessionTypeVM.COMPETITIVE,
@@ -156,6 +164,99 @@ public partial class ViewModelsTestData
         }
     }
 
+    public static PlaySessionCreateVM ScytheSessionWithoutPlayersCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionCreateVM;
+            session.PlayerIds = [];
+            session.StartPlayerId = null;
+            return session;
+        }
+    }
+
+    public static PlaySessionCreateVM ScytheSessionRandomStartPlayerCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionCreateVM;
+            session.StartPlayerId = null;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
+    public static PlaySessionCreateVM ScytheSessionRandomAndFixedStartPlayerCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionCreateVM;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
+    public static PlaySessionCreateVM ScytheSessionRandomStartPlayerWithoutPlayersCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionRandomStartPlayerCreateVM;
+            session.PlayerIds = [];
+            return session;
+        }
+    }
+
+    public static PlaySessionStartVM ScytheSessionRandomStartPlayerStartVM
+    {
+        get
+        {
+            var session = ScytheSessionStartVM;
+            session.StartPlayerId = null;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
+    public static PlaySessionStartVM ScytheSessionRandomAndFixedStartPlayerStartVM
+    {
+        get
+        {
+            var session = ScytheSessionStartVM;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
+    public static PlaySessionCreateVM ScytheSessionWithDeletedPlayerCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionCreateVM;
+            session.PlayerIds = [CommonTestData.Guid1, CommonTestData.DeletedGuid];
+            return session;
+        }
+    }
+
+    public static PlaySessionCreateVM ScytheSessionWithStartPlayerNotPlayingCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionCreateVM;
+            session.PlayerIds = [CommonTestData.Guid2];
+            return session;
+        }
+    }
+
+    public static PlaySessionStartVM ScytheSessionWithStartPlayerNotPlayingStartVM
+    {
+        get
+        {
+            var session = ScytheSessionStartVM;
+            session.PlayerIds = [CommonTestData.Guid2];
+            return session;
+        }
+    }
+
     public static PlaySessionStartVM FenrisSessionStartVM
     {
         get
@@ -196,6 +297,7 @@ public partial class ViewModelsTestData
             session.Duration = new TimeSpan(1, 45, 0);
             session.SessionType = PlaySessionTypeVM.COOPERATIVE;
             session.Notes = "Rematch";
+            session.StartPlayerId = CommonTestData.Guid2;
             return session;
         }
     }
@@ -220,10 +322,55 @@ public partial class ViewModelsTestData
         }
     }
 
+    public static PlaySessionUpdateVM ScytheSessionWithDeletedPlayerUpdateVM
+    {
+        get
+        {
+            var session = ScytheSessionUpdateVM;
+            session.PlayerIds = [CommonTestData.Guid1, CommonTestData.DeletedGuid];
+            return session;
+        }
+    }
+
+    public static PlaySessionUpdateVM ScytheSessionWithStartPlayerNotPlayingUpdateVM
+    {
+        get
+        {
+            var session = ScytheSessionUpdateVM;
+            session.PlayerIds = [CommonTestData.Guid2];
+            return session;
+        }
+    }
+
+    public static PlaySessionUpdateVM ScytheSessionWithoutAliceUpdateVM
+    {
+        get
+        {
+            var session = ScytheSessionUpdateVM;
+            session.PlayerIds = [CommonTestData.Guid2];
+            session.StartPlayerId = CommonTestData.Guid2;
+            return session;
+        }
+    }
+
+    public static PlaySessionUpdateVM ScytheSessionWithoutPlayersUpdateVM
+    {
+        get
+        {
+            var session = ScytheSessionUpdateVM;
+            session.UsedExpansionIds = [CommonTestData.Guid2];
+            session.PlayerIds = [];
+            session.StartPlayerId = null;
+            return session;
+        }
+    }
+
     public static void CheckPlaySessionVM(PlaySessionBaseVM expected, PlaySessionBaseVM actual)
     {
         Assert.Equal(expected.BoardGameId, actual.BoardGameId);
         Assert.Equal(expected.UsedExpansionIds.Order(), actual.UsedExpansionIds.Order());
+        Assert.Equal(expected.PlayerIds.Order(), actual.PlayerIds.Order());
+        Assert.Equal(expected.StartPlayerId, actual.StartPlayerId);
         Assert.Equal(expected.StartTime, actual.StartTime);
         Assert.Equal(expected.Duration, actual.Duration);
         Assert.Equal(expected.SessionType, actual.SessionType);
