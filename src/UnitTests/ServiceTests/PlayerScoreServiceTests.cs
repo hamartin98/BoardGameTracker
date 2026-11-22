@@ -14,8 +14,8 @@ public class PlayerScoreServiceTests
     {
         using var context = ContextFactory.Create();
         context.BoardGames.Add(ModelsTestData.Scythe);
+        // Alice and Bob are added as the session's players
         context.PlaySessions.Add(ModelsTestData.ScytheSession);
-        context.Players.AddRange(ModelsTestData.Alice, ModelsTestData.Bob);
         context.PlayerScores.AddRange(scores);
         await context.SaveChangesAsync();
     }
@@ -44,6 +44,23 @@ public class PlayerScoreServiceTests
         await Assert.ThrowsAsync<EntityNotFoundException<Player>>(() =>
             CreateService()
                 .CreateAsync(ModelsTestData.UnknownPlayerScoreCreate, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task CreateForPlayerNotInSessionThrowsTest()
+    {
+        using (var context = ContextFactory.Create())
+        {
+            context.BoardGames.Add(ModelsTestData.Scythe);
+            context.Players.Add(ModelsTestData.Alice);
+            context.PlaySessions.Add(ModelsTestData.ScytheSessionWithBobOnly);
+            await context.SaveChangesAsync();
+        }
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .CreateAsync(ModelsTestData.AliceScytheScoreCreate, CancellationToken.None)
         );
     }
 

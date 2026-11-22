@@ -14,7 +14,9 @@ public class PlaySessionMapperConfig : IRegister
     )
         where TSource : PlaySessionBaseVM
     {
-        return setter.IgnoreEntityMetadata().Ignore(dest => dest.BoardGame);
+        return setter
+            .IgnoreEntityMetadata()
+            .Ignore(dest => dest.BoardGame, dest => dest.StartPlayer);
     }
 
     public void Register(TypeAdapterConfig config)
@@ -24,7 +26,12 @@ public class PlaySessionMapperConfig : IRegister
         config
             .NewConfig<PlaySessionStartVM, PlaySession>()
             .IgnoreEntityMetadata()
-            .Ignore(dest => dest.BoardGame, dest => dest.StartTime, dest => dest.Duration);
+            .Ignore(
+                dest => dest.BoardGame,
+                dest => dest.StartPlayer,
+                dest => dest.StartTime,
+                dest => dest.Duration
+            );
         config
             .NewConfig<PlaySession, PlaySessionResponseVM>()
             .Map(dest => dest.MetaData, src => src)
@@ -32,6 +39,7 @@ public class PlaySessionMapperConfig : IRegister
                 dest => dest.UsedExpansionIds,
                 src => src.UsedExpansions.Select(e => e.Id).ToList()
             )
+            .Map(dest => dest.PlayerIds, src => src.Players.Select(e => e.Id).ToList())
             .Map(dest => dest.PlayerScoreIds, src => src.PlayerScores.Select(s => s.Id).ToList());
         config.NewConfig<PlaySessionFilterVM, PlaySessionFilter>();
         config.NewConfig<PaginatedResponse<PlaySession>, PlaySessionsResponseVM>();

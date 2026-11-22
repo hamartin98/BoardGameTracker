@@ -16,9 +16,10 @@ public static class DbDataSeeder
         }
 
         List<BoardGame> boardGames = GetSeededBoardGames();
+        List<Player> players = GetSeededPlayers();
         await context.BoardGames.AddRangeAsync(boardGames);
-        await context.Players.AddRangeAsync(GetSeededPlayers());
-        await context.PlaySessions.AddRangeAsync(GetSeededPlaySessions(boardGames));
+        await context.Players.AddRangeAsync(players);
+        await context.PlaySessions.AddRangeAsync(GetSeededPlaySessions(boardGames, players));
         await context.PlayerScores.AddRangeAsync(GetSeededPlayerScores());
 
         await context.SaveChangesAsync();
@@ -34,14 +35,22 @@ public static class DbDataSeeder
         ];
     }
 
-    public static List<PlaySession> GetSeededPlaySessions(List<BoardGame> seededBoardGames)
+    public static List<PlaySession> GetSeededPlaySessions(
+        List<BoardGame> seededBoardGames,
+        List<Player> seededPlayers
+    )
     {
-        // Reference the seeded expansion instance, not a new copy, so it isn't inserted twice
+        // Reference the seeded expansion and player instances, not new copies, so they aren't inserted twice
         PlaySession session = ModelsTestData.ScytheSession;
         session.UsedExpansions.Clear();
         session.UsedExpansions.Add(
             seededBoardGames.Single(e => e.Id == ModelsTestData.ScytheFenris.Id)
         );
+        session.Players.Clear();
+        foreach (Player player in seededPlayers)
+        {
+            session.Players.Add(player);
+        }
         return [session];
     }
 

@@ -16,6 +16,16 @@ public class PlaySessionBaseVM : IValidatableObject
     public ICollection<Guid> UsedExpansionIds { get; set; } = [];
 
     /// <summary>
+    /// Ids of the players taking part in the session
+    /// </summary>
+    public ICollection<Guid> PlayerIds { get; set; } = [];
+
+    /// <summary>
+    /// Id of the player who starts the game; must be one of the session's players
+    /// </summary>
+    public Guid? StartPlayerId { get; set; }
+
+    /// <summary>
     /// Starting date and time of the play session
     /// </summary>
     /// <example>2026-11-20T18:00:00Z</example>
@@ -63,6 +73,16 @@ public class PlaySessionStartVM
     /// Ids of the expansions of that game used during the session
     /// </summary>
     public ICollection<Guid> UsedExpansionIds { get; set; } = [];
+
+    /// <summary>
+    /// Ids of the players taking part in the session
+    /// </summary>
+    public ICollection<Guid> PlayerIds { get; set; } = [];
+
+    /// <summary>
+    /// Id of the player who starts the game; must be one of the session's players
+    /// </summary>
+    public Guid? StartPlayerId { get; set; }
 
     /// <summary>
     /// Type of the play session

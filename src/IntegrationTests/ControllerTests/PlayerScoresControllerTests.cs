@@ -183,6 +183,20 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task CreateForPlayerNotInSessionReturnsUnprocessableTest()
+    {
+        var session = await ReadAsync<PlaySessionResponseVM>(
+            await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionWithoutPlayersCreateVM)
+        );
+        var createVM = ViewModelsTestData.AliceScytheScoreCreateVM;
+        createVM.SessionId = session.MetaData.Id;
+
+        var response = await PostAsync("/PlayerScores", createVM);
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
+    }
+
+    [Fact]
     public async Task CreateForUnknownSessionReturnsNotFoundTest()
     {
         var response = await PostAsync(

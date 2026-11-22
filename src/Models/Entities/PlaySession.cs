@@ -28,6 +28,26 @@ public class PlaySession : AbstractEntity
     public ICollection<Guid> UsedExpansionIds { get; set; } = [];
 
     /// <summary>
+    /// Players taking part in the session
+    /// </summary>
+    public ICollection<Player> Players { get; } = [];
+
+    /// <summary>
+    /// Requested player ids; resolved into Players by the service and not stored
+    /// </summary>
+    public ICollection<Guid> PlayerIds { get; set; } = [];
+
+    /// <summary>
+    /// Id of the player who starts the game; one of the session's players
+    /// </summary>
+    public Guid? StartPlayerId { get; set; }
+
+    /// <summary>
+    /// Player who starts the game
+    /// </summary>
+    public Player? StartPlayer { get; set; }
+
+    /// <summary>
     /// Starting date and time of the play session
     /// </summary>
     public DateTime? StartTime

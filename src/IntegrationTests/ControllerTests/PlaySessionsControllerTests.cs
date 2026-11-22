@@ -199,6 +199,28 @@ public class PlaySessionsControllerTests : IntegrationTestBase
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
+    [Fact]
+    public async Task CreateWithDeletedPlayerReturnsNotFoundTest()
+    {
+        var response = await PostAsync(
+            "/PlaySessions",
+            ViewModelsTestData.ScytheSessionWithDeletedPlayerCreateVM
+        );
+
+        await AssertProblemAsync(response, 404, "EntityNotFoundException");
+    }
+
+    [Fact]
+    public async Task CreateWithStartPlayerNotPlayingReturnsUnprocessableTest()
+    {
+        var response = await PostAsync(
+            "/PlaySessions",
+            ViewModelsTestData.ScytheSessionWithStartPlayerNotPlayingCreateVM
+        );
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
+    }
+
     // POST /PlaySessions/Start
 
     [Fact]
@@ -227,6 +249,17 @@ public class PlaySessionsControllerTests : IntegrationTestBase
         var response = await PostAsync(
             "/PlaySessions/Start",
             ViewModelsTestData.FenrisSessionStartVM
+        );
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
+    }
+
+    [Fact]
+    public async Task StartWithStartPlayerNotPlayingReturnsUnprocessableTest()
+    {
+        var response = await PostAsync(
+            "/PlaySessions/Start",
+            ViewModelsTestData.ScytheSessionWithStartPlayerNotPlayingStartVM
         );
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
@@ -348,6 +381,58 @@ public class PlaySessionsControllerTests : IntegrationTestBase
         var updated = await ReadAsync<PlaySessionResponseVM>(response);
         Assert.Empty(updated.UsedExpansionIds);
         Assert.Equal(2, updated.MetaData.Version);
+    }
+
+    [Fact]
+    public async Task UpdateOnlyPlayersBumpsVersionTest()
+    {
+        var created = await ReadAsync<PlaySessionResponseVM>(
+            await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionCreateVM)
+        );
+
+        var response = await PutAsync(
+            $"/PlaySessions/{created.MetaData.Id}?version=1",
+            ViewModelsTestData.ScytheSessionWithoutPlayersUpdateVM
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await ReadAsync<PlaySessionResponseVM>(response);
+        Assert.Empty(updated.PlayerIds);
+        Assert.Null(updated.StartPlayerId);
+        Assert.Equal(2, updated.MetaData.Version);
+    }
+
+    [Fact]
+    public async Task UpdateRemovingPlayerWithScoreReturnsUnprocessableTest()
+    {
+        var response = await PutAsync(
+            $"{ScytheSessionUrl}?version=1",
+            ViewModelsTestData.ScytheSessionWithoutAliceUpdateVM
+        );
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
+    }
+
+    [Fact]
+    public async Task UpdateWithDeletedPlayerReturnsNotFoundTest()
+    {
+        var response = await PutAsync(
+            $"{ScytheSessionUrl}?version=1",
+            ViewModelsTestData.ScytheSessionWithDeletedPlayerUpdateVM
+        );
+
+        await AssertProblemAsync(response, 404, "EntityNotFoundException");
+    }
+
+    [Fact]
+    public async Task UpdateWithStartPlayerNotPlayingReturnsUnprocessableTest()
+    {
+        var response = await PutAsync(
+            $"{ScytheSessionUrl}?version=1",
+            ViewModelsTestData.ScytheSessionWithStartPlayerNotPlayingUpdateVM
+        );
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
     [Fact]
