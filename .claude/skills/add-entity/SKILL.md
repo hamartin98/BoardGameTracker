@@ -53,7 +53,7 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
 10. **Verify.**
     - Run `dotnet build` and `dotnet test` from `src/`. This runs both the unit and integration tests.
     - Format only the files this change touched (`dotnet csharpier format <files>`), not the whole tree. Formatting everything rewrites unrelated files.
-    - Then use the `smoke-test-api` skill for create / get / update with `?version=` / delete, and for a 404 and a 409.
+    - Then follow the `smoke-test-api` skill: confirm the integration tests cover create / get / update with `?version=` / delete, a 404 and a 409, and add the new paths to `IntegrationTests/OpenApiTests.cs`.
 
 ## Gotchas
 

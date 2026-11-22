@@ -22,6 +22,7 @@ try
     builder.SetupDatabase(databaseType);
 
     builder.Services.SetupServices();
+    builder.Services.SetupRecommendationOptions(builder.Configuration);
 
     builder.Services.SetupMapper();
 

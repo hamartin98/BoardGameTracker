@@ -1,33 +1,54 @@
 ---
 name: smoke-test-api
-description: Run the BoardGameTracker API against the in-memory database and call endpoints with curl to confirm real HTTP behavior (status codes, ProblemDetails, versioning).
+description: Confirm real HTTP behavior of BoardGameTracker endpoints (status codes, ProblemDetails, versioning, Swagger) by writing and running integration tests against the in-memory API.
 ---
 
-> For repeatable checks, prefer the integration tests in `src/IntegrationTests`, which run every endpoint against the same seeded data. Use this skill for ad-hoc checks, Swagger, or behavior the tests don't cover.
+# Smoke-test the API with integration tests
 
-# Smoke-test the API
+Every check is an integration test in `src/IntegrationTests`. `BoardGameTrackerApiFactory` runs the real API in memory, in the Development environment. Each test gets its own freshly seeded in-memory database and its own fixed clock, so you don't start a server, pick a port or stop a process. Run all commands from `src/`.
 
-1. **Build** from `src/`: `dotnet build`. Stop if it fails.
-2. **Start** in the background. Log to a scratch file, not the repo:
+1. **Find the test class** for the controller under test: `IntegrationTests/ControllerTests/<Controller>Tests.cs`, deriving from `IntegrationTestBase`. Create it if it doesn't exist; `PlaySessionsControllerTests.cs` is a full example.
+2. **Write each check as a permanent test.** A check worth running once is worth keeping, so don't write throwaway tests.
+   - Send requests with `Client.GetAsync` / `PostAsync` / `PutAsync` / `Client.DeleteAsync`, and read bodies with `ReadAsync<T>`.
+   - Check errors with `AssertProblemAsync(response, status, "ExceptionType")`. For 400s from request validation, check only the status code.
+   - Request bodies and expected values come from `TestData` (`ViewModelsTestData`), compared with the `Check*` helpers. Never build them inline in the test.
+   - After a write, read the entity back to check it was stored, not just the write response.
+   - Update and delete need `?version=<current version>`. Seeded entities start at version 1; otherwise read `MetaData.Version` from the earlier response.
+   - For anything that depends on time, move `Clock.UtcNow`. It starts at `CommonTestData.DateTime`, the same time as the seeded data.
+3. **Run only those tests**, then the whole suite:
    ```bash
-   P=Board; DatabaseType=IN_MEMORY dotnet run --no-build --project "${P}GameTrackerApi" > "$LOG" 2>&1 &
+   dotnet test IntegrationTests --filter "FullyQualifiedName~<Controller>Tests"
+   dotnet test
    ```
-   - The port is **5135**. `Properties/launchSettings.json` sets it and overrides `ASPNETCORE_URLS`, so don't pass a different port.
-   - The environment is Development, so Swagger is at `/swagger`.
-3. **Wait** until `curl -s -o /dev/null http://localhost:5135/BoardGames` succeeds. Poll for up to ~30 s and read `$LOG` if it never answers.
-4. **Call endpoints** with `curl -s -w "\nHTTP %{http_code}\n"`. Known seed data, from `Database/DbDataSeeder.cs` and `TestData/`:
-   - `77934a16-a70a-4ac3-9c0e-000000000001`: Scythe (base game)
-   - `77934a16-a70a-4ac3-9c0e-200000000001`: Scythe expansion (Fenris)
-   - `77934a16-a70a-4ac3-9c0e-900000000000`: soft-deleted. Expect 404.
+4. **Report** each request covered with its expected status, and every failing test with its assertion message. A 500 is always a bug to report.
 
-   Expected error codes (`Middlewares/ExceptionHandlerMiddleware.cs`), returned as ProblemDetails JSON:
-   - 400: `ApplicationException`
-   - 404: not found / invalid foreign key
-   - 409: wrong `?version=`
-   - 422: `BusinessRuleException`
-   - 500: anything else (a 500 is a bug to report)
+## Reference
 
-   Update and delete require `?version=<current version>`. Read it from the `metaData.version` of a GET.
-5. **Stop** the server every time, even after failures: `pkill -f "${P}GameTrackerApi"`. Never write the literal project name in a command that also runs `pkill -f`: the pattern then matches the shell running it, which gets killed (exit code 144) and skips every later command in that call.
+Seed data (`Database/DbDataSeeder.cs`, fixtures in `TestData/`), using the `CommonTestData` ids:
+- `Guid1`: Scythe (base game, 1–5 players). Also Alice, the seeded play session, Alice's score and the Stars category.
+- `Guid2`: the Scythe expansion Fenris. Also Bob, Bob's score and the Territories category.
+- `Guid3`: the Fenris Bonus category.
+- `DeletedGuid`: a soft-deleted board game. Expect 404.
 
-Report each request with its status code and the relevant part of the body. The in-memory database resets on every start.
+The seeded session (Scythe with Fenris, Alice and Bob) started at `CommonTestData.DateTime` and lasted 2 hours.
+
+Expected error codes (`Middlewares/ExceptionHandlerMiddleware.cs`), returned as ProblemDetails JSON:
+- 400: `ApplicationException`, or request validation (DataAnnotations / `IValidatableObject`)
+- 404: not found / invalid foreign key
+- 409: wrong `?version=` (`VersionMismatchException`)
+- 422: `BusinessRuleException`
+- 500: anything else
+
+Swagger: `IntegrationTests/OpenApiTests.cs` checks that `/swagger/v1/swagger.json` is generated and lists the paths. When you add an endpoint, add its path to the `DocumentListsPathTest` cases.
+
+## Manual run (exception)
+
+Use this only to look at the Swagger UI in a browser. For everything else, use a test.
+
+```bash
+P=Board; DatabaseType=IN_MEMORY dotnet run --project "${P}GameTrackerApi" > "$LOG" 2>&1 &
+# Swagger UI: http://localhost:5135/swagger (the port is fixed by Properties/launchSettings.json)
+pkill -f "${P}GameTrackerApi"
+```
+
+Never write the literal project name in a command that also runs `pkill -f`. The pattern then matches the shell running it, which gets killed (exit code 144).
