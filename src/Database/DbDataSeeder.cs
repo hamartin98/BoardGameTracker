@@ -19,6 +19,7 @@ public static class DbDataSeeder
         List<Player> players = GetSeededPlayers();
         await context.BoardGames.AddRangeAsync(boardGames);
         await context.Players.AddRangeAsync(players);
+        await context.ScoringCategories.AddRangeAsync(GetSeededScoringCategories());
         await context.PlaySessions.AddRangeAsync(GetSeededPlaySessions(boardGames, players));
         await context.PlayerScores.AddRangeAsync(GetSeededPlayerScores());
 
@@ -52,6 +53,16 @@ public static class DbDataSeeder
             session.Players.Add(player);
         }
         return [session];
+    }
+
+    public static List<ScoringCategory> GetSeededScoringCategories()
+    {
+        return
+        [
+            ModelsTestData.ScytheStars,
+            ModelsTestData.ScytheTerritories,
+            ModelsTestData.FenrisBonus,
+        ];
     }
 
     public static List<PlayerScore> GetSeededPlayerScores()

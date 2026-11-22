@@ -101,6 +101,7 @@ public class PlaySessionService
         await LoadRelations(existing, cancellationToken);
         List<BoardGame> expansions = await FindExpansionsAsync(model, cancellationToken);
         List<Player> players = await FindPlayersAsync(model, cancellationToken);
+        await ThrowIfScoredGameRemovedAsync(existing, model, expansions, cancellationToken);
         HashSet<Guid> playerIds = [.. players.Select(e => e.Id)];
         if (existing.PlayerScores.Any(e => !playerIds.Contains(e.PlayerId)))
         {
@@ -116,6 +117,33 @@ public class PlaySessionService
         {
             // A change to the collections alone must still bump the version
             Context.Entry(existing).State = EntityState.Modified;
+        }
+    }
+
+    /// <summary>
+    /// Throws when the update drops the board game or an expansion whose categories have scores in the session
+    /// </summary>
+    private async Task ThrowIfScoredGameRemovedAsync(
+        PlaySession existing,
+        PlaySession model,
+        List<BoardGame> expansions,
+        CancellationToken cancellationToken
+    )
+    {
+        Guid sessionId = existing.Id;
+        List<Guid> scoredBoardGameIds = await Context
+            .Set<CategoryScore>()
+            .Where(e => e.PlayerScore!.SessionId == sessionId)
+            .Select(e => e.ScoringCategory!.BoardGameId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        HashSet<Guid> keptBoardGameIds = [model.BoardGameId, .. expansions.Select(e => e.Id)];
+        if (scoredBoardGameIds.Any(e => !keptBoardGameIds.Contains(e)))
+        {
+            throw new BusinessRuleException(
+                "The board game or an expansion with scored categories cannot be removed from the play session."
+            );
         }
     }
 
@@ -166,10 +194,19 @@ public class PlaySessionService
         return await Context
             .Set<PlayerScore>()
             .Where(e => e.SessionId == id)
+            .Include(e => e.CategoryScores)
             .OrderBy(e => e.CreatedAt)
             .ThenBy(e => e.Id)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+
+    public Task<List<ScoringCategory>> GetScoringCategoriesAsync(
+        Guid id,
+        CancellationToken cancellationToken
+    )
+    {
+        return Context.GetSessionScoringCategoriesAsync(id, cancellationToken);
     }
 
     private async Task CheckBoardGameAsync(Guid boardGameId, CancellationToken cancellationToken)

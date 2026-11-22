@@ -31,6 +31,19 @@ public partial class ViewModelsTestData
             };
     }
 
+    public static ResponseMetaDataVM ResponseMetaDataVM3
+    {
+        get =>
+            new()
+            {
+                Id = CommonTestData.Guid3,
+                CreatedAt = CommonTestData.DateTime,
+                UpdatedAt = CommonTestData.DateTime,
+                Version = 1,
+                IsDeleted = false,
+            };
+    }
+
     public static void CheckResponseMetaDataVM(
         ResponseMetaDataVM expected,
         ResponseMetaDataVM actual

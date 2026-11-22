@@ -26,9 +26,14 @@ public class PlayerScore : AbstractEntity
     public PlaySession? Session { get; set; }
 
     /// <summary>
-    /// Score of the player in the given session (null when no scoring is applicable)
+    /// Total score; the sum of the category scores, or a stored total recorded without a breakdown
     /// </summary>
     public int? Score { get; set; }
+
+    /// <summary>
+    /// Points per scoring category of the session's board game and used expansions
+    /// </summary>
+    public ICollection<CategoryScore> CategoryScores { get; } = [];
 
     /// <summary>
     /// Whether the player won the game

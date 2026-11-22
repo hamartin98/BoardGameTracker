@@ -121,7 +121,7 @@ public class PlayerScoresControllerTests : IntegrationTestBase
                 ViewModelsTestData.ScytheSessionWithoutExpansionsCreateVM
             )
         );
-        var createVM = ViewModelsTestData.AliceScytheScoreCreateVM;
+        var createVM = ViewModelsTestData.AliceScytheWithoutExpansionsScoreCreateVM;
         createVM.SessionId = session.MetaData.Id;
 
         var response = await PostAsync("/PlayerScores", createVM);
@@ -129,6 +129,7 @@ public class PlayerScoresControllerTests : IntegrationTestBase
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = await ReadAsync<PlayerScoreResponseVM>(response);
         ViewModelsTestData.CheckPlayerScoreVM(createVM, created);
+        Assert.Equal(createVM.CategoryScores.Sum(e => e.Value), created.Score);
         Assert.Equal(1, created.MetaData.Version);
 
         Assert.NotNull(response.Headers.Location);
@@ -229,6 +230,58 @@ public class PlayerScoresControllerTests : IntegrationTestBase
             ViewModelsTestData.AliceScytheScoreUpdatedVM,
             fetched
         );
+    }
+
+    [Fact]
+    public async Task UpdateWithMissingCategoryReturnsUnprocessableTest()
+    {
+        var response = await PutAsync(
+            $"{AliceScoreUrl}?version=1",
+            ViewModelsTestData.AliceScytheScoreMissingCategoryUpdateVM
+        );
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
+    }
+
+    [Fact]
+    public async Task UpdateWithUnknownCategoryReturnsNotFoundTest()
+    {
+        var response = await PutAsync(
+            $"{AliceScoreUrl}?version=1",
+            ViewModelsTestData.AliceScytheScoreUnknownCategoryUpdateVM
+        );
+
+        await AssertProblemAsync(response, 404, "EntityNotFoundException");
+    }
+
+    [Fact]
+    public async Task UpdateWithDuplicateCategoryReturnsBadRequestTest()
+    {
+        var response = await PutAsync(
+            $"{AliceScoreUrl}?version=1",
+            ViewModelsTestData.AliceScytheScoreDuplicateCategoryUpdateVM
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateWithCategoryOfAnotherGameReturnsUnprocessableTest()
+    {
+        var azul = await ReadAsync<BoardGameResponseVM>(
+            await PostAsync("/BoardGames", ViewModelsTestData.AzulCreateVM)
+        );
+        var categoryVM = ViewModelsTestData.AzulTilesCategoryCreateVM;
+        categoryVM.BoardGameId = azul.MetaData.Id;
+        var category = await ReadAsync<ScoringCategoryResponseVM>(
+            await PostAsync("/ScoringCategories", categoryVM)
+        );
+        var updateVM = ViewModelsTestData.AliceScytheScoreUpdateVM;
+        updateVM.CategoryScores.Add(new() { ScoringCategoryId = category.MetaData.Id });
+
+        var response = await PutAsync($"{AliceScoreUrl}?version=1", updateVM);
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
     [Fact]

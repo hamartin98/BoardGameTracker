@@ -252,6 +252,60 @@ public class PlaySessionServiceTests
     }
 
     [Fact]
+    public async Task UpdateRemovingScoredExpansionThrowsTest()
+    {
+        using (var context = ContextFactory.Create())
+        {
+            context.BoardGames.Add(ModelsTestData.Scythe);
+            context.ScoringCategories.AddRange(
+                ModelsTestData.ScytheStars,
+                ModelsTestData.ScytheTerritories,
+                ModelsTestData.FenrisBonus
+            );
+            context.PlaySessions.Add(ModelsTestData.ScytheSession);
+            context.PlayerScores.Add(ModelsTestData.AliceScytheScore);
+            await context.SaveChangesAsync();
+        }
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .UpdateAsync(
+                    ModelsTestData.ScytheSessionWithoutExpansions,
+                    ModelsTestData.ScytheSession.Id,
+                    1,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task GetScoringCategoriesListsBaseGameThenExpansionCategoriesTest()
+    {
+        using (var context = ContextFactory.Create())
+        {
+            context.ScoringCategories.AddRange(
+                ModelsTestData.FenrisBonus,
+                ModelsTestData.ScytheTerritories,
+                ModelsTestData.ScytheStars
+            );
+            context.PlaySessions.Add(ModelsTestData.ScytheSession);
+            await context.SaveChangesAsync();
+        }
+
+        var categories = await CreateService()
+            .GetScoringCategoriesAsync(ModelsTestData.ScytheSession.Id, CancellationToken.None);
+
+        Assert.Equal(
+            [
+                ModelsTestData.ScytheStars.Id,
+                ModelsTestData.ScytheTerritories.Id,
+                ModelsTestData.FenrisBonus.Id,
+            ],
+            categories.Select(e => e.Id)
+        );
+    }
+
+    [Fact]
     public async Task UpdateWithoutChangesKeepsVersionTest()
     {
         await SeedReferencesAsync();

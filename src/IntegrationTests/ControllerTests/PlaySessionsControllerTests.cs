@@ -127,6 +127,32 @@ public class PlaySessionsControllerTests : IntegrationTestBase
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
+    // GET /PlaySessions/{id}/ScoringCategories
+
+    [Fact]
+    public async Task GetScoringCategoriesTest()
+    {
+        var response = await Client.GetAsync($"{ScytheSessionUrl}/ScoringCategories");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        ViewModelsTestData.CheckScoringCategoryResponseVMs(
+            [
+                ViewModelsTestData.ScytheStarsVM,
+                ViewModelsTestData.ScytheTerritoriesVM,
+                ViewModelsTestData.FenrisBonusVM,
+            ],
+            await ReadAsync<List<ScoringCategoryResponseVM>>(response)
+        );
+    }
+
+    [Fact]
+    public async Task GetScoringCategoriesOfUnknownPlaySessionReturnsNotFoundTest()
+    {
+        var response = await Client.GetAsync($"{UnknownUrl}/ScoringCategories");
+
+        await AssertProblemAsync(response, 404, "EntityNotFoundException");
+    }
+
     // POST /PlaySessions
 
     [Fact]
@@ -433,8 +459,12 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [Fact]
     public async Task UpdateOnlyExpansionsBumpsVersionTest()
     {
+        var created = await ReadAsync<PlaySessionResponseVM>(
+            await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionCreateVM)
+        );
+
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=1",
+            $"/PlaySessions/{created.MetaData.Id}?version=1",
             ViewModelsTestData.ScytheSessionUpdateVM
         );
 
@@ -461,6 +491,17 @@ public class PlaySessionsControllerTests : IntegrationTestBase
         Assert.Empty(updated.PlayerIds);
         Assert.Null(updated.StartPlayerId);
         Assert.Equal(2, updated.MetaData.Version);
+    }
+
+    [Fact]
+    public async Task UpdateRemovingScoredExpansionReturnsUnprocessableTest()
+    {
+        var response = await PutAsync(
+            $"{ScytheSessionUrl}?version=1",
+            ViewModelsTestData.ScytheSessionUpdateVM
+        );
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
     [Fact]

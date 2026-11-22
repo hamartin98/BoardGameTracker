@@ -87,6 +87,11 @@ public class BoardGameService : NamedEntityService<BoardGame, BoardGameFilter>, 
     )
     {
         await LoadRelations(entity, cancellationToken);
+        // Tracked categories of the game and its expansions are cascaded by the delete
+        await Context
+            .Set<ScoringCategory>()
+            .Where(e => e.BoardGameId == entity.Id || e.BoardGame!.ExpansionOfId == entity.Id)
+            .LoadAsync(cancellationToken);
         // Tracked sessions (and their scores) are cascaded by the delete
         await Context
             .Set<PlaySession>()

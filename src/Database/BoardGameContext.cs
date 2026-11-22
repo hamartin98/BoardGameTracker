@@ -17,11 +17,17 @@ public class BoardGameContext : DbContext
 
     public DbSet<PlaySession> PlaySessions { get; set; }
 
+    public DbSet<ScoringCategory> ScoringCategories { get; set; }
+
+    public DbSet<CategoryScore> CategoryScores { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ConfigureBoardGame();
         modelBuilder.ConfigurePlayer();
         modelBuilder.ConfigurePlaySession();
         modelBuilder.ConfigurePlayerScore();
+        modelBuilder.ConfigureScoringCategory();
+        modelBuilder.ConfigureCategoryScore();
     }
 }

@@ -128,6 +128,29 @@ namespace Migrations.Migrations
                     b.ToTable("board_games", (string)null);
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Models.Entities.CategoryScore", b =>
+                {
+                    b.Property<Guid>("PlayerScoreId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_score_id");
+
+                    b.Property<Guid>("ScoringCategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("scoring_category_id");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("integer")
+                        .HasColumnName("value");
+
+                    b.HasKey("PlayerScoreId", "ScoringCategoryId")
+                        .HasName("pk_category_scores");
+
+                    b.HasIndex("ScoringCategoryId")
+                        .HasDatabaseName("ix_category_scores_scoring_category_id");
+
+                    b.ToTable("category_scores", (string)null);
+                });
+
             modelBuilder.Entity("BoardGameTracker.Models.Entities.PlaySession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -315,6 +338,69 @@ namespace Migrations.Migrations
                     b.ToTable("player_scores", (string)null);
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Models.Entities.ScoringCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BoardGameId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("board_game_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("normalized_name");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_scoring_categories");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_scoring_categories_created_at");
+
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("ix_scoring_categories_is_deleted")
+                        .HasFilter("is_deleted = false");
+
+                    b.HasIndex("BoardGameId", "NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_scoring_categories_board_game_id_normalized_name")
+                        .HasFilter("is_deleted = false");
+
+                    b.HasIndex("BoardGameId", "Order")
+                        .HasDatabaseName("ix_scoring_categories_board_game_id_order");
+
+                    b.ToTable("scoring_categories", (string)null);
+                });
+
             modelBuilder.Entity("PlaySessionPlayer", b =>
                 {
                     b.Property<Guid>("PlaySessionId")
@@ -362,6 +448,27 @@ namespace Migrations.Migrations
                     b.Navigation("ExpansionOf");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Models.Entities.CategoryScore", b =>
+                {
+                    b.HasOne("BoardGameTracker.Models.Entities.PlayerScore", "PlayerScore")
+                        .WithMany("CategoryScores")
+                        .HasForeignKey("PlayerScoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_category_scores_player_scores_player_score_id");
+
+                    b.HasOne("BoardGameTracker.Models.Entities.ScoringCategory", "ScoringCategory")
+                        .WithMany("CategoryScores")
+                        .HasForeignKey("ScoringCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_category_scores_scoring_categories_scoring_category_id");
+
+                    b.Navigation("PlayerScore");
+
+                    b.Navigation("ScoringCategory");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Models.Entities.PlaySession", b =>
                 {
                     b.HasOne("BoardGameTracker.Models.Entities.BoardGame", "BoardGame")
@@ -402,6 +509,18 @@ namespace Migrations.Migrations
                     b.Navigation("Session");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Models.Entities.ScoringCategory", b =>
+                {
+                    b.HasOne("BoardGameTracker.Models.Entities.BoardGame", "BoardGame")
+                        .WithMany("ScoringCategories")
+                        .HasForeignKey("BoardGameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_scoring_categories_board_games_board_game_id");
+
+                    b.Navigation("BoardGame");
+                });
+
             modelBuilder.Entity("PlaySessionPlayer", b =>
                 {
                     b.HasOne("BoardGameTracker.Models.Entities.PlaySession", null)
@@ -422,6 +541,8 @@ namespace Migrations.Migrations
             modelBuilder.Entity("BoardGameTracker.Models.Entities.BoardGame", b =>
                 {
                     b.Navigation("Expansions");
+
+                    b.Navigation("ScoringCategories");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Models.Entities.PlaySession", b =>
@@ -432,6 +553,16 @@ namespace Migrations.Migrations
             modelBuilder.Entity("BoardGameTracker.Models.Entities.Player", b =>
                 {
                     b.Navigation("PlayerScores");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Models.Entities.PlayerScore", b =>
+                {
+                    b.Navigation("CategoryScores");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Models.Entities.ScoringCategory", b =>
+                {
+                    b.Navigation("CategoryScores");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,13 +1,26 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BoardGameTracker.ViewModels;
 
-public class PlayerScoreBaseVM
+/// <summary>
+/// Points of a player in one scoring category
+/// </summary>
+public class CategoryScoreVM
 {
     /// <summary>
-    /// Score of the player in the given session (null when no scoring is applicable)
+    /// Id of the scoring category
     /// </summary>
-    /// <example>78</example>
-    public int? Score { get; set; }
+    public required Guid ScoringCategoryId { get; set; }
 
+    /// <summary>
+    /// Points in the category
+    /// </summary>
+    /// <example>24</example>
+    public int Value { get; set; }
+}
+
+public class PlayerScoreBaseVM : IValidatableObject
+{
     /// <summary>
     /// Whether the player won the game
     /// </summary>
@@ -19,6 +32,19 @@ public class PlayerScoreBaseVM
     /// </summary>
     /// <example>Polania</example>
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Points for every scoring category of the session's board game and used expansions; empty when it has none
+    /// </summary>
+    public ICollection<CategoryScoreVM> CategoryScores { get; set; } = [];
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (CategoryScores.DistinctBy(e => e.ScoringCategoryId).Count() != CategoryScores.Count)
+        {
+            yield return new("Each scoring category can only be scored once.");
+        }
+    }
 }
 
 public class PlayerScoreCreateVM : PlayerScoreBaseVM
@@ -45,6 +71,12 @@ public class PlayerScoreResponseVM : PlayerScoreCreateVM
     /// Response metadata
     /// </summary>
     public required ResponseMetaDataVM MetaData { get; set; }
+
+    /// <summary>
+    /// Total score: the sum of the category scores, or a total recorded without a breakdown; null without points
+    /// </summary>
+    /// <example>78</example>
+    public int? Score { get; set; }
 }
 
 public class PlayerScoresResponseVM : PaginatedResponseVM<PlayerScoreResponseVM>;

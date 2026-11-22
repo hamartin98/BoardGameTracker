@@ -347,6 +347,7 @@ public partial class ViewModelsTestData
         get
         {
             var session = ScytheSessionUpdateVM;
+            session.UsedExpansionIds = [CommonTestData.Guid2];
             session.PlayerIds = [CommonTestData.Guid2];
             session.StartPlayerId = CommonTestData.Guid2;
             return session;

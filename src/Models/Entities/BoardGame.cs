@@ -56,4 +56,9 @@ public class BoardGame : NamedEntity
     /// Expansions of the game
     /// </summary>
     public ICollection<BoardGame> Expansions { get; } = [];
+
+    /// <summary>
+    /// Scoring categories of the game; an expansion's categories extend its base game's
+    /// </summary>
+    public ICollection<ScoringCategory> ScoringCategories { get; } = [];
 }
