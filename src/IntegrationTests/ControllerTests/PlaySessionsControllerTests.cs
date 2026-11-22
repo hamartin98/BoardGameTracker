@@ -221,6 +221,42 @@ public class PlaySessionsControllerTests : IntegrationTestBase
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
+    [Fact]
+    public async Task CreateWithRandomStartPlayerTest()
+    {
+        var response = await PostAsync(
+            "/PlaySessions",
+            ViewModelsTestData.ScytheSessionRandomStartPlayerCreateVM
+        );
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var created = await ReadAsync<PlaySessionResponseVM>(response);
+        Assert.NotNull(created.StartPlayerId);
+        Assert.Contains(created.StartPlayerId.Value, created.PlayerIds);
+    }
+
+    [Fact]
+    public async Task CreateWithRandomAndFixedStartPlayerReturnsBadRequestTest()
+    {
+        var response = await PostAsync(
+            "/PlaySessions",
+            ViewModelsTestData.ScytheSessionRandomAndFixedStartPlayerCreateVM
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateWithRandomStartPlayerWithoutPlayersReturnsUnprocessableTest()
+    {
+        var response = await PostAsync(
+            "/PlaySessions",
+            ViewModelsTestData.ScytheSessionRandomStartPlayerWithoutPlayersCreateVM
+        );
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
+    }
+
     // POST /PlaySessions/Start
 
     [Fact]
@@ -252,6 +288,31 @@ public class PlaySessionsControllerTests : IntegrationTestBase
         );
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
+    }
+
+    [Fact]
+    public async Task StartWithRandomStartPlayerTest()
+    {
+        var response = await PostAsync(
+            "/PlaySessions/Start",
+            ViewModelsTestData.ScytheSessionRandomStartPlayerStartVM
+        );
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var started = await ReadAsync<PlaySessionResponseVM>(response);
+        Assert.NotNull(started.StartPlayerId);
+        Assert.Contains(started.StartPlayerId.Value, started.PlayerIds);
+    }
+
+    [Fact]
+    public async Task StartWithRandomAndFixedStartPlayerReturnsBadRequestTest()
+    {
+        var response = await PostAsync(
+            "/PlaySessions/Start",
+            ViewModelsTestData.ScytheSessionRandomAndFixedStartPlayerStartVM
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

@@ -48,6 +48,11 @@ public class PlaySession : AbstractEntity
     public Player? StartPlayer { get; set; }
 
     /// <summary>
+    /// Whether the service picks a random start player from the players on create; not stored
+    /// </summary>
+    public bool RandomStartPlayer { get; set; }
+
+    /// <summary>
     /// Starting date and time of the play session
     /// </summary>
     public DateTime? StartTime

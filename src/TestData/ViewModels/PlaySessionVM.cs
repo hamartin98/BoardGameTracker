@@ -175,6 +175,58 @@ public partial class ViewModelsTestData
         }
     }
 
+    public static PlaySessionCreateVM ScytheSessionRandomStartPlayerCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionCreateVM;
+            session.StartPlayerId = null;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
+    public static PlaySessionCreateVM ScytheSessionRandomAndFixedStartPlayerCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionCreateVM;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
+    public static PlaySessionCreateVM ScytheSessionRandomStartPlayerWithoutPlayersCreateVM
+    {
+        get
+        {
+            var session = ScytheSessionRandomStartPlayerCreateVM;
+            session.PlayerIds = [];
+            return session;
+        }
+    }
+
+    public static PlaySessionStartVM ScytheSessionRandomStartPlayerStartVM
+    {
+        get
+        {
+            var session = ScytheSessionStartVM;
+            session.StartPlayerId = null;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
+    public static PlaySessionStartVM ScytheSessionRandomAndFixedStartPlayerStartVM
+    {
+        get
+        {
+            var session = ScytheSessionStartVM;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
     public static PlaySessionCreateVM ScytheSessionWithDeletedPlayerCreateVM
     {
         get

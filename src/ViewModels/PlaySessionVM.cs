@@ -48,7 +48,7 @@ public class PlaySessionBaseVM : IValidatableObject
     /// </summary>
     public string? Notes { get; set; }
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (Duration is not null && Duration <= TimeSpan.Zero)
         {
@@ -57,12 +57,30 @@ public class PlaySessionBaseVM : IValidatableObject
     }
 }
 
-public class PlaySessionCreateVM : PlaySessionBaseVM { }
+public class PlaySessionCreateVM : PlaySessionBaseVM
+{
+    /// <summary>
+    /// Whether to pick a random start player from the players; StartPlayerId must not be set
+    /// </summary>
+    public bool RandomStartPlayer { get; set; }
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        foreach (ValidationResult result in base.Validate(validationContext))
+        {
+            yield return result;
+        }
+        if (RandomStartPlayer && StartPlayerId is not null)
+        {
+            yield return new(PlaySessionValidation.RandomAndFixedStartPlayerMessage);
+        }
+    }
+}
 
 /// <summary>
 /// Request to start a play session now; the start time is set by the server and the duration cannot be set
 /// </summary>
-public class PlaySessionStartVM
+public class PlaySessionStartVM : IValidatableObject
 {
     /// <summary>
     /// Id of the base game played
@@ -94,6 +112,19 @@ public class PlaySessionStartVM
     /// Additional notes about the play session
     /// </summary>
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Whether to pick a random start player from the players; StartPlayerId must not be set
+    /// </summary>
+    public bool RandomStartPlayer { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (RandomStartPlayer && StartPlayerId is not null)
+        {
+            yield return new(PlaySessionValidation.RandomAndFixedStartPlayerMessage);
+        }
+    }
 }
 
 public class PlaySessionUpdateVM : PlaySessionBaseVM { }
@@ -109,6 +140,12 @@ public class PlaySessionResponseVM : PlaySessionBaseVM
     /// Ids of the player scores recorded for the session
     /// </summary>
     public ICollection<Guid> PlayerScoreIds { get; set; } = [];
+}
+
+internal static class PlaySessionValidation
+{
+    public const string RandomAndFixedStartPlayerMessage =
+        "StartPlayerId cannot be set when RandomStartPlayer is true.";
 }
 
 public class PlaySessionsResponseVM : PaginatedResponseVM<PlaySessionResponseVM>;

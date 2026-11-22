@@ -77,6 +77,42 @@ public class PlaySessionServiceTests
     }
 
     [Fact]
+    public async Task CreateWithRandomStartPlayerPicksSessionPlayerTest()
+    {
+        await SeedReferencesAsync();
+
+        var created = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
+
+        Assert.Contains(created.StartPlayerId!.Value, created.Players.Select(e => e.Id));
+    }
+
+    [Fact]
+    public async Task CreateWithRandomStartPlayerWithoutPlayersThrowsTest()
+    {
+        await SeedReferencesAsync();
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .CreateAsync(
+                    ModelsTestData.ScytheSessionRandomStartPlayerWithoutPlayers,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task StartWithRandomStartPlayerPicksSessionPlayerTest()
+    {
+        await SeedReferencesAsync();
+
+        var started = await CreateService()
+            .StartAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
+
+        Assert.Contains(started.StartPlayerId!.Value, started.Players.Select(e => e.Id));
+    }
+
+    [Fact]
     public async Task CreateForUnknownBoardGameThrowsNotFoundTest()
     {
         await Assert.ThrowsAsync<EntityNotFoundException<BoardGame>>(() =>

@@ -29,6 +29,7 @@ public static partial class ModelBuilderExtensions
                 .UsingEntity(join => join.ToTable("play_session_players"));
 
             entity.Ignore(e => e.PlayerIds);
+            entity.Ignore(e => e.RandomStartPlayer);
 
             entity
                 .HasOne(e => e.StartPlayer)

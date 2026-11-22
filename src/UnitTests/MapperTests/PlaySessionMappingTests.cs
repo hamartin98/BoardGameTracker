@@ -29,6 +29,18 @@ public partial class MappingTests
     }
 
     [Fact]
+    public void PlaySessionRandomStartPlayerCreateToModelMappingTest()
+    {
+        var expected = ModelsTestData.ScytheSessionRandomStartPlayer;
+
+        var actual = Mapper.Map<PlaySession>(
+            ViewModelsTestData.ScytheSessionRandomStartPlayerCreateVM
+        );
+
+        ModelsTestData.CheckPlaySession(expected, actual);
+    }
+
+    [Fact]
     public void PlaySessionUpdateToModelMappingTest()
     {
         var expected = ModelsTestData.ScytheSessionWithoutExpansions;

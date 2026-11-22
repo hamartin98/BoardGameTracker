@@ -22,7 +22,8 @@ public class PlaySessionMapperConfig : IRegister
     public void Register(TypeAdapterConfig config)
     {
         MapRequestFields(config.NewConfig<PlaySessionCreateVM, PlaySession>());
-        MapRequestFields(config.NewConfig<PlaySessionUpdateVM, PlaySession>());
+        MapRequestFields(config.NewConfig<PlaySessionUpdateVM, PlaySession>())
+            .Ignore(dest => dest.RandomStartPlayer);
         config
             .NewConfig<PlaySessionStartVM, PlaySession>()
             .IgnoreEntityMetadata()

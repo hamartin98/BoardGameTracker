@@ -156,6 +156,27 @@ public partial class ModelsTestData
         }
     }
 
+    public static PlaySession ScytheSessionRandomStartPlayer
+    {
+        get
+        {
+            var session = ScytheSessionCreate;
+            session.StartPlayerId = null;
+            session.RandomStartPlayer = true;
+            return session;
+        }
+    }
+
+    public static PlaySession ScytheSessionRandomStartPlayerWithoutPlayers
+    {
+        get
+        {
+            var session = ScytheSessionRandomStartPlayer;
+            session.PlayerIds = [];
+            return session;
+        }
+    }
+
     public static PlaySession ScytheSessionWithUnknownPlayer
     {
         get
@@ -206,6 +227,7 @@ public partial class ModelsTestData
         Assert.Equal(expected.UsedExpansionIds.Order(), actual.UsedExpansionIds.Order());
         Assert.Equal(expected.PlayerIds.Order(), actual.PlayerIds.Order());
         Assert.Equal(expected.StartPlayerId, actual.StartPlayerId);
+        Assert.Equal(expected.RandomStartPlayer, actual.RandomStartPlayer);
         Assert.Equal(expected.StartTime, actual.StartTime);
         Assert.Equal(expected.Duration, actual.Duration);
         Assert.Equal(expected.SessionType, actual.SessionType);

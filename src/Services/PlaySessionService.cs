@@ -66,9 +66,20 @@ public class PlaySessionService
         {
             model.UsedExpansions.Add(expansion);
         }
-        foreach (Player player in await FindPlayersAsync(model, cancellationToken))
+        List<Player> players = await FindPlayersAsync(model, cancellationToken);
+        foreach (Player player in players)
         {
             model.Players.Add(player);
+        }
+        if (model.RandomStartPlayer)
+        {
+            if (players.Count == 0)
+            {
+                throw new BusinessRuleException(
+                    "A random start player needs at least one player in the play session."
+                );
+            }
+            model.StartPlayerId = players[Random.Shared.Next(players.Count)].Id;
         }
     }
 
