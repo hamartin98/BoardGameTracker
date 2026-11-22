@@ -17,6 +17,12 @@ public partial class ViewModelsTestData
                 Score = 78,
                 Win = true,
                 Notes = "Polania",
+                CategoryScores =
+                {
+                    new() { ScoringCategoryId = CommonTestData.Guid1, Value = 30 },
+                    new() { ScoringCategoryId = CommonTestData.Guid2, Value = 44 },
+                    new() { ScoringCategoryId = CommonTestData.Guid3, Value = 4 },
+                },
             };
     }
 
@@ -31,6 +37,12 @@ public partial class ViewModelsTestData
                 Score = 64,
                 Win = false,
                 Notes = "Saxony",
+                CategoryScores =
+                {
+                    new() { ScoringCategoryId = CommonTestData.Guid1, Value = 24 },
+                    new() { ScoringCategoryId = CommonTestData.Guid2, Value = 36 },
+                    new() { ScoringCategoryId = CommonTestData.Guid3, Value = 4 },
+                },
             };
     }
 
@@ -41,9 +53,14 @@ public partial class ViewModelsTestData
             {
                 PlayerId = CommonTestData.Guid1,
                 SessionId = CommonTestData.Guid1,
-                Score = 78,
                 Win = true,
                 Notes = "Polania",
+                CategoryScores =
+                {
+                    new() { ScoringCategoryId = CommonTestData.Guid1, Value = 30 },
+                    new() { ScoringCategoryId = CommonTestData.Guid2, Value = 44 },
+                    new() { ScoringCategoryId = CommonTestData.Guid3, Value = 4 },
+                },
             };
     }
 
@@ -52,9 +69,14 @@ public partial class ViewModelsTestData
         get =>
             new()
             {
-                Score = 81,
                 Win = false,
                 Notes = "Polania, recounted",
+                CategoryScores =
+                {
+                    new() { ScoringCategoryId = CommonTestData.Guid1, Value = 31 },
+                    new() { ScoringCategoryId = CommonTestData.Guid2, Value = 46 },
+                    new() { ScoringCategoryId = CommonTestData.Guid3, Value = 4 },
+                },
             };
     }
 
@@ -67,6 +89,53 @@ public partial class ViewModelsTestData
             score.Score = 81;
             score.Win = false;
             score.Notes = "Polania, recounted";
+            score.CategoryScores = AliceScytheScoreUpdateVM.CategoryScores;
+            return score;
+        }
+    }
+
+    public static PlayerScoreCreateVM AliceScytheWithoutExpansionsScoreCreateVM
+    {
+        get
+        {
+            var score = AliceScytheScoreCreateVM;
+            score.CategoryScores =
+            [
+                .. score.CategoryScores.Where(e => e.ScoringCategoryId != CommonTestData.Guid3),
+            ];
+            return score;
+        }
+    }
+
+    public static PlayerScoreUpdateVM AliceScytheScoreMissingCategoryUpdateVM
+    {
+        get
+        {
+            var score = AliceScytheScoreUpdateVM;
+            score.CategoryScores =
+            [
+                .. score.CategoryScores.Where(e => e.ScoringCategoryId != CommonTestData.Guid3),
+            ];
+            return score;
+        }
+    }
+
+    public static PlayerScoreUpdateVM AliceScytheScoreUnknownCategoryUpdateVM
+    {
+        get
+        {
+            var score = AliceScytheScoreUpdateVM;
+            score.CategoryScores.Add(new() { ScoringCategoryId = CommonTestData.DeletedGuid });
+            return score;
+        }
+    }
+
+    public static PlayerScoreUpdateVM AliceScytheScoreDuplicateCategoryUpdateVM
+    {
+        get
+        {
+            var score = AliceScytheScoreUpdateVM;
+            score.CategoryScores.Add(new() { ScoringCategoryId = CommonTestData.Guid1, Value = 1 });
             return score;
         }
     }
@@ -108,9 +177,16 @@ public partial class ViewModelsTestData
     {
         Assert.Equal(expected.PlayerId, actual.PlayerId);
         Assert.Equal(expected.SessionId, actual.SessionId);
-        Assert.Equal(expected.Score, actual.Score);
         Assert.Equal(expected.Win, actual.Win);
         Assert.Equal(expected.Notes, actual.Notes);
+        Assert.Equal(
+            expected
+                .CategoryScores.OrderBy(e => e.ScoringCategoryId)
+                .Select(e => (e.ScoringCategoryId, e.Value)),
+            actual
+                .CategoryScores.OrderBy(e => e.ScoringCategoryId)
+                .Select(e => (e.ScoringCategoryId, e.Value))
+        );
     }
 
     public static void CheckPlayerScoreResponseVM(
@@ -120,6 +196,7 @@ public partial class ViewModelsTestData
     {
         Assert.Equal(expected.MetaData.Id, actual.MetaData.Id);
         Assert.Equal(expected.MetaData.Version, actual.MetaData.Version);
+        Assert.Equal(expected.Score, actual.Score);
         CheckPlayerScoreVM(expected, actual);
     }
 }

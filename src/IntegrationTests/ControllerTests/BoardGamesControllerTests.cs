@@ -310,6 +310,77 @@ public class BoardGamesControllerTests : IntegrationTestBase
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
+    // GET /BoardGames/{id}/ScoringCategories
+
+    [Fact]
+    public async Task GetScoringCategoriesTest()
+    {
+        var response = await Client.GetAsync($"{ScytheUrl}/ScoringCategories");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        ViewModelsTestData.CheckScoringCategoryResponseVMs(
+            [ViewModelsTestData.ScytheStarsVM, ViewModelsTestData.ScytheTerritoriesVM],
+            await ReadAsync<List<ScoringCategoryResponseVM>>(response)
+        );
+    }
+
+    [Fact]
+    public async Task GetScoringCategoriesOfUnknownBoardGameReturnsNotFoundTest()
+    {
+        var response = await Client.GetAsync($"{UnknownUrl}/ScoringCategories");
+
+        await AssertProblemAsync(response, 404, "EntityNotFoundException");
+    }
+
+    // PUT /BoardGames/{id}/ScoringCategories/Order
+
+    [Fact]
+    public async Task ReorderScoringCategoriesTest()
+    {
+        var expected = ViewModelsTestData.ScytheTerritoriesVM;
+        expected.Order = 0;
+        expected.MetaData.Version = 2;
+        var expectedStars = ViewModelsTestData.ScytheStarsVM;
+        expectedStars.Order = 1;
+        expectedStars.MetaData.Version = 2;
+
+        var response = await PutAsync(
+            $"{ScytheUrl}/ScoringCategories/Order",
+            new List<Guid> { CommonTestData.Guid2, CommonTestData.Guid1 }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        ViewModelsTestData.CheckScoringCategoryResponseVMs(
+            [expected, expectedStars],
+            await ReadAsync<List<ScoringCategoryResponseVM>>(response)
+        );
+        ViewModelsTestData.CheckScoringCategoryResponseVMs(
+            [expected, expectedStars],
+            await ReadAsync<List<ScoringCategoryResponseVM>>(
+                await Client.GetAsync($"{ScytheUrl}/ScoringCategories")
+            )
+        );
+    }
+
+    [Fact]
+    public async Task ReorderScoringCategoriesWithIncompleteListReturnsUnprocessableTest()
+    {
+        var response = await PutAsync(
+            $"{ScytheUrl}/ScoringCategories/Order",
+            new List<Guid> { CommonTestData.Guid1 }
+        );
+
+        await AssertProblemAsync(response, 422, "BusinessRuleException");
+    }
+
+    [Fact]
+    public async Task ReorderScoringCategoriesOfUnknownBoardGameReturnsNotFoundTest()
+    {
+        var response = await PutAsync($"{UnknownUrl}/ScoringCategories/Order", new List<Guid>());
+
+        await AssertProblemAsync(response, 404, "EntityNotFoundException");
+    }
+
     // DELETE /BoardGames/{id}
 
     [Fact]
@@ -324,6 +395,10 @@ public class BoardGamesControllerTests : IntegrationTestBase
             HttpStatusCode.NotFound,
             (await Client.GetAsync($"/PlaySessions/{CommonTestData.Guid1}")).StatusCode
         );
+        var categories = await ReadAsync<ScoringCategoriesResponseVM>(
+            await Client.GetAsync("/ScoringCategories")
+        );
+        Assert.Empty(categories.Items);
     }
 
     [Fact]

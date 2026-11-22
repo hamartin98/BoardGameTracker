@@ -3,6 +3,7 @@ using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Services;
 using BoardGameTracker.TestData;
 using BoardGameTracker.TestData.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.UnitTests.ServiceTests;
 
@@ -11,6 +12,20 @@ public class PlayerScoreServiceTests
     private readonly TestDbContextFactory ContextFactory = new();
 
     private async Task SeedAsync(params PlayerScore[] scores)
+    {
+        using (var context = ContextFactory.Create())
+        {
+            context.ScoringCategories.AddRange(
+                ModelsTestData.ScytheStars,
+                ModelsTestData.ScytheTerritories,
+                ModelsTestData.FenrisBonus
+            );
+            await context.SaveChangesAsync();
+        }
+        await SeedWithoutCategoriesAsync(scores);
+    }
+
+    private async Task SeedWithoutCategoriesAsync(params PlayerScore[] scores)
     {
         using var context = ContextFactory.Create();
         context.BoardGames.Add(ModelsTestData.Scythe);
@@ -33,7 +48,114 @@ public class PlayerScoreServiceTests
         var created = await CreateService()
             .CreateAsync(ModelsTestData.AliceScytheScoreCreate, CancellationToken.None);
 
-        ModelsTestData.CheckPlayerScore(ModelsTestData.AliceScytheScoreCreate, created);
+        ModelsTestData.CheckPlayerScore(ModelsTestData.AliceScytheScore, created);
+    }
+
+    [Fact]
+    public async Task CreateWithMissingCategoryThrowsTest()
+    {
+        await SeedAsync();
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .CreateAsync(
+                    ModelsTestData.AliceScytheScoreMissingCategoryCreate,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task CreateWithUnknownCategoryThrowsNotFoundTest()
+    {
+        await SeedAsync();
+
+        await Assert.ThrowsAsync<EntityNotFoundException<ScoringCategory>>(() =>
+            CreateService()
+                .CreateAsync(
+                    ModelsTestData.AliceScytheScoreUnknownCategoryCreate,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task CreateWithCategoryOfAnotherGameThrowsTest()
+    {
+        await SeedAsync();
+        using (var context = ContextFactory.Create())
+        {
+            // Fenris is not a used expansion of this session
+            var session = context.PlaySessions.Include(e => e.UsedExpansions).Single();
+            session.UsedExpansions.Clear();
+            await context.SaveChangesAsync();
+        }
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .CreateAsync(ModelsTestData.AliceScytheScoreCreate, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task CreateWithoutCategoriesInGameWithoutCategoriesHasNoScoreTest()
+    {
+        await SeedWithoutCategoriesAsync();
+
+        var created = await CreateService()
+            .CreateAsync(ModelsTestData.AliceScoreWithoutCategoriesCreate, CancellationToken.None);
+
+        Assert.Null(created.Score);
+        Assert.Empty(created.CategoryScores);
+    }
+
+    [Fact]
+    public async Task UpdateWithoutCategoriesKeepsRecordedTotalTest()
+    {
+        await SeedWithoutCategoriesAsync(ModelsTestData.AliceLegacyScytheScore);
+
+        var updated = await CreateService()
+            .UpdateAsync(
+                ModelsTestData.AliceScoreWithoutCategoriesUpdate,
+                ModelsTestData.AliceScytheScore.Id,
+                1,
+                CancellationToken.None
+            );
+
+        Assert.Equal(ModelsTestData.AliceLegacyScytheScore.Score, updated.Score);
+        Assert.Equal(2, updated.Version);
+    }
+
+    [Fact]
+    public async Task UpdateLegacyScoreInGameWithCategoriesRequiresCategoriesTest()
+    {
+        await SeedAsync(ModelsTestData.AliceLegacyScytheScore);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CreateService()
+                .UpdateAsync(
+                    ModelsTestData.AliceScoreWithoutCategoriesUpdate,
+                    ModelsTestData.AliceScytheScore.Id,
+                    1,
+                    CancellationToken.None
+                )
+        );
+    }
+
+    [Fact]
+    public async Task UpdateWithSameCategoryScoresKeepsVersionTest()
+    {
+        await SeedAsync(ModelsTestData.AliceScytheScore);
+
+        var updated = await CreateService()
+            .UpdateAsync(
+                ModelsTestData.AliceScytheScoreCreate,
+                ModelsTestData.AliceScytheScore.Id,
+                1,
+                CancellationToken.None
+            );
+
+        Assert.Equal(1, updated.Version);
     }
 
     [Fact]
@@ -112,9 +234,7 @@ public class PlayerScoreServiceTests
                 CancellationToken.None
             );
 
-        Assert.Equal(ModelsTestData.AliceScytheScore.PlayerId, updated.PlayerId);
-        Assert.Equal(ModelsTestData.AliceScytheScore.SessionId, updated.SessionId);
-        Assert.Equal(ModelsTestData.AliceScytheScoreUpdate.Score, updated.Score);
+        ModelsTestData.CheckPlayerScore(ModelsTestData.AliceScytheScoreUpdated, updated);
         Assert.Equal(2, updated.Version);
     }
 

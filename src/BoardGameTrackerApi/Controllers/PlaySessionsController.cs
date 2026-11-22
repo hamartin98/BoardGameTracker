@@ -84,4 +84,21 @@ public class PlaySessionsController(IMapper mapper, IPlaySessionService playSess
         var result = await playSessionService.GetPlayerScoresAsync(id, cancellationToken);
         return Ok(Mapper.Map<List<PlayerScoreResponseVM>>(result));
     }
+
+    /// <summary>
+    /// Get the scoring categories of the given play session: the board game's, then each used expansion's
+    /// </summary>
+    /// <param name="id">Play session id</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    [HttpGet("{id}/ScoringCategories")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Description = "Entities successfully retrieved")]
+    public async Task<ActionResult<List<ScoringCategoryResponseVM>>> GetScoringCategories(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await playSessionService.GetScoringCategoriesAsync(id, cancellationToken);
+        return Ok(Mapper.Map<List<ScoringCategoryResponseVM>>(result));
+    }
 }

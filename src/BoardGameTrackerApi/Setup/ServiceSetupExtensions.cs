@@ -12,6 +12,7 @@ internal static class ServiceSetupExtensions
         services.AddTransient<IPlayerService, PlayerService>();
         services.AddTransient<IPlayerScoreService, PlayerScoreService>();
         services.AddTransient<IPlaySessionService, PlaySessionService>();
+        services.AddTransient<IScoringCategoryService, ScoringCategoryService>();
         return services;
     }
 }

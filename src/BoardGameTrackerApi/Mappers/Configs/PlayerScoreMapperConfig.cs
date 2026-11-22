@@ -9,15 +9,38 @@ namespace BoardGameTracker.Mappers;
 
 public class PlayerScoreMapperConfig : IRegister
 {
+    private static TypeAdapterSetter<TSource, PlayerScore> MapRequestFields<TSource>(
+        TypeAdapterSetter<TSource, PlayerScore> setter
+    )
+        where TSource : PlayerScoreBaseVM
+    {
+        // The get-only CategoryScores collection is filled after mapping
+        return setter
+            .IgnoreEntityMetadata()
+            .Ignore(dest => dest.Score, dest => dest.CategoryScores)
+            .AfterMapping(
+                (src, dest) =>
+                {
+                    foreach (CategoryScoreVM categoryScore in src.CategoryScores)
+                    {
+                        dest.CategoryScores.Add(
+                            new()
+                            {
+                                ScoringCategoryId = categoryScore.ScoringCategoryId,
+                                Value = categoryScore.Value,
+                            }
+                        );
+                    }
+                }
+            );
+    }
+
     public void Register(TypeAdapterConfig config)
     {
-        config
-            .NewConfig<PlayerScoreCreateVM, PlayerScore>()
-            .IgnoreEntityMetadata()
+        config.NewConfig<CategoryScore, CategoryScoreVM>();
+        MapRequestFields(config.NewConfig<PlayerScoreCreateVM, PlayerScore>())
             .Ignore(dest => dest.Player, dest => dest.Session);
-        config
-            .NewConfig<PlayerScoreUpdateVM, PlayerScore>()
-            .IgnoreEntityMetadata()
+        MapRequestFields(config.NewConfig<PlayerScoreUpdateVM, PlayerScore>())
             .Ignore(
                 dest => dest.Player,
                 dest => dest.Session,
