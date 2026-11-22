@@ -26,7 +26,7 @@ dotnet csharpier format <files>                    # only the files you changed;
 
 EF Core migrations (separate `Migrations` project, needs Postgres): use the `ef-migration` skill.
 
-To run the API and check endpoints with curl, use the `smoke-test-api` skill (port 5135 is fixed by `launchSettings.json`).
+To check real HTTP behavior of endpoints, use the `smoke-test-api` skill: checks are written and run as integration tests against the in-memory API, with no server to start.
 
 Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Dockerfile .`, then run with `-e DatabaseType=IN_MEMORY -p 8080:8080`.
 
