@@ -28,9 +28,9 @@ public class BoardGame : NamedEntity
     public required byte MaxPlayerCount { get; set; }
 
     /// <summary>
-    /// Optional URL for BoardGameGeek page
+    /// Optional BoardGameGeek id
     /// </summary>
-    public string? BggUrl { get; set; }
+    public int? BggId { get; set; }
 
     /// <summary>
     /// Type of the board game

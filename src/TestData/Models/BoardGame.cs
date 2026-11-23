@@ -113,7 +113,7 @@ public partial class ModelsTestData
         Assert.Equal(expected.MaxPlayerCount, actual.MaxPlayerCount);
         Assert.Equal(expected.MinPlayTime, actual.MinPlayTime);
         Assert.Equal(expected.MaxPlayTime, actual.MaxPlayTime);
-        Assert.Equal(expected.BggUrl, actual.BggUrl);
+        Assert.Equal(expected.BggId, actual.BggId);
         Assert.Equal(expected.Categories, actual.Categories);
         Assert.Equal(expected.Type, actual.Type);
         CommonTestData.CheckNullableProperty(expected.ExpansionOfId, actual.ExpansionOfId);

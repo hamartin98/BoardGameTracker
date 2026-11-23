@@ -17,7 +17,7 @@ public partial class ViewModelsTestData
                 MaxPlayerCount = 5,
                 MinPlayTime = new TimeSpan(1, 55, 0),
                 MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl = "https://boardgamegeek.com/boardgame/169786/scythe",
+                BggId = 169786,
                 Categories =
                 [
                     BoardGameCategoryVM.EXPLORATION,
@@ -41,8 +41,7 @@ public partial class ViewModelsTestData
                 MaxPlayerCount = 5,
                 MinPlayTime = new TimeSpan(1, 55, 0),
                 MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl =
-                    "https://boardgamegeek.com/boardgameexpansion/242277/scythe-the-rise-of-fenris",
+                BggId = 242277,
                 Categories =
                 [
                     BoardGameCategoryVM.EXPLORATION,
@@ -66,8 +65,7 @@ public partial class ViewModelsTestData
                 MaxPlayerCount = 5,
                 MinPlayTime = new TimeSpan(1, 55, 0),
                 MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl =
-                    "https://boardgamegeek.com/boardgameexpansion/242277/scythe-the-rise-of-fenris",
+                BggId = 242277,
                 Categories =
                 [
                     BoardGameCategoryVM.EXPLORATION,
@@ -90,7 +88,7 @@ public partial class ViewModelsTestData
                 MaxPlayerCount = 4,
                 MinPlayTime = new TimeSpan(0, 30, 0),
                 MaxPlayTime = new TimeSpan(0, 45, 0),
-                BggUrl = "https://boardgamegeek.com/boardgame/230802/azul",
+                BggId = 230802,
                 Categories = [BoardGameCategoryVM.ABSTRACT],
                 Type = BoardGameTypeVM.BASE_GAME,
             };
@@ -107,7 +105,7 @@ public partial class ViewModelsTestData
                 MaxPlayerCount = 4,
                 MinPlayTime = new TimeSpan(0, 30, 0),
                 MaxPlayTime = new TimeSpan(0, 45, 0),
-                BggUrl = "https://boardgamegeek.com/boardgame/230802/azul",
+                BggId = 230802,
                 Categories = [BoardGameCategoryVM.ABSTRACT],
                 Type = BoardGameTypeVM.BASE_GAME,
             };
@@ -136,12 +134,12 @@ public partial class ViewModelsTestData
         }
     }
 
-    public static BoardGameCreateVM AzulWithoutBggUrlCreateVM
+    public static BoardGameCreateVM AzulWithoutBggIdCreateVM
     {
         get
         {
             var boardGame = AzulCreateVM;
-            boardGame.BggUrl = null;
+            boardGame.BggId = null;
             return boardGame;
         }
     }
@@ -196,12 +194,12 @@ public partial class ViewModelsTestData
         }
     }
 
-    public static BoardGameCreateVM AzulInvalidBggUrlCreateVM
+    public static BoardGameCreateVM AzulInvalidBggIdCreateVM
     {
         get
         {
             var boardGame = AzulCreateVM;
-            boardGame.BggUrl = "boardgamegeek.com";
+            boardGame.BggId = 0;
             return boardGame;
         }
     }
@@ -215,7 +213,7 @@ public partial class ViewModelsTestData
             boardGame.MaxPlayTime = new TimeSpan(0, 1, 0);
             boardGame.MinPlayerCount = 101;
             boardGame.MaxPlayerCount = 0;
-            boardGame.BggUrl = "boardgamegeek.com";
+            boardGame.BggId = 0;
             return boardGame;
         }
     }
@@ -303,7 +301,7 @@ public partial class ViewModelsTestData
                 MaxPlayerCount = 7,
                 MinPlayTime = new TimeSpan(1, 30, 0),
                 MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl = "https://boardgamegeek.com/boardgame/169786/scythe",
+                BggId = 169786,
                 Categories = [BoardGameCategoryVM.ECONOMIC],
             };
     }
@@ -319,7 +317,7 @@ public partial class ViewModelsTestData
                 MaxPlayerCount = 7,
                 MinPlayTime = new TimeSpan(1, 30, 0),
                 MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl = "https://boardgamegeek.com/boardgame/169786/scythe",
+                BggId = 169786,
                 Categories = [BoardGameCategoryVM.ECONOMIC],
                 Type = BoardGameTypeVM.BASE_GAME,
             };
@@ -365,7 +363,7 @@ public partial class ViewModelsTestData
         Assert.Equal(expected.MaxPlayerCount, actual.MaxPlayerCount);
         Assert.Equal(expected.MinPlayTime, actual.MinPlayTime);
         Assert.Equal(expected.MaxPlayTime, actual.MaxPlayTime);
-        Assert.Equal(expected.BggUrl, actual.BggUrl);
+        Assert.Equal(expected.BggId, actual.BggId);
         Assert.Equal(expected.Categories.Count, actual.Categories.Count);
         foreach (var category in expected.Categories)
         {

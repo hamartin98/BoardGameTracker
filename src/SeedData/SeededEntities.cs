@@ -19,7 +19,7 @@ public static class SeededEntities
                 MaxPlayerCount = 5,
                 MinPlayTime = new TimeSpan(1, 55, 0),
                 MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl = "https://boardgamegeek.com/boardgame/169786/scythe",
+                BggId = 169786,
                 Categories =
                     BoardGameCategory.EXPLORATION
                     | BoardGameCategory.FIGHTING
@@ -41,8 +41,7 @@ public static class SeededEntities
                 MaxPlayerCount = 5,
                 MinPlayTime = new TimeSpan(1, 55, 0),
                 MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl =
-                    "https://boardgamegeek.com/boardgameexpansion/242277/scythe-the-rise-of-fenris",
+                BggId = 242277,
                 Categories =
                     BoardGameCategory.EXPLORATION
                     | BoardGameCategory.FIGHTING
