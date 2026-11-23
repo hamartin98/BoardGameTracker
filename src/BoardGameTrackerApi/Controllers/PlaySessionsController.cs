@@ -1,4 +1,5 @@
 using BoardGameTracker.Interfaces.Services;
+using BoardGameTracker.Models.Commands;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
 using BoardGameTracker.ViewModels;
@@ -13,6 +14,8 @@ public class PlaySessionsController(IMapper mapper, IPlaySessionService playSess
     : CrudController<
         PlaySession,
         PlaySessionFilter,
+        CreatePlaySessionCommand,
+        UpdatePlaySessionCommand,
         PlaySessionCreateVM,
         PlaySessionUpdateVM,
         PlaySessionResponseVM,
@@ -21,38 +24,12 @@ public class PlaySessionsController(IMapper mapper, IPlaySessionService playSess
     >(mapper, playSessionService)
 {
     /// <summary>
-    /// Start a play session now; the start time is set to the current UTC time
-    /// </summary>
-    /// <param name="startVM">Start request body</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    [HttpPost("Start")]
-    [Consumes("application/json")]
-    [Produces("application/json")]
-    [ProducesResponseType(
-        StatusCodes.Status201Created,
-        Description = "Play session successfully started"
-    )]
-    public async Task<ActionResult<PlaySessionResponseVM>> Start(
-        [FromBody] PlaySessionStartVM startVM,
-        CancellationToken cancellationToken
-    )
-    {
-        PlaySession model = Mapper.Map<PlaySession>(startVM);
-        PlaySession result = await playSessionService.StartAsync(model, cancellationToken);
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = result.Id },
-            Mapper.Map<PlaySessionResponseVM>(result)
-        );
-    }
-
-    /// <summary>
     /// Finish a play session; the duration is set to the time elapsed since its start
     /// </summary>
     /// <param name="id">Id of the play session to finish</param>
-    /// <param name="version">Version of the play session for concurrency check</param>
+    /// <param name="ifMatch">ETag of the play session for the concurrency check</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpPost("{id}/Finish")]
+    [HttpPost("{id:guid}/finish")]
     [Produces("application/json")]
     [ProducesResponseType(
         StatusCodes.Status200OK,
@@ -60,11 +37,13 @@ public class PlaySessionsController(IMapper mapper, IPlaySessionService playSess
     )]
     public async Task<ActionResult<PlaySessionResponseVM>> Finish(
         [FromRoute] Guid id,
-        [FromQuery] int version,
+        [FromHeader(Name = "If-Match")] string? ifMatch,
         CancellationToken cancellationToken
     )
     {
+        int version = EntityTags.ParseIfMatch(ifMatch);
         PlaySession result = await playSessionService.FinishAsync(id, version, cancellationToken);
+        Response.SetETag(result);
         return Ok(Mapper.Map<PlaySessionResponseVM>(result));
     }
 
@@ -73,7 +52,7 @@ public class PlaySessionsController(IMapper mapper, IPlaySessionService playSess
     /// </summary>
     /// <param name="id">Play session id</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpGet("{id}/PlayerScores")]
+    [HttpGet("{id:guid}/player-scores")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Description = "Entities successfully retrieved")]
     public async Task<ActionResult<List<PlayerScoreResponseVM>>> GetPlayerScores(
@@ -90,7 +69,7 @@ public class PlaySessionsController(IMapper mapper, IPlaySessionService playSess
     /// </summary>
     /// <param name="id">Play session id</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpGet("{id}/ScoringCategories")]
+    [HttpGet("{id:guid}/scoring-categories")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Description = "Entities successfully retrieved")]
     public async Task<ActionResult<List<ScoringCategoryResponseVM>>> GetScoringCategories(

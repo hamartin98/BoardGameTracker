@@ -40,7 +40,7 @@ public partial class ViewModelsTestData
             };
     }
 
-    public static PlaySessionStartVM ScytheSessionStartVM
+    public static PlaySessionCreateVM ScytheSessionStartVM
     {
         get =>
             new()
@@ -51,7 +51,18 @@ public partial class ViewModelsTestData
                 StartPlayerId = CommonTestData.Guid1,
                 SessionType = PlaySessionTypeVM.COMPETITIVE,
                 Notes = "First game",
+                StartNow = true,
             };
+    }
+
+    public static PlaySessionCreateVM ScytheSessionStartNowWithStartTimeVM
+    {
+        get
+        {
+            var session = ScytheSessionStartVM;
+            session.StartTime = CommonTestData.DateTime;
+            return session;
+        }
     }
 
     public static PlaySessionUpdateVM ScytheSessionUpdateVM
@@ -206,7 +217,7 @@ public partial class ViewModelsTestData
         }
     }
 
-    public static PlaySessionStartVM ScytheSessionRandomStartPlayerStartVM
+    public static PlaySessionCreateVM ScytheSessionRandomStartPlayerStartVM
     {
         get
         {
@@ -217,7 +228,7 @@ public partial class ViewModelsTestData
         }
     }
 
-    public static PlaySessionStartVM ScytheSessionRandomAndFixedStartPlayerStartVM
+    public static PlaySessionCreateVM ScytheSessionRandomAndFixedStartPlayerStartVM
     {
         get
         {
@@ -247,7 +258,7 @@ public partial class ViewModelsTestData
         }
     }
 
-    public static PlaySessionStartVM ScytheSessionWithStartPlayerNotPlayingStartVM
+    public static PlaySessionCreateVM ScytheSessionWithStartPlayerNotPlayingStartVM
     {
         get
         {
@@ -257,7 +268,7 @@ public partial class ViewModelsTestData
         }
     }
 
-    public static PlaySessionStartVM FenrisSessionStartVM
+    public static PlaySessionCreateVM FenrisSessionStartVM
     {
         get
         {

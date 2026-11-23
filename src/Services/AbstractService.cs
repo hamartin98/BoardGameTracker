@@ -8,16 +8,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Services;
 
-public abstract class AbstractService<EntityType, FilterType> : ICrudService<EntityType, FilterType>
+/// <summary>
+/// CRUD service whose create and update take their own input types, holding the entity's values
+/// </summary>
+public abstract class AbstractService<EntityType, FilterType, CreateType, UpdateType>
+    : ICrudService<EntityType, FilterType, CreateType, UpdateType>
     where EntityType : AbstractEntity
     where FilterType : AbstractFilter<EntityType>
+    where CreateType : class
+    where UpdateType : class
 {
     protected readonly BoardGameContext Context;
 
-    public AbstractService(BoardGameContext context)
+    protected AbstractService(BoardGameContext context)
     {
         Context = context;
     }
+
+    /// <summary>
+    /// Entity to store from a create input
+    /// </summary>
+    protected abstract EntityType GetCreateValues(CreateType model);
+
+    /// <summary>
+    /// Values to apply to the stored entity from an update input
+    /// </summary>
+    protected abstract EntityType GetUpdateValues(UpdateType model);
 
     public virtual async Task<EntityType> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -27,18 +43,20 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     }
 
     public virtual async Task<EntityType> CreateAsync(
-        EntityType model,
+        CreateType model,
         CancellationToken cancellationToken
     )
     {
         await ValidateCreateAsync(model, cancellationToken);
-        var entity = await Context.Set<EntityType>().AddAsync(model, cancellationToken);
+        var entity = await Context
+            .Set<EntityType>()
+            .AddAsync(GetCreateValues(model), cancellationToken);
         await Context.SaveChangesAsync(cancellationToken);
         return entity.Entity;
     }
 
     public virtual async Task<EntityType> UpdateAsync(
-        EntityType model,
+        UpdateType model,
         Guid id,
         int version,
         CancellationToken cancellationToken
@@ -50,13 +68,14 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
         await ValidateUpdateAsync(entity, model, cancellationToken);
 
         // Keep stored metadata; the interceptors update Version and UpdatedAt on save
-        model.Id = entity.Id;
-        model.CreatedAt = entity.CreatedAt;
-        model.UpdatedAt = entity.UpdatedAt;
-        model.Version = entity.Version;
-        model.IsDeleted = entity.IsDeleted;
+        EntityType values = GetUpdateValues(model);
+        values.Id = entity.Id;
+        values.CreatedAt = entity.CreatedAt;
+        values.UpdatedAt = entity.UpdatedAt;
+        values.Version = entity.Version;
+        values.IsDeleted = entity.IsDeleted;
 
-        Context.Entry(entity).CurrentValues.SetValues(model);
+        Context.Entry(entity).CurrentValues.SetValues(values);
         await UpdateRelationsAsync(entity, model, cancellationToken);
         await SaveVersionedChangesAsync(cancellationToken);
 
@@ -166,7 +185,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     /// Runs before a new entity is saved
     /// </summary>
     protected virtual Task ValidateCreateAsync(
-        EntityType model,
+        CreateType model,
         CancellationToken cancellationToken
     )
     {
@@ -178,7 +197,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     /// </summary>
     protected virtual Task ValidateUpdateAsync(
         EntityType existing,
-        EntityType model,
+        UpdateType model,
         CancellationToken cancellationToken
     )
     {
@@ -190,7 +209,7 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     /// </summary>
     protected virtual Task UpdateRelationsAsync(
         EntityType existing,
-        EntityType model,
+        UpdateType model,
         CancellationToken cancellationToken
     )
     {
@@ -222,5 +241,28 @@ public abstract class AbstractService<EntityType, FilterType> : ICrudService<Ent
     )
     {
         return LoadRelations(entity, cancellationToken);
+    }
+}
+
+/// <summary>
+/// CRUD service whose create and update take the entity itself
+/// </summary>
+public abstract class AbstractService<EntityType, FilterType>
+    : AbstractService<EntityType, FilterType, EntityType, EntityType>,
+        ICrudService<EntityType, FilterType>
+    where EntityType : AbstractEntity
+    where FilterType : AbstractFilter<EntityType>
+{
+    protected AbstractService(BoardGameContext context)
+        : base(context) { }
+
+    protected override EntityType GetCreateValues(EntityType model)
+    {
+        return model;
+    }
+
+    protected override EntityType GetUpdateValues(EntityType model)
+    {
+        return model;
     }
 }

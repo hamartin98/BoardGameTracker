@@ -30,7 +30,7 @@ try
     builder.Services.AddExceptionHandler<ExceptionHandler>();
     builder.Services.AddProblemDetails();
 
-    builder.Services.AddMvc(options => options.SetupFilters());
+    builder.Services.AddMvc(options => options.SetupProblemResponses());
 
     var app = builder.Build();
 

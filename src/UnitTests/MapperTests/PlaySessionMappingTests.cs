@@ -1,4 +1,4 @@
-using BoardGameTracker.Models.Entities;
+using BoardGameTracker.Models.Commands;
 using BoardGameTracker.Models.Filters;
 using BoardGameTracker.TestData.Models;
 using BoardGameTracker.TestData.ViewModels;
@@ -19,35 +19,35 @@ public partial class MappingTests
     }
 
     [Fact]
-    public void PlaySessionCreateToModelMappingTest()
+    public void PlaySessionCreateToCommandMappingTest()
     {
         var expected = ModelsTestData.ScytheSessionCreate;
 
-        var actual = Mapper.Map<PlaySession>(ViewModelsTestData.ScytheSessionCreateVM);
+        var actual = Mapper.Map<CreatePlaySessionCommand>(ViewModelsTestData.ScytheSessionCreateVM);
 
-        ModelsTestData.CheckPlaySession(expected, actual);
+        ModelsTestData.CheckCreatePlaySessionCommand(expected, actual);
     }
 
     [Fact]
-    public void PlaySessionRandomStartPlayerCreateToModelMappingTest()
+    public void PlaySessionRandomStartPlayerCreateToCommandMappingTest()
     {
         var expected = ModelsTestData.ScytheSessionRandomStartPlayer;
 
-        var actual = Mapper.Map<PlaySession>(
+        var actual = Mapper.Map<CreatePlaySessionCommand>(
             ViewModelsTestData.ScytheSessionRandomStartPlayerCreateVM
         );
 
-        ModelsTestData.CheckPlaySession(expected, actual);
+        ModelsTestData.CheckCreatePlaySessionCommand(expected, actual);
     }
 
     [Fact]
-    public void PlaySessionUpdateToModelMappingTest()
+    public void PlaySessionUpdateToCommandMappingTest()
     {
         var expected = ModelsTestData.ScytheSessionWithoutExpansions;
 
-        var actual = Mapper.Map<PlaySession>(ViewModelsTestData.ScytheSessionUpdateVM);
+        var actual = Mapper.Map<UpdatePlaySessionCommand>(ViewModelsTestData.ScytheSessionUpdateVM);
 
-        ModelsTestData.CheckPlaySession(expected, actual);
+        ModelsTestData.CheckUpdatePlaySessionCommand(expected, actual);
     }
 
     [Fact]
@@ -61,19 +61,12 @@ public partial class MappingTests
     }
 
     [Fact]
-    public void PlaySessionStartToModelMappingTest()
+    public void PlaySessionStartToCommandMappingTest()
     {
         var expected = ModelsTestData.ScytheSessionStart;
 
-        var actual = Mapper.Map<PlaySession>(ViewModelsTestData.ScytheSessionStartVM);
+        var actual = Mapper.Map<CreatePlaySessionCommand>(ViewModelsTestData.ScytheSessionStartVM);
 
-        ModelsTestData.CheckPlaySession(expected, actual);
-    }
-
-    [Fact]
-    public void PlaySessionStartVMHasNoStartTimeOrDurationTest()
-    {
-        Assert.Null(typeof(PlaySessionStartVM).GetProperty(nameof(PlaySessionCreateVM.StartTime)));
-        Assert.Null(typeof(PlaySessionStartVM).GetProperty(nameof(PlaySessionCreateVM.Duration)));
+        ModelsTestData.CheckCreatePlaySessionCommand(expected, actual);
     }
 }

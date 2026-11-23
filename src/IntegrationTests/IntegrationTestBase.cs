@@ -37,6 +37,39 @@ public abstract class IntegrationTestBase : IDisposable
         return Client.PutAsJsonAsync(url, body, JsonOptions);
     }
 
+    /// <summary>
+    /// PUT with the If-Match header set to the ETag of the given version
+    /// </summary>
+    protected Task<HttpResponseMessage> PutAsync<T>(string url, int version, T body)
+    {
+        return SendAsync(
+            new(HttpMethod.Put, url) { Content = JsonContent.Create(body, options: JsonOptions) },
+            version
+        );
+    }
+
+    /// <summary>
+    /// DELETE with the If-Match header set to the ETag of the given version
+    /// </summary>
+    protected Task<HttpResponseMessage> DeleteAsync(string url, int version)
+    {
+        return SendAsync(new(HttpMethod.Delete, url), version);
+    }
+
+    /// <summary>
+    /// POST without a body, with the If-Match header set to the ETag of the given version
+    /// </summary>
+    protected Task<HttpResponseMessage> PostEmptyAsync(string url, int version)
+    {
+        return SendAsync(new(HttpMethod.Post, url), version);
+    }
+
+    private Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, int version)
+    {
+        request.Headers.IfMatch.Add(new($"\"{version}\""));
+        return Client.SendAsync(request);
+    }
+
     protected static async Task<T> ReadAsync<T>(HttpResponseMessage response)
     {
         T? result = await response.Content.ReadFromJsonAsync<T>(JsonOptions);

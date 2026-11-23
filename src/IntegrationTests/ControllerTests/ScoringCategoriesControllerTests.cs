@@ -7,16 +7,16 @@ namespace BoardGameTracker.IntegrationTests.ControllerTests;
 
 public class ScoringCategoriesControllerTests : IntegrationTestBase
 {
-    private static readonly string StarsUrl = $"/ScoringCategories/{CommonTestData.Guid1}";
-    private static readonly string TerritoriesUrl = $"/ScoringCategories/{CommonTestData.Guid2}";
-    private static readonly string UnknownUrl = $"/ScoringCategories/{Guid.Empty}";
+    private static readonly string StarsUrl = $"/scoring-categories/{CommonTestData.Guid1}";
+    private static readonly string TerritoriesUrl = $"/scoring-categories/{CommonTestData.Guid2}";
+    private static readonly string UnknownUrl = $"/scoring-categories/{Guid.Empty}";
 
-    // GET /ScoringCategories
+    // GET /scoring-categories
 
     [Fact]
     public async Task GetAllReturnsSeededScoringCategoriesTest()
     {
-        var response = await Client.GetAsync("/ScoringCategories?orderBy=id");
+        var response = await Client.GetAsync("/scoring-categories?orderBy=id");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var page = await ReadAsync<ScoringCategoriesResponseVM>(response);
@@ -48,7 +48,7 @@ public class ScoringCategoriesControllerTests : IntegrationTestBase
     [MemberData(nameof(FilterCases))]
     public async Task GetAllFiltersTest(string query, Guid[] expectedIds)
     {
-        var response = await Client.GetAsync($"/ScoringCategories?{query}");
+        var response = await Client.GetAsync($"/scoring-categories?{query}");
 
         var page = await ReadAsync<ScoringCategoriesResponseVM>(response);
         Assert.Equal(expectedIds, page.Items.Select(e => e.MetaData.Id));
@@ -57,12 +57,12 @@ public class ScoringCategoriesControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllWithUnknownOrderByReturnsBadRequestTest()
     {
-        var response = await Client.GetAsync("/ScoringCategories?orderBy=nope");
+        var response = await Client.GetAsync("/scoring-categories?orderBy=nope");
 
         await AssertProblemAsync(response, 400, "InvalidOrderByException");
     }
 
-    // GET /ScoringCategories/{id}
+    // GET /scoring-categories/{id}
 
     [Fact]
     public async Task GetByIdReturnsScoringCategoryTest()
@@ -84,13 +84,13 @@ public class ScoringCategoriesControllerTests : IntegrationTestBase
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // POST /ScoringCategories
+    // POST /scoring-categories
 
     [Fact]
     public async Task CreateAppendsToScoringOrderTest()
     {
         var response = await PostAsync(
-            "/ScoringCategories",
+            "/scoring-categories",
             ViewModelsTestData.ScytheResourcesCreateVM
         );
 
@@ -114,7 +114,7 @@ public class ScoringCategoriesControllerTests : IntegrationTestBase
     public async Task CreateWithDuplicateNameReturnsUnprocessableTest()
     {
         var response = await PostAsync(
-            "/ScoringCategories",
+            "/scoring-categories",
             ViewModelsTestData.ScytheStarsUppercaseCreateVM
         );
 
@@ -125,7 +125,7 @@ public class ScoringCategoriesControllerTests : IntegrationTestBase
     public async Task CreateForDeletedBoardGameReturnsNotFoundTest()
     {
         var response = await PostAsync(
-            "/ScoringCategories",
+            "/scoring-categories",
             ViewModelsTestData.DeletedBoardGameCategoryCreateVM
         );
 
@@ -136,22 +136,19 @@ public class ScoringCategoriesControllerTests : IntegrationTestBase
     public async Task CreateWithEmptyNameReturnsBadRequestTest()
     {
         var response = await PostAsync(
-            "/ScoringCategories",
+            "/scoring-categories",
             ViewModelsTestData.EmptyNameCategoryCreateVM
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    // PUT /ScoringCategories/{id}
+    // PUT /scoring-categories/{id}
 
     [Fact]
     public async Task UpdateTest()
     {
-        var response = await PutAsync(
-            $"{StarsUrl}?version=1",
-            ViewModelsTestData.StarTokensUpdateVM
-        );
+        var response = await PutAsync(StarsUrl, 1, ViewModelsTestData.StarTokensUpdateVM);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         ViewModelsTestData.CheckScoringCategoryResponseVM(
@@ -167,53 +164,44 @@ public class ScoringCategoriesControllerTests : IntegrationTestBase
     [Fact]
     public async Task UpdateWithDuplicateNameReturnsUnprocessableTest()
     {
-        var response = await PutAsync(
-            $"{StarsUrl}?version=1",
-            ViewModelsTestData.TerritoriesUppercaseUpdateVM
-        );
+        var response = await PutAsync(StarsUrl, 1, ViewModelsTestData.TerritoriesUppercaseUpdateVM);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
     [Fact]
-    public async Task UpdateWithStaleVersionReturnsConflictTest()
+    public async Task UpdateWithStaleVersionReturnsPreconditionFailedTest()
     {
-        var response = await PutAsync(
-            $"{StarsUrl}?version=2",
-            ViewModelsTestData.StarTokensUpdateVM
-        );
+        var response = await PutAsync(StarsUrl, 2, ViewModelsTestData.StarTokensUpdateVM);
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
     }
 
     [Fact]
     public async Task UpdateUnknownScoringCategoryReturnsNotFoundTest()
     {
-        var response = await PutAsync(
-            $"{UnknownUrl}?version=1",
-            ViewModelsTestData.StarTokensUpdateVM
-        );
+        var response = await PutAsync(UnknownUrl, 1, ViewModelsTestData.StarTokensUpdateVM);
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // DELETE /ScoringCategories/{id}
+    // DELETE /scoring-categories/{id}
 
     [Fact]
     public async Task DeleteRenumbersLaterCategoriesTest()
     {
         var created = await ReadAsync<ScoringCategoryResponseVM>(
-            await PostAsync("/ScoringCategories", ViewModelsTestData.ScytheResourcesCreateVM)
+            await PostAsync("/scoring-categories", ViewModelsTestData.ScytheResourcesCreateVM)
         );
-        await Client.DeleteAsync($"/PlayerScores/{CommonTestData.Guid1}?version=1");
-        await Client.DeleteAsync($"/PlayerScores/{CommonTestData.Guid2}?version=1");
+        await DeleteAsync($"/player-scores/{CommonTestData.Guid1}", 1);
+        await DeleteAsync($"/player-scores/{CommonTestData.Guid2}", 1);
 
-        var response = await Client.DeleteAsync($"{TerritoriesUrl}?version=1");
+        var response = await DeleteAsync(TerritoriesUrl, 1);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await Client.GetAsync(TerritoriesUrl)).StatusCode);
         var resources = await ReadAsync<ScoringCategoryResponseVM>(
-            await Client.GetAsync($"/ScoringCategories/{created.MetaData.Id}")
+            await Client.GetAsync($"/scoring-categories/{created.MetaData.Id}")
         );
         Assert.Equal(1, resources.Order);
         Assert.Equal(2, resources.MetaData.Version);
@@ -222,23 +210,23 @@ public class ScoringCategoriesControllerTests : IntegrationTestBase
     [Fact]
     public async Task DeleteCategoryWithScoresReturnsUnprocessableTest()
     {
-        var response = await Client.DeleteAsync($"{StarsUrl}?version=1");
+        var response = await DeleteAsync(StarsUrl, 1);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
     [Fact]
-    public async Task DeleteWithStaleVersionReturnsConflictTest()
+    public async Task DeleteWithStaleVersionReturnsPreconditionFailedTest()
     {
-        var response = await Client.DeleteAsync($"{StarsUrl}?version=2");
+        var response = await DeleteAsync(StarsUrl, 2);
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
     }
 
     [Fact]
     public async Task DeleteUnknownScoringCategoryReturnsNotFoundTest()
     {
-        var response = await Client.DeleteAsync($"{UnknownUrl}?version=1");
+        var response = await DeleteAsync(UnknownUrl, 1);
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }

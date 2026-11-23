@@ -1,4 +1,5 @@
 using BoardGameTracker.Models;
+using BoardGameTracker.Models.Commands;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
 using BoardGameTracker.ViewModels;
@@ -22,17 +23,13 @@ public class PlaySessionMapperConfig : IRegister
     public void Register(TypeAdapterConfig config)
     {
         MapRequestFields(config.NewConfig<PlaySessionCreateVM, PlaySession>());
-        MapRequestFields(config.NewConfig<PlaySessionUpdateVM, PlaySession>())
-            .Ignore(dest => dest.RandomStartPlayer);
+        MapRequestFields(config.NewConfig<PlaySessionUpdateVM, PlaySession>());
         config
-            .NewConfig<PlaySessionStartVM, PlaySession>()
-            .IgnoreEntityMetadata()
-            .Ignore(
-                dest => dest.BoardGame,
-                dest => dest.StartPlayer,
-                dest => dest.StartTime,
-                dest => dest.Duration
-            );
+            .NewConfig<PlaySessionCreateVM, CreatePlaySessionCommand>()
+            .Map(dest => dest.Values, src => src);
+        config
+            .NewConfig<PlaySessionUpdateVM, UpdatePlaySessionCommand>()
+            .Map(dest => dest.Values, src => src);
         config
             .NewConfig<PlaySession, PlaySessionResponseVM>()
             .Map(dest => dest.MetaData, src => src)

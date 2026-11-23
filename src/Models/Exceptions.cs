@@ -51,3 +51,15 @@ public class BusinessRuleException : Exception
     public BusinessRuleException(string message)
         : base(message) { }
 }
+
+public class PreconditionRequiredException : Exception
+{
+    public PreconditionRequiredException()
+        : base("The If-Match header with the entity's ETag is required.") { }
+}
+
+public class InvalidIfMatchException : ApplicationException
+{
+    public InvalidIfMatchException()
+        : base("If-Match must be a single entity tag such as \"3\".") { }
+}

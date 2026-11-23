@@ -9,17 +9,17 @@ public class RecommendationsControllerTests : IntegrationTestBase
 {
     private async Task<List<BoardGameRecommendationVM>> GetAsync(string query)
     {
-        var response = await Client.GetAsync($"/Recommendations?{query}");
+        var response = await Client.GetAsync($"/recommendations?{query}");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         return await ReadAsync<List<BoardGameRecommendationVM>>(response);
     }
 
     private async Task<BoardGameResponseVM> CreateBoardGameAsync(BoardGameCreateVM boardGame)
     {
-        return await ReadAsync<BoardGameResponseVM>(await PostAsync("/BoardGames", boardGame));
+        return await ReadAsync<BoardGameResponseVM>(await PostAsync("/board-games", boardGame));
     }
 
-    // GET /Recommendations
+    // GET /recommendations
 
     [Fact]
     public async Task GetForPlayerCountReturnsSeededBaseGameTest()
@@ -54,9 +54,9 @@ public class RecommendationsControllerTests : IntegrationTestBase
     [Fact]
     public async Task AveragePlayTimeUsesFinishedSessionsOfThePlayerCountTest()
     {
-        await PostAsync("/PlaySessions", ViewModelsTestData.ScytheShortTwoPlayerSessionCreateVM);
-        await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSoloSessionCreateVM);
-        await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionWithoutStartTimeCreateVM);
+        await PostAsync("/play-sessions", ViewModelsTestData.ScytheShortTwoPlayerSessionCreateVM);
+        await PostAsync("/play-sessions", ViewModelsTestData.ScytheSoloSessionCreateVM);
+        await PostAsync("/play-sessions", ViewModelsTestData.ScytheSessionWithoutStartTimeCreateVM);
 
         var twoPlayers = Assert.Single(await GetAsync("playerCount=2"));
         var solo = Assert.Single(await GetAsync("playerCount=1"));
@@ -131,7 +131,7 @@ public class RecommendationsControllerTests : IntegrationTestBase
     [InlineData("playerCount=2&limit=0")]
     public async Task InvalidQueryReturnsBadRequestTest(string query)
     {
-        var response = await Client.GetAsync($"/Recommendations?{query}");
+        var response = await Client.GetAsync($"/recommendations?{query}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

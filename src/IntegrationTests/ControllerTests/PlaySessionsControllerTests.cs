@@ -7,15 +7,15 @@ namespace BoardGameTracker.IntegrationTests.ControllerTests;
 
 public class PlaySessionsControllerTests : IntegrationTestBase
 {
-    private static readonly string ScytheSessionUrl = $"/PlaySessions/{CommonTestData.Guid1}";
-    private static readonly string UnknownUrl = $"/PlaySessions/{Guid.Empty}";
+    private static readonly string ScytheSessionUrl = $"/play-sessions/{CommonTestData.Guid1}";
+    private static readonly string UnknownUrl = $"/play-sessions/{Guid.Empty}";
 
-    // GET /PlaySessions
+    // GET /play-sessions
 
     [Fact]
     public async Task GetAllReturnsSeededPlaySessionTest()
     {
-        var response = await Client.GetAsync("/PlaySessions");
+        var response = await Client.GetAsync("/play-sessions");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var page = await ReadAsync<PlaySessionsResponseVM>(response);
@@ -46,7 +46,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [MemberData(nameof(FilterCases))]
     public async Task GetAllFiltersTest(string query, int expectedCount)
     {
-        var response = await Client.GetAsync($"/PlaySessions?{query}");
+        var response = await Client.GetAsync($"/play-sessions?{query}");
 
         var page = await ReadAsync<PlaySessionsResponseVM>(response);
         Assert.Equal(expectedCount, page.TotalCount);
@@ -56,9 +56,12 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllPagesTest()
     {
-        await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionWithoutExpansionsCreateVM);
+        await PostAsync(
+            "/play-sessions",
+            ViewModelsTestData.ScytheSessionWithoutExpansionsCreateVM
+        );
 
-        var response = await Client.GetAsync("/PlaySessions?page=1&pageSize=1&orderBy=createdAt");
+        var response = await Client.GetAsync("/play-sessions?page=1&pageSize=1&orderBy=createdAt");
 
         var page = await ReadAsync<PlaySessionsResponseVM>(response);
         Assert.Equal(2, page.TotalCount);
@@ -72,12 +75,12 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllWithUnknownOrderByReturnsBadRequestTest()
     {
-        var response = await Client.GetAsync("/PlaySessions?orderBy=nope");
+        var response = await Client.GetAsync("/play-sessions?orderBy=nope");
 
         await AssertProblemAsync(response, 400, "InvalidOrderByException");
     }
 
-    // GET /PlaySessions/{id}
+    // GET /play-sessions/{id}
 
     [Fact]
     public async Task GetByIdReturnsPlaySessionTest()
@@ -99,12 +102,12 @@ public class PlaySessionsControllerTests : IntegrationTestBase
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // GET /PlaySessions/{id}/PlayerScores
+    // GET /play-sessions/{id}/player-scores
 
     [Fact]
     public async Task GetPlayerScoresTest()
     {
-        var response = await Client.GetAsync($"{ScytheSessionUrl}/PlayerScores");
+        var response = await Client.GetAsync($"{ScytheSessionUrl}/player-scores");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var scores = await ReadAsync<List<PlayerScoreResponseVM>>(response);
@@ -122,17 +125,17 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetPlayerScoresOfUnknownPlaySessionReturnsNotFoundTest()
     {
-        var response = await Client.GetAsync($"{UnknownUrl}/PlayerScores");
+        var response = await Client.GetAsync($"{UnknownUrl}/player-scores");
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // GET /PlaySessions/{id}/ScoringCategories
+    // GET /play-sessions/{id}/scoring-categories
 
     [Fact]
     public async Task GetScoringCategoriesTest()
     {
-        var response = await Client.GetAsync($"{ScytheSessionUrl}/ScoringCategories");
+        var response = await Client.GetAsync($"{ScytheSessionUrl}/scoring-categories");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         ViewModelsTestData.CheckScoringCategoryResponseVMs(
@@ -148,17 +151,17 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetScoringCategoriesOfUnknownPlaySessionReturnsNotFoundTest()
     {
-        var response = await Client.GetAsync($"{UnknownUrl}/ScoringCategories");
+        var response = await Client.GetAsync($"{UnknownUrl}/scoring-categories");
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // POST /PlaySessions
+    // POST /play-sessions
 
     [Fact]
     public async Task CreateTest()
     {
-        var response = await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionCreateVM);
+        var response = await PostAsync("/play-sessions", ViewModelsTestData.ScytheSessionCreateVM);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = await ReadAsync<PlaySessionResponseVM>(response);
@@ -177,7 +180,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateWithNegativeDurationReturnsBadRequestTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionNegativeDurationCreateVM
         );
 
@@ -187,7 +190,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [Fact]
     public async Task CreateForExpansionReturnsUnprocessableTest()
     {
-        var response = await PostAsync("/PlaySessions", ViewModelsTestData.FenrisSessionCreateVM);
+        var response = await PostAsync("/play-sessions", ViewModelsTestData.FenrisSessionCreateVM);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -196,7 +199,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateForDeletedBoardGameReturnsNotFoundTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.DeletedBoardGameSessionCreateVM
         );
 
@@ -207,7 +210,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateWithBaseGameAsExpansionReturnsUnprocessableTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionWithBaseGameAsExpansionCreateVM
         );
 
@@ -218,7 +221,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateWithDeletedExpansionReturnsNotFoundTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionWithDeletedExpansionCreateVM
         );
 
@@ -229,7 +232,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateWithDeletedPlayerReturnsNotFoundTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionWithDeletedPlayerCreateVM
         );
 
@@ -240,7 +243,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateWithStartPlayerNotPlayingReturnsUnprocessableTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionWithStartPlayerNotPlayingCreateVM
         );
 
@@ -251,7 +254,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateWithRandomStartPlayerTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionRandomStartPlayerCreateVM
         );
 
@@ -265,7 +268,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateWithRandomAndFixedStartPlayerReturnsBadRequestTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionRandomAndFixedStartPlayerCreateVM
         );
 
@@ -276,22 +279,19 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task CreateWithRandomStartPlayerWithoutPlayersReturnsUnprocessableTest()
     {
         var response = await PostAsync(
-            "/PlaySessions",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionRandomStartPlayerWithoutPlayersCreateVM
         );
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
-    // POST /PlaySessions/Start
+    // POST /play-sessions with startNow
 
     [Fact]
     public async Task StartTest()
     {
-        var response = await PostAsync(
-            "/PlaySessions/Start",
-            ViewModelsTestData.ScytheSessionStartVM
-        );
+        var response = await PostAsync("/play-sessions", ViewModelsTestData.ScytheSessionStartVM);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var started = await ReadAsync<PlaySessionResponseVM>(response);
@@ -306,12 +306,20 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task StartForExpansionReturnsUnprocessableTest()
+    public async Task StartNowWithStartTimeReturnsBadRequestTest()
     {
         var response = await PostAsync(
-            "/PlaySessions/Start",
-            ViewModelsTestData.FenrisSessionStartVM
+            "/play-sessions",
+            ViewModelsTestData.ScytheSessionStartNowWithStartTimeVM
         );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task StartForExpansionReturnsUnprocessableTest()
+    {
+        var response = await PostAsync("/play-sessions", ViewModelsTestData.FenrisSessionStartVM);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -320,7 +328,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task StartWithRandomStartPlayerTest()
     {
         var response = await PostAsync(
-            "/PlaySessions/Start",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionRandomStartPlayerStartVM
         );
 
@@ -334,7 +342,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task StartWithRandomAndFixedStartPlayerReturnsBadRequestTest()
     {
         var response = await PostAsync(
-            "/PlaySessions/Start",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionRandomAndFixedStartPlayerStartVM
         );
 
@@ -345,30 +353,31 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task StartWithStartPlayerNotPlayingReturnsUnprocessableTest()
     {
         var response = await PostAsync(
-            "/PlaySessions/Start",
+            "/play-sessions",
             ViewModelsTestData.ScytheSessionWithStartPlayerNotPlayingStartVM
         );
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
-    // POST /PlaySessions/{id}/Finish
+    // POST /play-sessions/{id}/finish
 
     [Fact]
     public async Task FinishTest()
     {
         var started = await ReadAsync<PlaySessionResponseVM>(
-            await PostAsync("/PlaySessions/Start", ViewModelsTestData.ScytheSessionStartVM)
+            await PostAsync("/play-sessions", ViewModelsTestData.ScytheSessionStartVM)
         );
-        string url = $"/PlaySessions/{started.MetaData.Id}";
+        string url = $"/play-sessions/{started.MetaData.Id}";
         Clock.UtcNow += TimeSpan.FromMinutes(90);
 
-        var response = await Client.PostAsync($"{url}/Finish?version=1", null);
+        var response = await PostEmptyAsync($"{url}/finish", 1);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var finished = await ReadAsync<PlaySessionResponseVM>(response);
         ViewModelsTestData.CheckPlaySessionVM(ViewModelsTestData.ScytheSessionFinishedVM, finished);
         Assert.Equal(2, finished.MetaData.Version);
+        Assert.Equal("\"2\"", response.Headers.ETag?.Tag);
 
         var fetched = await ReadAsync<PlaySessionResponseVM>(await Client.GetAsync(url));
         ViewModelsTestData.CheckPlaySessionResponseVM(finished, fetched);
@@ -377,7 +386,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [Fact]
     public async Task FinishAlreadyFinishedSessionReturnsUnprocessableTest()
     {
-        var response = await Client.PostAsync($"{ScytheSessionUrl}/Finish?version=1", null);
+        var response = await PostEmptyAsync($"{ScytheSessionUrl}/finish", 1);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -387,15 +396,12 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     {
         var created = await ReadAsync<PlaySessionResponseVM>(
             await PostAsync(
-                "/PlaySessions",
+                "/play-sessions",
                 ViewModelsTestData.ScytheSessionWithoutStartTimeCreateVM
             )
         );
 
-        var response = await Client.PostAsync(
-            $"/PlaySessions/{created.MetaData.Id}/Finish?version=1",
-            null
-        );
+        var response = await PostEmptyAsync($"/play-sessions/{created.MetaData.Id}/finish", 1);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -404,40 +410,46 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task FinishSessionNotStartedYetReturnsUnprocessableTest()
     {
         var started = await ReadAsync<PlaySessionResponseVM>(
-            await PostAsync("/PlaySessions/Start", ViewModelsTestData.ScytheSessionStartVM)
+            await PostAsync("/play-sessions", ViewModelsTestData.ScytheSessionStartVM)
         );
 
-        var response = await Client.PostAsync(
-            $"/PlaySessions/{started.MetaData.Id}/Finish?version=1",
-            null
-        );
+        var response = await PostEmptyAsync($"/play-sessions/{started.MetaData.Id}/finish", 1);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
     [Fact]
-    public async Task FinishWithStaleVersionReturnsConflictTest()
+    public async Task FinishWithStaleVersionReturnsPreconditionFailedTest()
     {
-        var response = await Client.PostAsync($"{ScytheSessionUrl}/Finish?version=2", null);
+        var response = await PostEmptyAsync($"{ScytheSessionUrl}/finish", 2);
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
+    }
+
+    [Fact]
+    public async Task FinishWithoutIfMatchReturnsPreconditionRequiredTest()
+    {
+        var response = await Client.PostAsync($"{ScytheSessionUrl}/finish", null);
+
+        await AssertProblemAsync(response, 428, "PreconditionRequiredException");
     }
 
     [Fact]
     public async Task FinishUnknownPlaySessionReturnsNotFoundTest()
     {
-        var response = await Client.PostAsync($"{UnknownUrl}/Finish?version=1", null);
+        var response = await PostEmptyAsync($"{UnknownUrl}/finish", 1);
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // PUT /PlaySessions/{id}
+    // PUT /play-sessions/{id}
 
     [Fact]
     public async Task UpdateTest()
     {
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=1",
+            ScytheSessionUrl,
+            1,
             ViewModelsTestData.ScytheSessionRematchUpdateVM
         );
 
@@ -460,11 +472,12 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task UpdateOnlyExpansionsBumpsVersionTest()
     {
         var created = await ReadAsync<PlaySessionResponseVM>(
-            await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionCreateVM)
+            await PostAsync("/play-sessions", ViewModelsTestData.ScytheSessionCreateVM)
         );
 
         var response = await PutAsync(
-            $"/PlaySessions/{created.MetaData.Id}?version=1",
+            $"/play-sessions/{created.MetaData.Id}",
+            1,
             ViewModelsTestData.ScytheSessionUpdateVM
         );
 
@@ -478,11 +491,12 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task UpdateOnlyPlayersBumpsVersionTest()
     {
         var created = await ReadAsync<PlaySessionResponseVM>(
-            await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionCreateVM)
+            await PostAsync("/play-sessions", ViewModelsTestData.ScytheSessionCreateVM)
         );
 
         var response = await PutAsync(
-            $"/PlaySessions/{created.MetaData.Id}?version=1",
+            $"/play-sessions/{created.MetaData.Id}",
+            1,
             ViewModelsTestData.ScytheSessionWithoutPlayersUpdateVM
         );
 
@@ -497,7 +511,8 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task UpdateRemovingScoredExpansionReturnsUnprocessableTest()
     {
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=1",
+            ScytheSessionUrl,
+            1,
             ViewModelsTestData.ScytheSessionUpdateVM
         );
 
@@ -508,7 +523,8 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task UpdateRemovingPlayerWithScoreReturnsUnprocessableTest()
     {
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=1",
+            ScytheSessionUrl,
+            1,
             ViewModelsTestData.ScytheSessionWithoutAliceUpdateVM
         );
 
@@ -519,7 +535,8 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task UpdateWithDeletedPlayerReturnsNotFoundTest()
     {
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=1",
+            ScytheSessionUrl,
+            1,
             ViewModelsTestData.ScytheSessionWithDeletedPlayerUpdateVM
         );
 
@@ -530,7 +547,8 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task UpdateWithStartPlayerNotPlayingReturnsUnprocessableTest()
     {
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=1",
+            ScytheSessionUrl,
+            1,
             ViewModelsTestData.ScytheSessionWithStartPlayerNotPlayingUpdateVM
         );
 
@@ -538,21 +556,23 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task UpdateWithStaleVersionReturnsConflictTest()
+    public async Task UpdateWithStaleVersionReturnsPreconditionFailedTest()
     {
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=2",
+            ScytheSessionUrl,
+            2,
             ViewModelsTestData.ScytheSessionRematchUpdateVM
         );
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
     }
 
     [Fact]
     public async Task UpdateUnknownPlaySessionReturnsNotFoundTest()
     {
         var response = await PutAsync(
-            $"{UnknownUrl}?version=1",
+            UnknownUrl,
+            1,
             ViewModelsTestData.ScytheSessionRematchUpdateVM
         );
 
@@ -563,7 +583,8 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task UpdateToExpansionReturnsUnprocessableTest()
     {
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=1",
+            ScytheSessionUrl,
+            1,
             ViewModelsTestData.FenrisSessionUpdateVM
         );
 
@@ -574,44 +595,45 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     public async Task UpdateWithDeletedExpansionReturnsNotFoundTest()
     {
         var response = await PutAsync(
-            $"{ScytheSessionUrl}?version=1",
+            ScytheSessionUrl,
+            1,
             ViewModelsTestData.ScytheSessionWithDeletedExpansionUpdateVM
         );
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // DELETE /PlaySessions/{id}
+    // DELETE /play-sessions/{id}
 
     [Fact]
     public async Task DeleteCascadesToScoresTest()
     {
-        var response = await Client.DeleteAsync($"{ScytheSessionUrl}?version=1");
+        var response = await DeleteAsync(ScytheSessionUrl, 1);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await Client.GetAsync(ScytheSessionUrl)).StatusCode);
         Assert.Equal(
             HttpStatusCode.NotFound,
-            (await Client.GetAsync($"/PlayerScores/{CommonTestData.Guid1}")).StatusCode
+            (await Client.GetAsync($"/player-scores/{CommonTestData.Guid1}")).StatusCode
         );
         Assert.Equal(
             HttpStatusCode.NotFound,
-            (await Client.GetAsync($"/PlayerScores/{CommonTestData.Guid2}")).StatusCode
+            (await Client.GetAsync($"/player-scores/{CommonTestData.Guid2}")).StatusCode
         );
     }
 
     [Fact]
-    public async Task DeleteWithStaleVersionReturnsConflictTest()
+    public async Task DeleteWithStaleVersionReturnsPreconditionFailedTest()
     {
-        var response = await Client.DeleteAsync($"{ScytheSessionUrl}?version=2");
+        var response = await DeleteAsync(ScytheSessionUrl, 2);
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
     }
 
     [Fact]
     public async Task DeleteUnknownPlaySessionReturnsNotFoundTest()
     {
-        var response = await Client.DeleteAsync($"{UnknownUrl}?version=1");
+        var response = await DeleteAsync(UnknownUrl, 1);
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }

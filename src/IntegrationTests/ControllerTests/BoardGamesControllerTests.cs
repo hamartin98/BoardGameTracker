@@ -7,17 +7,17 @@ namespace BoardGameTracker.IntegrationTests.ControllerTests;
 
 public class BoardGamesControllerTests : IntegrationTestBase
 {
-    private static readonly string ScytheUrl = $"/BoardGames/{CommonTestData.Guid1}";
-    private static readonly string FenrisUrl = $"/BoardGames/{CommonTestData.Guid2}";
-    private static readonly string DeletedUrl = $"/BoardGames/{CommonTestData.DeletedGuid}";
-    private static readonly string UnknownUrl = $"/BoardGames/{Guid.Empty}";
+    private static readonly string ScytheUrl = $"/board-games/{CommonTestData.Guid1}";
+    private static readonly string FenrisUrl = $"/board-games/{CommonTestData.Guid2}";
+    private static readonly string DeletedUrl = $"/board-games/{CommonTestData.DeletedGuid}";
+    private static readonly string UnknownUrl = $"/board-games/{Guid.Empty}";
 
-    // GET /BoardGames
+    // GET /board-games
 
     [Fact]
     public async Task GetAllReturnsSeededBoardGamesTest()
     {
-        var response = await Client.GetAsync("/BoardGames");
+        var response = await Client.GetAsync("/board-games");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var page = await ReadAsync<BoardGamesResponseVM>(response);
@@ -46,7 +46,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [InlineData("createdAtTo=2000-01-01T00:00:00Z")]
     public async Task GetAllFiltersTest(string query, params string[] expectedNames)
     {
-        var response = await Client.GetAsync($"/BoardGames?{query}");
+        var response = await Client.GetAsync($"/board-games?{query}");
 
         var page = await ReadAsync<BoardGamesResponseVM>(response);
         Assert.Equal(expectedNames, page.Items.Select(e => e.Name));
@@ -55,7 +55,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllPagesTest()
     {
-        var response = await Client.GetAsync("/BoardGames?page=2&pageSize=1");
+        var response = await Client.GetAsync("/board-games?page=2&pageSize=1");
 
         var page = await ReadAsync<BoardGamesResponseVM>(response);
         Assert.Equal(2, page.Page);
@@ -70,7 +70,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllOrdersTest()
     {
-        var response = await Client.GetAsync("/BoardGames?orderBy=name&orderDirection=DESC");
+        var response = await Client.GetAsync("/board-games?orderBy=name&orderDirection=DESC");
 
         var page = await ReadAsync<BoardGamesResponseVM>(response);
         Assert.Equal(
@@ -82,12 +82,12 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllWithUnknownOrderByReturnsBadRequestTest()
     {
-        var response = await Client.GetAsync("/BoardGames?orderBy=nope");
+        var response = await Client.GetAsync("/board-games?orderBy=nope");
 
         await AssertProblemAsync(response, 400, "InvalidOrderByException");
     }
 
-    // GET /BoardGames/{id}
+    // GET /board-games/{id}
 
     [Fact]
     public async Task GetByIdReturnsBoardGameTest()
@@ -125,12 +125,12 @@ public class BoardGamesControllerTests : IntegrationTestBase
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // GET /BoardGames/{id}/Expansions
+    // GET /board-games/{id}/expansions
 
     [Fact]
     public async Task GetExpansionsTest()
     {
-        var response = await Client.GetAsync($"{ScytheUrl}/Expansions");
+        var response = await Client.GetAsync($"{ScytheUrl}/expansions");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var expansions = await ReadAsync<List<BoardGameResponseVM>>(response);
@@ -143,17 +143,17 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetExpansionsOfUnknownBoardGameReturnsNotFoundTest()
     {
-        var response = await Client.GetAsync($"{UnknownUrl}/Expansions");
+        var response = await Client.GetAsync($"{UnknownUrl}/expansions");
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // POST /BoardGames
+    // POST /board-games
 
     [Fact]
     public async Task CreateTest()
     {
-        var response = await PostAsync("/BoardGames", ViewModelsTestData.AzulCreateVM);
+        var response = await PostAsync("/board-games", ViewModelsTestData.AzulCreateVM);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = await ReadAsync<BoardGameResponseVM>(response);
@@ -170,7 +170,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task CreateExpansionTest()
     {
-        var response = await PostAsync("/BoardGames", ViewModelsTestData.ScytheInvadersCreateVM);
+        var response = await PostAsync("/board-games", ViewModelsTestData.ScytheInvadersCreateVM);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         ViewModelsTestData.CheckBoardGameResponseVM(
@@ -178,7 +178,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
             await ReadAsync<BoardGameResponseVM>(response)
         );
         var expansions = await ReadAsync<List<BoardGameResponseVM>>(
-            await Client.GetAsync($"{ScytheUrl}/Expansions")
+            await Client.GetAsync($"{ScytheUrl}/expansions")
         );
         Assert.Equal(2, expansions.Count);
     }
@@ -187,7 +187,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     public async Task CreateWithInvalidBodyReturnsBadRequestTest()
     {
         var response = await PostAsync(
-            "/BoardGames",
+            "/board-games",
             ViewModelsTestData.AzulInvalidPlayTimeCreateVM
         );
 
@@ -197,7 +197,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task CreateWithDuplicateNameReturnsUnprocessableTest()
     {
-        var response = await PostAsync("/BoardGames", ViewModelsTestData.ScytheUppercaseCreateVM);
+        var response = await PostAsync("/board-games", ViewModelsTestData.ScytheUppercaseCreateVM);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -205,7 +205,10 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task CreateExpansionOfExpansionReturnsUnprocessableTest()
     {
-        var response = await PostAsync("/BoardGames", ViewModelsTestData.ExpansionOfFenrisCreateVM);
+        var response = await PostAsync(
+            "/board-games",
+            ViewModelsTestData.ExpansionOfFenrisCreateVM
+        );
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -213,7 +216,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task CreateBaseGameWithParentReturnsUnprocessableTest()
     {
-        var response = await PostAsync("/BoardGames", ViewModelsTestData.AzulWithParentCreateVM);
+        var response = await PostAsync("/board-games", ViewModelsTestData.AzulWithParentCreateVM);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -222,19 +225,19 @@ public class BoardGamesControllerTests : IntegrationTestBase
     public async Task CreateExpansionOfDeletedGameReturnsNotFoundTest()
     {
         var response = await PostAsync(
-            "/BoardGames",
+            "/board-games",
             ViewModelsTestData.ExpansionOfDeletedGameCreateVM
         );
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // PUT /BoardGames/{id}
+    // PUT /board-games/{id}
 
     [Fact]
     public async Task UpdateTest()
     {
-        var response = await PutAsync($"{ScytheUrl}?version=1", ViewModelsTestData.ScytheUpdateVM);
+        var response = await PutAsync(ScytheUrl, 1, ViewModelsTestData.ScytheUpdateVM);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var updated = await ReadAsync<BoardGameResponseVM>(response);
@@ -249,10 +252,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task UpdateExpansionTest()
     {
-        var response = await PutAsync(
-            $"{FenrisUrl}?version=1",
-            ViewModelsTestData.ScytheFenrisUpdateVM
-        );
+        var response = await PutAsync(FenrisUrl, 1, ViewModelsTestData.ScytheFenrisUpdateVM);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var updated = await ReadAsync<BoardGameResponseVM>(response);
@@ -260,19 +260,19 @@ public class BoardGamesControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task UpdateWithStaleVersionReturnsConflictTest()
+    public async Task UpdateWithStaleVersionReturnsPreconditionFailedTest()
     {
-        await PutAsync($"{ScytheUrl}?version=1", ViewModelsTestData.ScytheUpdateVM);
+        await PutAsync(ScytheUrl, 1, ViewModelsTestData.ScytheUpdateVM);
 
-        var response = await PutAsync($"{ScytheUrl}?version=1", ViewModelsTestData.ScytheUpdateVM);
+        var response = await PutAsync(ScytheUrl, 1, ViewModelsTestData.ScytheUpdateVM);
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
     }
 
     [Fact]
     public async Task UpdateUnknownBoardGameReturnsNotFoundTest()
     {
-        var response = await PutAsync($"{UnknownUrl}?version=1", ViewModelsTestData.ScytheUpdateVM);
+        var response = await PutAsync(UnknownUrl, 1, ViewModelsTestData.ScytheUpdateVM);
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
@@ -281,7 +281,8 @@ public class BoardGamesControllerTests : IntegrationTestBase
     public async Task UpdateToTakenNameReturnsUnprocessableTest()
     {
         var response = await PutAsync(
-            $"{ScytheUrl}?version=1",
+            ScytheUrl,
+            1,
             ViewModelsTestData.ScytheRenamedToFenrisUpdateVM
         );
 
@@ -291,10 +292,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task UpdateBaseGameWithParentReturnsUnprocessableTest()
     {
-        var response = await PutAsync(
-            $"{ScytheUrl}?version=1",
-            ViewModelsTestData.ScytheWithParentUpdateVM
-        );
+        var response = await PutAsync(ScytheUrl, 1, ViewModelsTestData.ScytheWithParentUpdateVM);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -303,19 +301,20 @@ public class BoardGamesControllerTests : IntegrationTestBase
     public async Task UpdateExpansionWithoutParentReturnsUnprocessableTest()
     {
         var response = await PutAsync(
-            $"{FenrisUrl}?version=1",
+            FenrisUrl,
+            1,
             ViewModelsTestData.ScytheFenrisWithoutParentUpdateVM
         );
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
-    // GET /BoardGames/{id}/ScoringCategories
+    // GET /board-games/{id}/scoring-categories
 
     [Fact]
     public async Task GetScoringCategoriesTest()
     {
-        var response = await Client.GetAsync($"{ScytheUrl}/ScoringCategories");
+        var response = await Client.GetAsync($"{ScytheUrl}/scoring-categories");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         ViewModelsTestData.CheckScoringCategoryResponseVMs(
@@ -327,12 +326,12 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetScoringCategoriesOfUnknownBoardGameReturnsNotFoundTest()
     {
-        var response = await Client.GetAsync($"{UnknownUrl}/ScoringCategories");
+        var response = await Client.GetAsync($"{UnknownUrl}/scoring-categories");
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // PUT /BoardGames/{id}/ScoringCategories/Order
+    // PUT /board-games/{id}/scoring-categories/order
 
     [Fact]
     public async Task ReorderScoringCategoriesTest()
@@ -345,7 +344,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
         expectedStars.MetaData.Version = 2;
 
         var response = await PutAsync(
-            $"{ScytheUrl}/ScoringCategories/Order",
+            $"{ScytheUrl}/scoring-categories/order",
             new List<Guid> { CommonTestData.Guid2, CommonTestData.Guid1 }
         );
 
@@ -357,7 +356,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
         ViewModelsTestData.CheckScoringCategoryResponseVMs(
             [expected, expectedStars],
             await ReadAsync<List<ScoringCategoryResponseVM>>(
-                await Client.GetAsync($"{ScytheUrl}/ScoringCategories")
+                await Client.GetAsync($"{ScytheUrl}/scoring-categories")
             )
         );
     }
@@ -366,7 +365,7 @@ public class BoardGamesControllerTests : IntegrationTestBase
     public async Task ReorderScoringCategoriesWithIncompleteListReturnsUnprocessableTest()
     {
         var response = await PutAsync(
-            $"{ScytheUrl}/ScoringCategories/Order",
+            $"{ScytheUrl}/scoring-categories/order",
             new List<Guid> { CommonTestData.Guid1 }
         );
 
@@ -376,43 +375,43 @@ public class BoardGamesControllerTests : IntegrationTestBase
     [Fact]
     public async Task ReorderScoringCategoriesOfUnknownBoardGameReturnsNotFoundTest()
     {
-        var response = await PutAsync($"{UnknownUrl}/ScoringCategories/Order", new List<Guid>());
+        var response = await PutAsync($"{UnknownUrl}/scoring-categories/order", new List<Guid>());
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // DELETE /BoardGames/{id}
+    // DELETE /board-games/{id}
 
     [Fact]
     public async Task DeleteCascadesToExpansionsAndSessionsTest()
     {
-        var response = await Client.DeleteAsync($"{ScytheUrl}?version=1");
+        var response = await DeleteAsync(ScytheUrl, 1);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await Client.GetAsync(ScytheUrl)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await Client.GetAsync(FenrisUrl)).StatusCode);
         Assert.Equal(
             HttpStatusCode.NotFound,
-            (await Client.GetAsync($"/PlaySessions/{CommonTestData.Guid1}")).StatusCode
+            (await Client.GetAsync($"/play-sessions/{CommonTestData.Guid1}")).StatusCode
         );
         var categories = await ReadAsync<ScoringCategoriesResponseVM>(
-            await Client.GetAsync("/ScoringCategories")
+            await Client.GetAsync("/scoring-categories")
         );
         Assert.Empty(categories.Items);
     }
 
     [Fact]
-    public async Task DeleteWithStaleVersionReturnsConflictTest()
+    public async Task DeleteWithStaleVersionReturnsPreconditionFailedTest()
     {
-        var response = await Client.DeleteAsync($"{ScytheUrl}?version=2");
+        var response = await DeleteAsync(ScytheUrl, 2);
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
     }
 
     [Fact]
     public async Task DeleteUnknownBoardGameReturnsNotFoundTest()
     {
-        var response = await Client.DeleteAsync($"{UnknownUrl}?version=1");
+        var response = await DeleteAsync(UnknownUrl, 1);
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }

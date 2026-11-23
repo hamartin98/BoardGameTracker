@@ -9,11 +9,11 @@ Every check is an integration test in `src/IntegrationTests`. `BoardGameTrackerA
 
 1. **Find the test class** for the controller under test: `IntegrationTests/ControllerTests/<Controller>Tests.cs`, deriving from `IntegrationTestBase`. Create it if it doesn't exist; `PlaySessionsControllerTests.cs` is a full example.
 2. **Write each check as a permanent test.** A check worth running once is worth keeping, so don't write throwaway tests.
-   - Send requests with `Client.GetAsync` / `PostAsync` / `PutAsync` / `Client.DeleteAsync`, and read bodies with `ReadAsync<T>`.
+   - Send requests with `Client.GetAsync` / `PostAsync` / `PutAsync(url, version, body)` / `DeleteAsync(url, version)` / `PostEmptyAsync(url, version)`, and read bodies with `ReadAsync<T>`. URLs are kebab-case (`/play-sessions/{id}/finish`).
    - Check errors with `AssertProblemAsync(response, status, "ExceptionType")`. For 400s from request validation, check only the status code.
    - Request bodies and expected values come from `TestData` (`ViewModelsTestData`), compared with the `Check*` helpers. Never build them inline in the test.
    - After a write, read the entity back to check it was stored, not just the write response.
-   - Update and delete need `?version=<current version>`. Seeded entities start at version 1; otherwise read `MetaData.Version` from the earlier response.
+   - Update, delete and finish need the current version, which the helpers send as `If-Match: "<version>"`. Seeded entities start at version 1; otherwise read `MetaData.Version` (or the `ETag` header) from the earlier response.
    - For anything that depends on time, move `Clock.UtcNow`. It starts at `CommonTestData.DateTime`, the same time as the seeded data.
 3. **Run only those tests**, then the whole suite:
    ```bash
@@ -35,8 +35,9 @@ The seeded session (Scythe with Fenris, Alice and Bob) started at `CommonTestDat
 Expected error codes (`Middlewares/ExceptionHandlerMiddleware.cs`), returned as ProblemDetails JSON:
 - 400: `ApplicationException`, or request validation (DataAnnotations / `IValidatableObject`)
 - 404: not found / invalid foreign key
-- 409: wrong `?version=` (`VersionMismatchException`)
+- 412: `If-Match` doesn't match the current version (`VersionMismatchException`)
 - 422: `BusinessRuleException`
+- 428: `If-Match` missing (`PreconditionRequiredException`)
 - 500: anything else
 
 Swagger: `IntegrationTests/OpenApiTests.cs` checks that `/swagger/v1/swagger.json` is generated and lists the paths. When you add an endpoint, add its path to the `DocumentListsPathTest` cases.

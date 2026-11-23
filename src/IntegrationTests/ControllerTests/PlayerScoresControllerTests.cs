@@ -7,15 +7,15 @@ namespace BoardGameTracker.IntegrationTests.ControllerTests;
 
 public class PlayerScoresControllerTests : IntegrationTestBase
 {
-    private static readonly string AliceScoreUrl = $"/PlayerScores/{CommonTestData.Guid1}";
-    private static readonly string UnknownUrl = $"/PlayerScores/{Guid.Empty}";
+    private static readonly string AliceScoreUrl = $"/player-scores/{CommonTestData.Guid1}";
+    private static readonly string UnknownUrl = $"/player-scores/{Guid.Empty}";
 
-    // GET /PlayerScores
+    // GET /player-scores
 
     [Fact]
     public async Task GetAllReturnsSeededPlayerScoresTest()
     {
-        var response = await Client.GetAsync("/PlayerScores");
+        var response = await Client.GetAsync("/player-scores");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var page = await ReadAsync<PlayerScoresResponseVM>(response);
@@ -47,7 +47,7 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     [MemberData(nameof(FilterCases))]
     public async Task GetAllFiltersTest(string query, Guid[] expectedIds)
     {
-        var response = await Client.GetAsync($"/PlayerScores?{query}");
+        var response = await Client.GetAsync($"/player-scores?{query}");
 
         var page = await ReadAsync<PlayerScoresResponseVM>(response);
         Assert.Equal(expectedIds, page.Items.Select(e => e.MetaData.Id));
@@ -56,7 +56,7 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllPagesTest()
     {
-        var response = await Client.GetAsync("/PlayerScores?page=2&pageSize=1");
+        var response = await Client.GetAsync("/player-scores?page=2&pageSize=1");
 
         var page = await ReadAsync<PlayerScoresResponseVM>(response);
         Assert.Equal(2, page.Page);
@@ -71,7 +71,7 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllOrdersTest()
     {
-        var response = await Client.GetAsync("/PlayerScores?orderBy=score&orderDirection=ASC");
+        var response = await Client.GetAsync("/player-scores?orderBy=score&orderDirection=ASC");
 
         var page = await ReadAsync<PlayerScoresResponseVM>(response);
         Assert.Equal(
@@ -83,12 +83,12 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllWithUnknownOrderByReturnsBadRequestTest()
     {
-        var response = await Client.GetAsync("/PlayerScores?orderBy=nope");
+        var response = await Client.GetAsync("/player-scores?orderBy=nope");
 
         await AssertProblemAsync(response, 400, "InvalidOrderByException");
     }
 
-    // GET /PlayerScores/{id}
+    // GET /player-scores/{id}
 
     [Fact]
     public async Task GetByIdReturnsPlayerScoreTest()
@@ -110,21 +110,21 @@ public class PlayerScoresControllerTests : IntegrationTestBase
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // POST /PlayerScores
+    // POST /player-scores
 
     [Fact]
     public async Task CreateTest()
     {
         var session = await ReadAsync<PlaySessionResponseVM>(
             await PostAsync(
-                "/PlaySessions",
+                "/play-sessions",
                 ViewModelsTestData.ScytheSessionWithoutExpansionsCreateVM
             )
         );
         var createVM = ViewModelsTestData.AliceScytheWithoutExpansionsScoreCreateVM;
         createVM.SessionId = session.MetaData.Id;
 
-        var response = await PostAsync("/PlayerScores", createVM);
+        var response = await PostAsync("/player-scores", createVM);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = await ReadAsync<PlayerScoreResponseVM>(response);
@@ -139,7 +139,7 @@ public class PlayerScoresControllerTests : IntegrationTestBase
         ViewModelsTestData.CheckPlayerScoreResponseVM(created, fetched);
 
         var sessionScores = await ReadAsync<List<PlayerScoreResponseVM>>(
-            await Client.GetAsync($"/PlaySessions/{session.MetaData.Id}/PlayerScores")
+            await Client.GetAsync($"/play-sessions/{session.MetaData.Id}/player-scores")
         );
         ViewModelsTestData.CheckPlayerScoreResponseVM(created, Assert.Single(sessionScores));
     }
@@ -147,10 +147,10 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     [Fact]
     public async Task CreateAfterDeletingPlayersScoreTest()
     {
-        await Client.DeleteAsync($"{AliceScoreUrl}?version=1");
+        await DeleteAsync(AliceScoreUrl, 1);
 
         var response = await PostAsync(
-            "/PlayerScores",
+            "/player-scores",
             ViewModelsTestData.AliceScytheScoreCreateVM
         );
 
@@ -165,7 +165,7 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     public async Task CreateSecondScoreOfPlayerInSessionReturnsUnprocessableTest()
     {
         var response = await PostAsync(
-            "/PlayerScores",
+            "/player-scores",
             ViewModelsTestData.AliceScytheScoreCreateVM
         );
 
@@ -176,7 +176,7 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     public async Task CreateForUnknownPlayerReturnsNotFoundTest()
     {
         var response = await PostAsync(
-            "/PlayerScores",
+            "/player-scores",
             ViewModelsTestData.UnknownPlayerScytheScoreCreateVM
         );
 
@@ -187,12 +187,15 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     public async Task CreateForPlayerNotInSessionReturnsUnprocessableTest()
     {
         var session = await ReadAsync<PlaySessionResponseVM>(
-            await PostAsync("/PlaySessions", ViewModelsTestData.ScytheSessionWithoutPlayersCreateVM)
+            await PostAsync(
+                "/play-sessions",
+                ViewModelsTestData.ScytheSessionWithoutPlayersCreateVM
+            )
         );
         var createVM = ViewModelsTestData.AliceScytheScoreCreateVM;
         createVM.SessionId = session.MetaData.Id;
 
-        var response = await PostAsync("/PlayerScores", createVM);
+        var response = await PostAsync("/player-scores", createVM);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
@@ -201,20 +204,21 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     public async Task CreateForUnknownSessionReturnsNotFoundTest()
     {
         var response = await PostAsync(
-            "/PlayerScores",
+            "/player-scores",
             ViewModelsTestData.AliceUnknownSessionScoreCreateVM
         );
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // PUT /PlayerScores/{id}
+    // PUT /player-scores/{id}
 
     [Fact]
     public async Task UpdateTest()
     {
         var response = await PutAsync(
-            $"{AliceScoreUrl}?version=1",
+            AliceScoreUrl,
+            1,
             ViewModelsTestData.AliceScytheScoreUpdateVM
         );
 
@@ -236,7 +240,8 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     public async Task UpdateWithMissingCategoryReturnsUnprocessableTest()
     {
         var response = await PutAsync(
-            $"{AliceScoreUrl}?version=1",
+            AliceScoreUrl,
+            1,
             ViewModelsTestData.AliceScytheScoreMissingCategoryUpdateVM
         );
 
@@ -247,7 +252,8 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     public async Task UpdateWithUnknownCategoryReturnsNotFoundTest()
     {
         var response = await PutAsync(
-            $"{AliceScoreUrl}?version=1",
+            AliceScoreUrl,
+            1,
             ViewModelsTestData.AliceScytheScoreUnknownCategoryUpdateVM
         );
 
@@ -258,7 +264,8 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     public async Task UpdateWithDuplicateCategoryReturnsBadRequestTest()
     {
         var response = await PutAsync(
-            $"{AliceScoreUrl}?version=1",
+            AliceScoreUrl,
+            1,
             ViewModelsTestData.AliceScytheScoreDuplicateCategoryUpdateVM
         );
 
@@ -269,72 +276,70 @@ public class PlayerScoresControllerTests : IntegrationTestBase
     public async Task UpdateWithCategoryOfAnotherGameReturnsUnprocessableTest()
     {
         var azul = await ReadAsync<BoardGameResponseVM>(
-            await PostAsync("/BoardGames", ViewModelsTestData.AzulCreateVM)
+            await PostAsync("/board-games", ViewModelsTestData.AzulCreateVM)
         );
         var categoryVM = ViewModelsTestData.AzulTilesCategoryCreateVM;
         categoryVM.BoardGameId = azul.MetaData.Id;
         var category = await ReadAsync<ScoringCategoryResponseVM>(
-            await PostAsync("/ScoringCategories", categoryVM)
+            await PostAsync("/scoring-categories", categoryVM)
         );
         var updateVM = ViewModelsTestData.AliceScytheScoreUpdateVM;
         updateVM.CategoryScores.Add(new() { ScoringCategoryId = category.MetaData.Id });
 
-        var response = await PutAsync($"{AliceScoreUrl}?version=1", updateVM);
+        var response = await PutAsync(AliceScoreUrl, 1, updateVM);
 
         await AssertProblemAsync(response, 422, "BusinessRuleException");
     }
 
     [Fact]
-    public async Task UpdateWithStaleVersionReturnsConflictTest()
+    public async Task UpdateWithStaleVersionReturnsPreconditionFailedTest()
     {
         var response = await PutAsync(
-            $"{AliceScoreUrl}?version=2",
+            AliceScoreUrl,
+            2,
             ViewModelsTestData.AliceScytheScoreUpdateVM
         );
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
     }
 
     [Fact]
     public async Task UpdateUnknownPlayerScoreReturnsNotFoundTest()
     {
-        var response = await PutAsync(
-            $"{UnknownUrl}?version=1",
-            ViewModelsTestData.AliceScytheScoreUpdateVM
-        );
+        var response = await PutAsync(UnknownUrl, 1, ViewModelsTestData.AliceScytheScoreUpdateVM);
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
 
-    // DELETE /PlayerScores/{id}
+    // DELETE /player-scores/{id}
 
     [Fact]
     public async Task DeleteTest()
     {
-        var response = await Client.DeleteAsync($"{AliceScoreUrl}?version=1");
+        var response = await DeleteAsync(AliceScoreUrl, 1);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await Client.GetAsync(AliceScoreUrl)).StatusCode);
 
         var session = await ReadAsync<PlaySessionResponseVM>(
-            await Client.GetAsync($"/PlaySessions/{CommonTestData.Guid1}")
+            await Client.GetAsync($"/play-sessions/{CommonTestData.Guid1}")
         );
         Assert.Equal([CommonTestData.Guid2], session.PlayerScoreIds);
         Assert.Equal(1, session.MetaData.Version);
     }
 
     [Fact]
-    public async Task DeleteWithStaleVersionReturnsConflictTest()
+    public async Task DeleteWithStaleVersionReturnsPreconditionFailedTest()
     {
-        var response = await Client.DeleteAsync($"{AliceScoreUrl}?version=2");
+        var response = await DeleteAsync(AliceScoreUrl, 2);
 
-        await AssertProblemAsync(response, 409, "VersionMismatchException");
+        await AssertProblemAsync(response, 412, "VersionMismatchException");
     }
 
     [Fact]
     public async Task DeleteUnknownPlayerScoreReturnsNotFoundTest()
     {
-        var response = await Client.DeleteAsync($"{UnknownUrl}?version=1");
+        var response = await DeleteAsync(UnknownUrl, 1);
 
         await AssertProblemAsync(response, 404, "EntityNotFoundException");
     }
