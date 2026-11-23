@@ -34,7 +34,7 @@ public class BoardGameMapperConfig : IRegister
     {
         return setter
             .IgnoreEntityMetadata()
-            .Ignore(dest => dest.NormalizedName, dest => dest.ExpansionOf)
+            .Ignore(dest => dest.NormalizedName, dest => dest.ExpansionOf, dest => dest.Statistics)
             .Map(dest => dest.Categories, src => MapBoardGameCategory(src.Categories));
     }
 

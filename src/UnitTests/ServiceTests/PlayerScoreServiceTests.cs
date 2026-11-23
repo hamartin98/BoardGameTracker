@@ -258,7 +258,8 @@ public class PlayerScoreServiceTests
     {
         await SeedAsync(ModelsTestData.AliceScytheScore, ModelsTestData.BobScytheScore);
 
-        await new PlayerService(ContextFactory.Create()).DeleteAsync(
+        var playerContext = ContextFactory.Create();
+        await new PlayerService(playerContext, new StatisticsService(playerContext)).DeleteAsync(
             ModelsTestData.Alice.Id,
             1,
             CancellationToken.None

@@ -1,3 +1,4 @@
+using BoardGameTracker.Database;
 using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Services;
@@ -26,15 +27,15 @@ public class PlayerServiceTests
         return alice;
     }
 
+    private static PlayerService CreateService(BoardGameContext context)
+    {
+        return new PlayerService(context, new StatisticsService(context));
+    }
+
     private async Task<Player> UpdateAsync(Player model, Guid id, int version)
     {
         using var context = ContextFactory.Create();
-        return await new PlayerService(context).UpdateAsync(
-            model,
-            id,
-            version,
-            CancellationToken.None
-        );
+        return await CreateService(context).UpdateAsync(model, id, version, CancellationToken.None);
     }
 
     [Fact]
@@ -56,10 +57,8 @@ public class PlayerServiceTests
         Clock.UtcNow = CommonTestData.DateTime.AddHours(1);
         using var context = ContextFactory.Create();
 
-        var created = await new PlayerService(context).CreateAsync(
-            ModelsTestData.Carol,
-            CancellationToken.None
-        );
+        var created = await CreateService(context)
+            .CreateAsync(ModelsTestData.Carol, CancellationToken.None);
 
         Assert.Equal(CommonTestData.DateTime.AddHours(1), created.CreatedAt);
         Assert.Equal(CommonTestData.DateTime.AddHours(1), created.UpdatedAt);
@@ -111,12 +110,8 @@ public class PlayerServiceTests
         await UpdateAsync(ModelsTestData.AliceRenamed, alice.Id, 1);
 
         await Assert.ThrowsAsync<VersionMismatchException>(() =>
-            new PlayerService(staleContext).UpdateAsync(
-                ModelsTestData.AliceRenamedAgain,
-                alice.Id,
-                1,
-                CancellationToken.None
-            )
+            CreateService(staleContext)
+                .UpdateAsync(ModelsTestData.AliceRenamedAgain, alice.Id, 1, CancellationToken.None)
         );
     }
 
@@ -130,7 +125,7 @@ public class PlayerServiceTests
         await UpdateAsync(ModelsTestData.AliceRenamed, alice.Id, 1);
 
         await Assert.ThrowsAsync<VersionMismatchException>(() =>
-            new PlayerService(staleContext).DeleteAsync(alice.Id, 1, CancellationToken.None)
+            CreateService(staleContext).DeleteAsync(alice.Id, 1, CancellationToken.None)
         );
     }
 }

@@ -14,7 +14,7 @@ public class PlayerMapperConfig : IRegister
         config
             .NewConfig<PlayerCreateVM, Player>()
             .IgnoreEntityMetadata()
-            .Ignore(dest => dest.NormalizedName);
+            .Ignore(dest => dest.NormalizedName, dest => dest.Statistics);
         config.NewConfig<Player, PlayerResponseVM>().Map(dest => dest.MetaData, src => src);
         config.NewConfig<PlayerFilterVM, PlayerFilter>();
         config.NewConfig<PaginatedResponse<Player>, PlayersResponseVM>();
