@@ -5,10 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTrackerApi.Controllers;
 
+/// <summary>
+/// CRUD endpoints whose create and update requests map to their own service input types
+/// </summary>
 [ApiController]
 public abstract class CrudController<
     TEntity,
     TFilter,
+    TCreate,
+    TUpdate,
     TCreateVM,
     TUpdateVM,
     TResponseVM,
@@ -17,11 +22,16 @@ public abstract class CrudController<
 > : ControllerBase
     where TEntity : AbstractEntity
     where TFilter : class
+    where TCreate : class
+    where TUpdate : class
 {
     protected readonly IMapper Mapper;
-    private readonly ICrudService<TEntity, TFilter> Service;
+    private readonly ICrudService<TEntity, TFilter, TCreate, TUpdate> Service;
 
-    protected CrudController(IMapper mapper, ICrudService<TEntity, TFilter> service)
+    protected CrudController(
+        IMapper mapper,
+        ICrudService<TEntity, TFilter, TCreate, TUpdate> service
+    )
     {
         Mapper = mapper;
         Service = service;
@@ -44,8 +54,9 @@ public abstract class CrudController<
         CancellationToken cancellationToken
     )
     {
-        TEntity entity = Mapper.Map<TEntity>(createVM!);
-        TEntity result = await Service.CreateAsync(entity, cancellationToken);
+        TCreate model = Mapper.Map<TCreate>(createVM!);
+        TEntity result = await Service.CreateAsync(model, cancellationToken);
+        Response.SetETag(result);
         return CreatedAtAction(
             nameof(GetById),
             new { id = result.Id },
@@ -58,7 +69,7 @@ public abstract class CrudController<
     /// </summary>
     /// <param name="id">Id of the entity to return</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Description = "Entity successfully retrieved")]
     public async Task<ActionResult<TResponseVM>> GetById(
@@ -67,6 +78,7 @@ public abstract class CrudController<
     )
     {
         TEntity result = await Service.GetByIdAsync(id, cancellationToken);
+        Response.SetETag(result);
         return Ok(Mapper.Map<TResponseVM>(result));
     }
 
@@ -93,21 +105,23 @@ public abstract class CrudController<
     /// </summary>
     /// <param name="id">Id of the entity to update</param>
     /// <param name="updateVM">Update request body</param>
-    /// <param name="version">Version of the entity for concurrency check</param>
+    /// <param name="ifMatch">ETag of the entity for the concurrency check</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpPut("{id}")]
+    [HttpPut("{id:guid}")]
     [Consumes("application/json")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Description = "Entity successfully updated")]
     public async Task<ActionResult<TResponseVM>> Update(
         [FromRoute] Guid id,
         [FromBody] TUpdateVM updateVM,
-        [FromQuery] int version,
+        [FromHeader(Name = "If-Match")] string? ifMatch,
         CancellationToken cancellationToken
     )
     {
-        TEntity model = Mapper.Map<TEntity>(updateVM!);
+        int version = EntityTags.ParseIfMatch(ifMatch);
+        TUpdate model = Mapper.Map<TUpdate>(updateVM!);
         TEntity updated = await Service.UpdateAsync(model, id, version, cancellationToken);
+        Response.SetETag(updated);
         return Ok(Mapper.Map<TResponseVM>(updated));
     }
 
@@ -115,9 +129,9 @@ public abstract class CrudController<
     /// Delete an entity
     /// </summary>
     /// <param name="id">Id of the entity to delete</param>
-    /// <param name="version">Version of the entity for concurrency check</param>
+    /// <param name="ifMatch">ETag of the entity for the concurrency check</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     [Produces("application/json")]
     [ProducesResponseType(
         StatusCodes.Status204NoContent,
@@ -125,11 +139,38 @@ public abstract class CrudController<
     )]
     public async Task<IActionResult> Delete(
         [FromRoute] Guid id,
-        [FromQuery] int version,
+        [FromHeader(Name = "If-Match")] string? ifMatch,
         CancellationToken cancellationToken
     )
     {
+        int version = EntityTags.ParseIfMatch(ifMatch);
         await Service.DeleteAsync(id, version, cancellationToken);
         return NoContent();
     }
 }
+
+/// <summary>
+/// CRUD endpoints whose create and update requests map to the entity itself
+/// </summary>
+public abstract class CrudController<
+    TEntity,
+    TFilter,
+    TCreateVM,
+    TUpdateVM,
+    TResponseVM,
+    TListResponseVM,
+    TFilterVM
+>(IMapper mapper, ICrudService<TEntity, TFilter> service)
+    : CrudController<
+        TEntity,
+        TFilter,
+        TEntity,
+        TEntity,
+        TCreateVM,
+        TUpdateVM,
+        TResponseVM,
+        TListResponseVM,
+        TFilterVM
+    >(mapper, service)
+    where TEntity : AbstractEntity
+    where TFilter : class;

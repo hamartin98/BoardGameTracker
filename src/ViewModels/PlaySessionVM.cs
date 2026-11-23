@@ -64,6 +64,11 @@ public class PlaySessionCreateVM : PlaySessionBaseVM
     /// </summary>
     public bool RandomStartPlayer { get; set; }
 
+    /// <summary>
+    /// Whether to start the session now: the server sets the start time and leaves the duration empty; StartTime and Duration must not be set
+    /// </summary>
+    public bool StartNow { get; set; }
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         foreach (ValidationResult result in base.Validate(validationContext))
@@ -74,55 +79,9 @@ public class PlaySessionCreateVM : PlaySessionBaseVM
         {
             yield return new(PlaySessionValidation.RandomAndFixedStartPlayerMessage);
         }
-    }
-}
-
-/// <summary>
-/// Request to start a play session now; the start time is set by the server and the duration cannot be set
-/// </summary>
-public class PlaySessionStartVM : IValidatableObject
-{
-    /// <summary>
-    /// Id of the base game played
-    /// </summary>
-    public required Guid BoardGameId { get; set; }
-
-    /// <summary>
-    /// Ids of the expansions of that game used during the session
-    /// </summary>
-    public ICollection<Guid> UsedExpansionIds { get; set; } = [];
-
-    /// <summary>
-    /// Ids of the players taking part in the session
-    /// </summary>
-    public ICollection<Guid> PlayerIds { get; set; } = [];
-
-    /// <summary>
-    /// Id of the player who starts the game; must be one of the session's players
-    /// </summary>
-    public Guid? StartPlayerId { get; set; }
-
-    /// <summary>
-    /// Type of the play session
-    /// </summary>
-    /// <example>COMPETITIVE</example>
-    public required PlaySessionTypeVM SessionType { get; set; }
-
-    /// <summary>
-    /// Additional notes about the play session
-    /// </summary>
-    public string? Notes { get; set; }
-
-    /// <summary>
-    /// Whether to pick a random start player from the players; StartPlayerId must not be set
-    /// </summary>
-    public bool RandomStartPlayer { get; set; }
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (RandomStartPlayer && StartPlayerId is not null)
+        if (StartNow && (StartTime is not null || Duration is not null))
         {
-            yield return new(PlaySessionValidation.RandomAndFixedStartPlayerMessage);
+            yield return new(PlaySessionValidation.StartNowWithTimesMessage);
         }
     }
 }
@@ -146,6 +105,9 @@ internal static class PlaySessionValidation
 {
     public const string RandomAndFixedStartPlayerMessage =
         "StartPlayerId cannot be set when RandomStartPlayer is true.";
+
+    public const string StartNowWithTimesMessage =
+        "StartTime and Duration cannot be set when StartNow is true.";
 }
 
 public class PlaySessionsResponseVM : PaginatedResponseVM<PlaySessionResponseVM>;

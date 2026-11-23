@@ -21,15 +21,10 @@ public static partial class ModelBuilderExtensions
                 .WithMany()
                 .UsingEntity(join => join.ToTable("play_session_expansions"));
 
-            entity.Ignore(e => e.UsedExpansionIds);
-
             entity
                 .HasMany(e => e.Players)
                 .WithMany()
                 .UsingEntity(join => join.ToTable("play_session_players"));
-
-            entity.Ignore(e => e.PlayerIds);
-            entity.Ignore(e => e.RandomStartPlayer);
 
             entity
                 .HasOne(e => e.StartPlayer)

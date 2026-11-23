@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace BoardGameTracker.Database.Interceptors;
 
-public sealed class UpdateInterceptor : SaveChangesInterceptor
+public sealed class UpdateInterceptor(TimeProvider timeProvider) : SaveChangesInterceptor
 {
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
@@ -26,7 +26,7 @@ public sealed class UpdateInterceptor : SaveChangesInterceptor
         {
             toUpdate.State = EntityState.Modified;
             toUpdate.Entity.Version++;
-            toUpdate.Entity.UpdatedAt = DateTime.UtcNow;
+            toUpdate.Entity.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
         }
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);

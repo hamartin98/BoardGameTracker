@@ -1,6 +1,8 @@
+using BoardGameTracker.Models.Commands;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
+using BoardGameTracker.SeedData;
 using Xunit;
 
 namespace BoardGameTracker.TestData.Models;
@@ -9,37 +11,7 @@ public partial class ModelsTestData
 {
     public static PlaySession ScytheSession
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid1,
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-                BoardGameId = CommonTestData.Guid1,
-                UsedExpansions = { ScytheFenris },
-                Players = { Alice, Bob },
-                StartPlayerId = CommonTestData.Guid1,
-                StartTime = CommonTestData.DateTime,
-                Duration = new TimeSpan(2, 0, 0),
-                SessionType = PlaySessionType.COMPETITIVE,
-                Notes = "First game",
-            };
-    }
-
-    public static PlaySession ScytheSessionCreate
-    {
-        get =>
-            new()
-            {
-                BoardGameId = CommonTestData.Guid1,
-                UsedExpansionIds = [CommonTestData.Guid2],
-                PlayerIds = [CommonTestData.Guid1, CommonTestData.Guid2],
-                StartPlayerId = CommonTestData.Guid1,
-                StartTime = CommonTestData.DateTime,
-                Duration = new TimeSpan(2, 0, 0),
-                SessionType = PlaySessionType.COMPETITIVE,
-                Notes = "First game",
-            };
+        get => SeededEntities.ScytheSession;
     }
 
     public static PlaySession ScytheSessionInProgress
@@ -73,66 +45,6 @@ public partial class ModelsTestData
         }
     }
 
-    public static PlaySession ScytheSessionStart
-    {
-        get =>
-            new()
-            {
-                BoardGameId = CommonTestData.Guid1,
-                UsedExpansionIds = [CommonTestData.Guid2],
-                PlayerIds = [CommonTestData.Guid1, CommonTestData.Guid2],
-                StartPlayerId = CommonTestData.Guid1,
-                SessionType = PlaySessionType.COMPETITIVE,
-                Notes = "First game",
-            };
-    }
-
-    public static PlaySession ScytheSessionWithoutExpansions
-    {
-        get =>
-            new()
-            {
-                BoardGameId = CommonTestData.Guid1,
-                PlayerIds = [CommonTestData.Guid1, CommonTestData.Guid2],
-                StartPlayerId = CommonTestData.Guid1,
-                StartTime = CommonTestData.DateTime,
-                Duration = new TimeSpan(2, 0, 0),
-                SessionType = PlaySessionType.COMPETITIVE,
-                Notes = "First game",
-            };
-    }
-
-    public static PlaySession ScytheSessionWithBaseGameAsExpansion
-    {
-        get
-        {
-            var session = ScytheSessionWithoutExpansions;
-            session.UsedExpansionIds = [CommonTestData.Guid1];
-            return session;
-        }
-    }
-
-    public static PlaySession ScytheSessionWithUnknownExpansion
-    {
-        get
-        {
-            var session = ScytheSessionWithoutExpansions;
-            session.UsedExpansionIds = [CommonTestData.DeletedGuid];
-            return session;
-        }
-    }
-
-    public static PlaySession ScytheSessionWithoutPlayers
-    {
-        get
-        {
-            var session = ScytheSessionCreate;
-            session.PlayerIds = [];
-            session.StartPlayerId = null;
-            return session;
-        }
-    }
-
     public static PlaySession ScytheSessionWithBobOnly
     {
         get
@@ -145,29 +57,101 @@ public partial class ModelsTestData
         }
     }
 
-    public static PlaySession ScytheSessionWithoutAlice
+    public static CreatePlaySessionCommand ScytheSessionCreate
+    {
+        get =>
+            new()
+            {
+                Values = new()
+                {
+                    BoardGameId = CommonTestData.Guid1,
+                    StartPlayerId = CommonTestData.Guid1,
+                    StartTime = CommonTestData.DateTime,
+                    Duration = new TimeSpan(2, 0, 0),
+                    SessionType = PlaySessionType.COMPETITIVE,
+                    Notes = "First game",
+                },
+                UsedExpansionIds = [CommonTestData.Guid2],
+                PlayerIds = [CommonTestData.Guid1, CommonTestData.Guid2],
+            };
+    }
+
+    public static CreatePlaySessionCommand ScytheSessionStart
+    {
+        get
+        {
+            var session = ScytheSessionCreate;
+            session.Values.StartTime = null;
+            session.Values.Duration = null;
+            session.StartNow = true;
+            return session;
+        }
+    }
+
+    public static CreatePlaySessionCommand ScytheSessionWithoutExpansions
+    {
+        get
+        {
+            var session = ScytheSessionCreate;
+            session.UsedExpansionIds = [];
+            return session;
+        }
+    }
+
+    public static CreatePlaySessionCommand ScytheSessionWithBaseGameAsExpansion
+    {
+        get
+        {
+            var session = ScytheSessionWithoutExpansions;
+            session.UsedExpansionIds = [CommonTestData.Guid1];
+            return session;
+        }
+    }
+
+    public static CreatePlaySessionCommand ScytheSessionWithUnknownExpansion
+    {
+        get
+        {
+            var session = ScytheSessionWithoutExpansions;
+            session.UsedExpansionIds = [CommonTestData.DeletedGuid];
+            return session;
+        }
+    }
+
+    public static CreatePlaySessionCommand ScytheSessionWithoutPlayers
+    {
+        get
+        {
+            var session = ScytheSessionCreate;
+            session.PlayerIds = [];
+            session.Values.StartPlayerId = null;
+            return session;
+        }
+    }
+
+    public static CreatePlaySessionCommand ScytheSessionWithoutAlice
     {
         get
         {
             var session = ScytheSessionCreate;
             session.PlayerIds = [CommonTestData.Guid2];
-            session.StartPlayerId = CommonTestData.Guid2;
+            session.Values.StartPlayerId = CommonTestData.Guid2;
             return session;
         }
     }
 
-    public static PlaySession ScytheSessionRandomStartPlayer
+    public static CreatePlaySessionCommand ScytheSessionRandomStartPlayer
     {
         get
         {
             var session = ScytheSessionCreate;
-            session.StartPlayerId = null;
+            session.Values.StartPlayerId = null;
             session.RandomStartPlayer = true;
             return session;
         }
     }
 
-    public static PlaySession ScytheSessionRandomStartPlayerWithoutPlayers
+    public static CreatePlaySessionCommand ScytheSessionRandomStartPlayerWithoutPlayers
     {
         get
         {
@@ -177,7 +161,7 @@ public partial class ModelsTestData
         }
     }
 
-    public static PlaySession ScytheSessionWithUnknownPlayer
+    public static CreatePlaySessionCommand ScytheSessionWithUnknownPlayer
     {
         get
         {
@@ -187,7 +171,7 @@ public partial class ModelsTestData
         }
     }
 
-    public static PlaySession ScytheSessionWithStartPlayerNotPlaying
+    public static CreatePlaySessionCommand ScytheSessionWithStartPlayerNotPlaying
     {
         get
         {
@@ -197,12 +181,12 @@ public partial class ModelsTestData
         }
     }
 
-    public static PlaySession ScytheFenrisSession
+    public static CreatePlaySessionCommand ScytheFenrisSession
     {
         get
         {
             var session = ScytheSessionWithoutExpansions;
-            session.BoardGameId = CommonTestData.Guid2;
+            session.Values.BoardGameId = CommonTestData.Guid2;
             return session;
         }
     }
@@ -224,14 +208,31 @@ public partial class ModelsTestData
     public static void CheckPlaySession(PlaySession expected, PlaySession actual)
     {
         Assert.Equal(expected.BoardGameId, actual.BoardGameId);
-        Assert.Equal(expected.UsedExpansionIds.Order(), actual.UsedExpansionIds.Order());
-        Assert.Equal(expected.PlayerIds.Order(), actual.PlayerIds.Order());
         Assert.Equal(expected.StartPlayerId, actual.StartPlayerId);
-        Assert.Equal(expected.RandomStartPlayer, actual.RandomStartPlayer);
         Assert.Equal(expected.StartTime, actual.StartTime);
         Assert.Equal(expected.Duration, actual.Duration);
         Assert.Equal(expected.SessionType, actual.SessionType);
         Assert.Equal(expected.Notes, actual.Notes);
+    }
+
+    public static void CheckUpdatePlaySessionCommand(
+        UpdatePlaySessionCommand expected,
+        UpdatePlaySessionCommand actual
+    )
+    {
+        CheckPlaySession(expected.Values, actual.Values);
+        Assert.Equal(expected.UsedExpansionIds.Order(), actual.UsedExpansionIds.Order());
+        Assert.Equal(expected.PlayerIds.Order(), actual.PlayerIds.Order());
+    }
+
+    public static void CheckCreatePlaySessionCommand(
+        CreatePlaySessionCommand expected,
+        CreatePlaySessionCommand actual
+    )
+    {
+        CheckUpdatePlaySessionCommand(expected, actual);
+        Assert.Equal(expected.RandomStartPlayer, actual.RandomStartPlayer);
+        Assert.Equal(expected.StartNow, actual.StartNow);
     }
 
     public static void CheckPlaySessionFilter(PlaySessionFilter expected, PlaySessionFilter actual)

@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="../Utils/Utils.csproj" />
     <ProjectReference Include="../BoardGameTrackerApi/BoardGameTrackerApi.csproj" />
+    <ProjectReference Include="../TestData/TestData.csproj" />
   </ItemGroup>
 
 </Project>

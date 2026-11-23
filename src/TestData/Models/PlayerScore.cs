@@ -1,5 +1,6 @@
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
+using BoardGameTracker.SeedData;
 using Xunit;
 
 namespace BoardGameTracker.TestData.Models;
@@ -8,46 +9,12 @@ public partial class ModelsTestData
 {
     public static PlayerScore AliceScytheScore
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid1,
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-                PlayerId = CommonTestData.Guid1,
-                SessionId = CommonTestData.Guid1,
-                Score = 78,
-                Win = true,
-                Notes = "Polania",
-                CategoryScores =
-                {
-                    new() { ScoringCategoryId = CommonTestData.Guid1, Value = 30 },
-                    new() { ScoringCategoryId = CommonTestData.Guid2, Value = 44 },
-                    new() { ScoringCategoryId = CommonTestData.Guid3, Value = 4 },
-                },
-            };
+        get => SeededEntities.AliceScytheScore;
     }
 
     public static PlayerScore BobScytheScore
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid2,
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-                PlayerId = CommonTestData.Guid2,
-                SessionId = CommonTestData.Guid1,
-                Score = 64,
-                Win = false,
-                Notes = "Saxony",
-                CategoryScores =
-                {
-                    new() { ScoringCategoryId = CommonTestData.Guid1, Value = 24 },
-                    new() { ScoringCategoryId = CommonTestData.Guid2, Value = 36 },
-                    new() { ScoringCategoryId = CommonTestData.Guid3, Value = 4 },
-                },
-            };
+        get => SeededEntities.BobScytheScore;
     }
 
     public static PlayerScore AliceScytheScoreCreate

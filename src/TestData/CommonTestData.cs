@@ -1,18 +1,19 @@
+using BoardGameTracker.SeedData;
 using Xunit;
 
 namespace BoardGameTracker.TestData;
 
 public static class CommonTestData
 {
-    public static readonly Guid Guid1 = new("77934a16-a70a-4ac3-9c0e-000000000001");
+    public static readonly Guid Guid1 = SeedConstants.Guid1;
 
-    public static readonly Guid Guid2 = new("77934a16-a70a-4ac3-9c0e-200000000001");
+    public static readonly Guid Guid2 = SeedConstants.Guid2;
 
-    public static readonly Guid Guid3 = new("77934a16-a70a-4ac3-9c0e-300000000001");
+    public static readonly Guid Guid3 = SeedConstants.Guid3;
 
-    public static readonly Guid DeletedGuid = new("77934a16-a70a-4ac3-9c0e-900000000000");
+    public static readonly Guid DeletedGuid = SeedConstants.DeletedGuid;
 
-    public static readonly DateTime DateTime = new(2026, 11, 19, 10, 11, 12, DateTimeKind.Utc);
+    public static readonly DateTime DateTime = SeedConstants.DateTime;
 
     public static void CheckNullableProperty(object? expected, object? actual)
     {

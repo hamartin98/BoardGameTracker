@@ -29,7 +29,7 @@ public class BoardGamesController(
     /// </summary>
     /// <param name="id">Board game id</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpGet("{id}/Expansions")]
+    [HttpGet("{id:guid}/expansions")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Description = "Entities successfully retrieved")]
     public async Task<ActionResult<List<BoardGameResponseVM>>> GetExpansions(
@@ -46,7 +46,7 @@ public class BoardGamesController(
     /// </summary>
     /// <param name="id">Board game id</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpGet("{id}/ScoringCategories")]
+    [HttpGet("{id:guid}/scoring-categories")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Description = "Entities successfully retrieved")]
     public async Task<ActionResult<List<ScoringCategoryResponseVM>>> GetScoringCategories(
@@ -64,7 +64,7 @@ public class BoardGamesController(
     /// <param name="id">Board game id</param>
     /// <param name="orderedIds">Ids of every scoring category of the board game, in the new order</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [HttpPut("{id}/ScoringCategories/Order")]
+    [HttpPut("{id:guid}/scoring-categories/order")]
     [Consumes("application/json")]
     [Produces("application/json")]
     [ProducesResponseType(

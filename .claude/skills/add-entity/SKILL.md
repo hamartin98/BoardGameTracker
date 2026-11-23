@@ -24,15 +24,15 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
    - Put extra checks in `ValidateCreateAsync(model)` / `ValidateUpdateAsync(existing, model)`. The update one runs after the version check, with the stored entity loaded, so don't load it again.
    - Override `LoadRelations` (a no-op by default) to eager-load the navigations a get-by-id response needs. Override `LoadDeleteRelationsAsync` (defaults to `LoadRelations`) to load the dependents a delete must cascade to.
    - Check foreign keys before create/update with `ThrowIfNotExistsAsync<TReferenced>(id, ct)`.
-   - For a collection set from ids in the request (see `PlaySessionService` and `PlaySession.UsedExpansionIds`): keep the requested ids in a property that the EF config ignores. Resolve them in `ValidateCreateAsync`, sync the collection in `UpdateRelationsAsync` (mark the entity `Modified` when it changes, so the version bumps), and include it for list responses in `IncludeListRelations`.
+   - Keep request-only data (ids of referenced entities, flags like `randomStartPlayer`) off the entity. Put it in create/update commands in `Models/Commands/` that wrap the stored values (`Values`), and use the 4-parameter `AbstractService<TEntity, TFilter, TCreate, TUpdate>`, `ICrudService<…, TCreate, TUpdate>` and the 9-parameter `CrudController`, with Mapster configs from the VMs to the commands. See `PlaySessionCommands.cs` and `PlaySessionService`. Resolve the ids in `ValidateCreateAsync`, sync the collection in `UpdateRelationsAsync` (mark the entity `Modified` when it changes, so the version bumps), and include it for list responses in `IncludeListRelations`.
    - Throw `BusinessRuleException` for business-rule violations (→ 422); `ThrowIfDuplicateAsync` already does for uniqueness. Don't use `InvalidOperationException`: it maps to 500, since EF throws it for internal failures. The middleware maps the other exception types.
 4. **DI.** Confirm the registration in `BoardGameTrackerApi/Setup/ServiceSetupExtensions.cs`.
 5. **Mapping.** Extend the `IRegister` class in `BoardGameTrackerApi/Mappers/Configs/` (`BoardGameMapperConfig.cs`).
    - Map `MetaData` from the entity for response VMs.
    - Map FilterVM → Filter and `PaginatedResponse<T>` → `<Entities>ResponseVM`.
    - `MapperConfigTests` compiles with `RequireDestinationMemberSource = true`, so every destination member needs a source or an explicit `Ignore`.
-6. **Controller.** Derive from `CrudController<TEntity, TFilter, TCreateVM, TUpdateVM, TResponseVM, TListResponseVM, TFilterVM>` with `[Route("[controller]")]`, like `BoardGameTrackerApi/Controllers/PlayersController.cs`. It provides create / get-by-id / list / update / delete (update and delete take `?version=`).
-   - Add extra endpoints to the derived controller with an XML doc comment and `ProducesResponseType`, like `GetExpansions` in `BoardGamesController.cs`.
+6. **Controller.** Derive from `CrudController<TEntity, TFilter, TCreateVM, TUpdateVM, TResponseVM, TListResponseVM, TFilterVM>` with `[Route("[controller]")]`, like `BoardGameTrackerApi/Controllers/PlayersController.cs`. It provides create / get-by-id / list / update / delete (update and delete take the version in `If-Match`; routes come out kebab-case).
+   - Add extra endpoints to the derived controller with an XML doc comment and a `ProducesResponseType` for the success status, like `GetExpansions` in `BoardGamesController.cs`. Use `{id:guid}` in routes. The ProblemDetails error codes are added by `Setup/ProblemResponsesConvention.cs` from the HTTP method, an `{id}` route parameter and an `If-Match` parameter.
 7. **Tests.**
    - Every object a test maps from or compares against lives in TestData, never inline in the test. That covers entities, create/update VMs, filter VMs and expected filters.
      - Models and model filters go in `TestData/Models/<Entity>.cs` (`partial class ModelsTestData`).
@@ -43,9 +43,9 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
    - Put the assertions in `Check<Type>(expected, actual)` helpers next to the fixtures (e.g. `CheckPlayer`, `CheckPlayerFilter`, `CheckPlayerResponseVM`), not in the test body.
    - Add mapping tests as `public partial class MappingTests` in `UnitTests/MapperTests/<Entity>MappingTests.cs`. Each test only gets `expected`, maps the fixture and calls the `Check*` helper (see `PlayerMappingTests.cs`). Cover entity → response VM, create VM → entity, and filter VM → filter.
    - Add enum mapping cases if the entity has enums.
-8. **Seed data.** Add fixtures to `Database/DbDataSeeder.cs`. The integration tests use the seed data as their test data, and it's also what manual testing sees.
+8. **Seed data.** Add the seeded entities to `SeedData/SeededEntities.cs` and seed them in `SeedData/DbDataSeeder.cs`; forward them from `ModelsTestData` (`get => SeededEntities.X;`). Keep xunit and test-only fixtures out of `SeedData`, since the API ships it. The integration tests use the seed data as their test data, and it's also what manual testing sees.
    - **Integration tests.** Add `IntegrationTests/ControllerTests/<Entities>ControllerTests.cs` deriving from `IntegrationTestBase`, like `BoardGamesControllerTests.cs`. Each test gets its own app and freshly seeded in-memory database, so tests may create, update and delete freely. Services get the injected `TimeProvider` from the factory; it starts at `CommonTestData.DateTime`, and tests move it with `Clock.UtcNow`.
-     - Call every endpoint, covering both success and each error status (400 / 404 / 409 / 422). Use `AssertProblemAsync(response, status, "ExceptionType")` for errors.
+     - Call every endpoint, covering both success and each error status (400 / 404 / 412 / 422 / 428). Use `AssertProblemAsync(response, status, "ExceptionType")` for errors.
      - Start from the seeded entities, using `CommonTestData` ids in URLs. Request bodies and expected responses come from `ViewModelsTestData`, compared with the `Check*` helpers, as in the unit tests.
      - After a write, read the entity back to check it was stored, not just the write response.
      - Sanity check: temporarily break one rule in the service and confirm the matching test fails.
@@ -53,7 +53,7 @@ For an entity with a unique, case-insensitive `Name`, derive from `NamedEntity`,
 10. **Verify.**
     - Run `dotnet build` and `dotnet test` from `src/`. This runs both the unit and integration tests.
     - Format only the files this change touched (`dotnet csharpier format <files>`), not the whole tree. Formatting everything rewrites unrelated files.
-    - Then follow the `smoke-test-api` skill: confirm the integration tests cover create / get / update with `?version=` / delete, a 404 and a 409, and add the new paths to `IntegrationTests/OpenApiTests.cs`.
+    - Then follow the `smoke-test-api` skill: confirm the integration tests cover create / get / update with `If-Match` / delete, a 404, a 412 and a 428, and add the new paths to `IntegrationTests/OpenApiTests.cs`.
 
 ## Gotchas
 

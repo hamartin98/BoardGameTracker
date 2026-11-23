@@ -37,18 +37,20 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 
 ## Cross-cutting conventions
 
-- **Optimistic concurrency via `Version`**: every entity has an integer `Version` (concurrency token). Update and delete endpoints take `?version=` as a query parameter; the service throws `VersionMismatchException` (→ 409) if it doesn't match.
-- **Interceptors manage audit fields**: `UpdateInterceptor` increments `Version` and sets `UpdatedAt` on modified entities; `SoftDeleteInterceptor` turns deletes into `IsDeleted = true`. A global query filter hides soft-deleted rows. Don't set these fields manually in services.
+- **Optimistic concurrency via `Version`**: every entity has an integer `Version` (concurrency token). Single-entity responses return it as the `ETag` header (`"3"`); update, delete and finish endpoints take it in `If-Match`, parsed by `Controllers/EntityTags.cs` (missing → `PreconditionRequiredException` 428, malformed → `InvalidIfMatchException` 400). The service throws `VersionMismatchException` (→ 412) if it doesn't match.
+- **Routes are kebab-case**: `[controller]` goes through `KebabCaseParameterTransformer` (`BoardGames` → `/board-games`); write literal route segments in kebab-case too, and constrain ids (`{id:guid}/scoring-categories`).
+- **Swagger error codes** come from `Setup/ProblemResponsesConvention.cs`, per action: 400 and 500 always, 404 for `{id}` routes and writes, 422 for writes, 412 and 428 when the action takes `If-Match`.
+- **Interceptors manage audit fields**, using the injected `TimeProvider`: `CreateInterceptor` sets `CreatedAt`/`UpdatedAt` on added entities when they're unset (fixtures with explicit dates keep them); `UpdateInterceptor` increments `Version` and sets `UpdatedAt` on modified entities; `SoftDeleteInterceptor` turns deletes into `IsDeleted = true`. A global query filter hides soft-deleted rows. Don't set these fields manually in services.
 - **Filtering/pagination**: `AbstractFilter<T>` handles paging (1-based `Page`; `Page` and `PageSize` are clamped in their setters, PageSize to 1–100, default 10), `CreatedAt` range, and dynamic `OrderBy` by property name string (`Models/Filters/QueryableOrderingExtensions.cs`), always tie-breaking on `id`. Entity-specific filters override `FilterQuery` and call `base`.
 - **Flags enums**: `BoardGameCategory` is a bitflag stored as a single value; the API exposes it as a `List<BoardGameCategoryVM>`, converted in `BoardGameMapperConfig`. Domain and VM enum values must stay in sync (covered by `EnumMappingTests`).
 - **Mapster configs** are `IRegister` classes discovered by assembly scan in `Setup/MapperSetupExtensions.cs`. `MapperConfigTests` compiles configs with `RequireDestinationMemberSource = true`, so every destination member needs a source.
-- **Errors**: services throw exceptions; `Middlewares/ExceptionHandlerMiddleware.cs` maps them to ProblemDetails status codes (`ApplicationException` 400, not-found 404, `VersionMismatchException` 409, `BusinessRuleException` 422, else 500 — including `InvalidOperationException`).
+- **Errors**: services throw exceptions; `Middlewares/ExceptionHandlerMiddleware.cs` maps them to ProblemDetails status codes (`ApplicationException` 400, not-found 404, `VersionMismatchException` 412, `BusinessRuleException` 422, `PreconditionRequiredException` 428, else 500 — including `InvalidOperationException`).
 
 ## Tests
 
 - `UnitTests` test mappings, filters and services directly; services run against an in-memory `BoardGameContext` from `UnitTests/ServiceTests/TestDbContextFactory.cs`.
-- `IntegrationTests` run the real API through `WebApplicationFactory<Program>` (`IntegrationTests/BoardGameTrackerApiFactory.cs`). Every test gets its own app and its own in-memory database (unique `InMemoryDatabaseName` setting), seeded by `DbDataSeeder` at startup. The seed data is the integration test data, so changing a seeded fixture in `TestData` can break integration tests.
-- Fixtures and `Check*` helpers for both live in `TestData`.
+- `IntegrationTests` run the real API through `WebApplicationFactory<Program>` (`IntegrationTests/BoardGameTrackerApiFactory.cs`). Every test gets its own app and its own in-memory database (unique `InMemoryDatabaseName` setting), seeded by `DbDataSeeder` at startup. The seed data is the integration test data, so changing a seeded entity can break integration tests.
+- Fixtures and `Check*` helpers for both live in `TestData` (references xunit; tests only). The seeded entities, their ids (`SeedConstants`) and `DbDataSeeder` live in `SeedData`, the only one of the two the API references, so it must not use xunit or test-only types. `ModelsTestData` forwards the seeded fixtures (`Alice => SeededEntities.Alice`) and `CommonTestData` ids forward to `SeedConstants`.
 
 ## Current state
 

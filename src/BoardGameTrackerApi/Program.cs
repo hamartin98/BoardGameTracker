@@ -2,6 +2,7 @@ using BoardGameTracker.Api.Configuration;
 using BoardGameTracker.Api.Middlewares;
 using BoardGameTracker.Api.Setup;
 using BoardGameTracker.Database;
+using BoardGameTracker.SeedData;
 using NLog;
 
 var logger = LoggerSetup.SetupLogger();
@@ -29,7 +30,7 @@ try
     builder.Services.AddExceptionHandler<ExceptionHandler>();
     builder.Services.AddProblemDetails();
 
-    builder.Services.AddMvc(options => options.SetupFilters());
+    builder.Services.AddMvc(options => options.SetupProblemResponses());
 
     var app = builder.Build();
 

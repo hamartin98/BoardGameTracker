@@ -8,7 +8,14 @@ namespace BoardGameTracker.UnitTests.ServiceTests;
 
 public class PlayerServiceTests
 {
-    private readonly TestDbContextFactory ContextFactory = new();
+    private readonly FixedTimeProvider Clock = new(CommonTestData.DateTime);
+
+    private readonly TestDbContextFactory ContextFactory;
+
+    public PlayerServiceTests()
+    {
+        ContextFactory = new(Clock);
+    }
 
     private async Task<Player> SeedAliceAsync()
     {
@@ -44,15 +51,42 @@ public class PlayerServiceTests
     }
 
     [Fact]
+    public async Task CreateSetsCreatedAtAndUpdatedAtFromClockTest()
+    {
+        Clock.UtcNow = CommonTestData.DateTime.AddHours(1);
+        using var context = ContextFactory.Create();
+
+        var created = await new PlayerService(context).CreateAsync(
+            ModelsTestData.Carol,
+            CancellationToken.None
+        );
+
+        Assert.Equal(CommonTestData.DateTime.AddHours(1), created.CreatedAt);
+        Assert.Equal(CommonTestData.DateTime.AddHours(1), created.UpdatedAt);
+    }
+
+    [Fact]
+    public async Task SavingKeepsExplicitCreatedAtTest()
+    {
+        Clock.UtcNow = CommonTestData.DateTime.AddHours(1);
+
+        var alice = await SeedAliceAsync();
+
+        Assert.Equal(CommonTestData.DateTime, alice.CreatedAt);
+        Assert.Equal(CommonTestData.DateTime, alice.UpdatedAt);
+    }
+
+    [Fact]
     public async Task UpdateKeepsCreatedAtAndRefreshesUpdatedAtTest()
     {
         var alice = await SeedAliceAsync();
+        Clock.UtcNow = CommonTestData.DateTime.AddHours(1);
 
         var updated = await UpdateAsync(ModelsTestData.AliceRenamed, alice.Id, 1);
 
         Assert.Equal(alice.Id, updated.Id);
         Assert.Equal(CommonTestData.DateTime, updated.CreatedAt);
-        Assert.True(updated.UpdatedAt > CommonTestData.DateTime);
+        Assert.Equal(CommonTestData.DateTime.AddHours(1), updated.UpdatedAt);
         Assert.False(updated.IsDeleted);
     }
 

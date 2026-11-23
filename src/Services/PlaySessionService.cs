@@ -1,6 +1,7 @@
 using BoardGameTracker.Database;
 using BoardGameTracker.Interfaces.Services;
 using BoardGameTracker.Models;
+using BoardGameTracker.Models.Commands;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
@@ -9,22 +10,45 @@ using Microsoft.EntityFrameworkCore;
 namespace BoardGameTracker.Services;
 
 public class PlaySessionService
-    : AbstractService<PlaySession, PlaySessionFilter>,
+    : AbstractService<
+        PlaySession,
+        PlaySessionFilter,
+        CreatePlaySessionCommand,
+        UpdatePlaySessionCommand
+    >,
         IPlaySessionService
 {
     private readonly TimeProvider TimeProvider;
+    private readonly Random Random;
 
-    public PlaySessionService(BoardGameContext context, TimeProvider timeProvider)
+    public PlaySessionService(BoardGameContext context, TimeProvider timeProvider, Random random)
         : base(context)
     {
         TimeProvider = timeProvider;
+        Random = random;
     }
 
-    public Task<PlaySession> StartAsync(PlaySession model, CancellationToken cancellationToken)
+    protected override PlaySession GetCreateValues(CreatePlaySessionCommand model)
     {
-        model.StartTime = TimeProvider.GetUtcNow().UtcDateTime;
-        model.Duration = null;
-        return CreateAsync(model, cancellationToken);
+        return model.Values;
+    }
+
+    protected override PlaySession GetUpdateValues(UpdatePlaySessionCommand model)
+    {
+        return model.Values;
+    }
+
+    public override Task<PlaySession> CreateAsync(
+        CreatePlaySessionCommand model,
+        CancellationToken cancellationToken
+    )
+    {
+        if (model.StartNow)
+        {
+            model.Values.StartTime = TimeProvider.GetUtcNow().UtcDateTime;
+            model.Values.Duration = null;
+        }
+        return base.CreateAsync(model, cancellationToken);
     }
 
     public async Task<PlaySession> FinishAsync(
@@ -57,19 +81,20 @@ public class PlaySessionService
     }
 
     protected override async Task ValidateCreateAsync(
-        PlaySession model,
+        CreatePlaySessionCommand model,
         CancellationToken cancellationToken
     )
     {
-        await CheckBoardGameAsync(model.BoardGameId, cancellationToken);
+        PlaySession session = model.Values;
+        await CheckBoardGameAsync(session.BoardGameId, cancellationToken);
         foreach (BoardGame expansion in await FindExpansionsAsync(model, cancellationToken))
         {
-            model.UsedExpansions.Add(expansion);
+            session.UsedExpansions.Add(expansion);
         }
         List<Player> players = await FindPlayersAsync(model, cancellationToken);
         foreach (Player player in players)
         {
-            model.Players.Add(player);
+            session.Players.Add(player);
         }
         if (model.RandomStartPlayer)
         {
@@ -79,29 +104,34 @@ public class PlaySessionService
                     "A random start player needs at least one player in the play session."
                 );
             }
-            model.StartPlayerId = players[Random.Shared.Next(players.Count)].Id;
+            session.StartPlayerId = players[Random.Next(players.Count)].Id;
         }
     }
 
     protected override Task ValidateUpdateAsync(
         PlaySession existing,
-        PlaySession model,
+        UpdatePlaySessionCommand model,
         CancellationToken cancellationToken
     )
     {
-        return CheckBoardGameAsync(model.BoardGameId, cancellationToken);
+        return CheckBoardGameAsync(model.Values.BoardGameId, cancellationToken);
     }
 
     protected override async Task UpdateRelationsAsync(
         PlaySession existing,
-        PlaySession model,
+        UpdatePlaySessionCommand model,
         CancellationToken cancellationToken
     )
     {
         await LoadRelations(existing, cancellationToken);
         List<BoardGame> expansions = await FindExpansionsAsync(model, cancellationToken);
         List<Player> players = await FindPlayersAsync(model, cancellationToken);
-        await ThrowIfScoredGameRemovedAsync(existing, model, expansions, cancellationToken);
+        await ThrowIfScoredGameRemovedAsync(
+            existing,
+            model.Values.BoardGameId,
+            expansions,
+            cancellationToken
+        );
         HashSet<Guid> playerIds = [.. players.Select(e => e.Id)];
         if (existing.PlayerScores.Any(e => !playerIds.Contains(e.PlayerId)))
         {
@@ -125,7 +155,7 @@ public class PlaySessionService
     /// </summary>
     private async Task ThrowIfScoredGameRemovedAsync(
         PlaySession existing,
-        PlaySession model,
+        Guid boardGameId,
         List<BoardGame> expansions,
         CancellationToken cancellationToken
     )
@@ -138,7 +168,7 @@ public class PlaySessionService
             .Distinct()
             .ToListAsync(cancellationToken);
 
-        HashSet<Guid> keptBoardGameIds = [model.BoardGameId, .. expansions.Select(e => e.Id)];
+        HashSet<Guid> keptBoardGameIds = [boardGameId, .. expansions.Select(e => e.Id)];
         if (scoredBoardGameIds.Any(e => !keptBoardGameIds.Contains(e)))
         {
             throw new BusinessRuleException(
@@ -223,7 +253,7 @@ public class PlaySessionService
     }
 
     private async Task<List<BoardGame>> FindExpansionsAsync(
-        PlaySession model,
+        UpdatePlaySessionCommand model,
         CancellationToken cancellationToken
     )
     {
@@ -239,7 +269,7 @@ public class PlaySessionService
         }
         if (
             expansions.Any(e =>
-                e.Type != BoardGameType.EXPANSION || e.ExpansionOfId != model.BoardGameId
+                e.Type != BoardGameType.EXPANSION || e.ExpansionOfId != model.Values.BoardGameId
             )
         )
         {
@@ -251,7 +281,7 @@ public class PlaySessionService
     }
 
     private async Task<List<Player>> FindPlayersAsync(
-        PlaySession model,
+        UpdatePlaySessionCommand model,
         CancellationToken cancellationToken
     )
     {
@@ -265,7 +295,7 @@ public class PlaySessionService
         {
             throw new EntityNotFoundException<Player>();
         }
-        if (model.StartPlayerId is Guid startPlayerId && !ids.Contains(startPlayerId))
+        if (model.Values.StartPlayerId is Guid startPlayerId && !ids.Contains(startPlayerId))
         {
             throw new BusinessRuleException(
                 "The start player must be one of the session's players."

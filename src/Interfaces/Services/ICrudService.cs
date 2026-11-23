@@ -2,16 +2,21 @@ using BoardGameTracker.Models;
 
 namespace BoardGameTracker.Interfaces.Services;
 
-public interface ICrudService<ModelType, FilterType>
+/// <summary>
+/// CRUD operations whose create and update take their own input types
+/// </summary>
+public interface ICrudService<ModelType, FilterType, CreateType, UpdateType>
     where ModelType : class
     where FilterType : class
+    where CreateType : class
+    where UpdateType : class
 {
     Task<ModelType> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
-    Task<ModelType> CreateAsync(ModelType model, CancellationToken cancellationToken);
+    Task<ModelType> CreateAsync(CreateType model, CancellationToken cancellationToken);
 
     Task<ModelType> UpdateAsync(
-        ModelType model,
+        UpdateType model,
         Guid id,
         int version,
         CancellationToken cancellationToken
@@ -24,3 +29,11 @@ public interface ICrudService<ModelType, FilterType>
 
     Task DeleteAsync(Guid id, int version, CancellationToken cancellationToken);
 }
+
+/// <summary>
+/// CRUD operations whose create and update take the entity itself
+/// </summary>
+public interface ICrudService<ModelType, FilterType>
+    : ICrudService<ModelType, FilterType, ModelType, ModelType>
+    where ModelType : class
+    where FilterType : class { }

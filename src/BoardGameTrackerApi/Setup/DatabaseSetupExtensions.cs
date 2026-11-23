@@ -33,6 +33,7 @@ internal static class DatabaseSetupExtensions
 
                 options
                     .AddInterceptors(
+                        serviceProvider.GetRequiredService<CreateInterceptor>(),
                         serviceProvider.GetRequiredService<UpdateInterceptor>(),
                         serviceProvider.GetRequiredService<SoftDeleteInterceptor>()
                     )

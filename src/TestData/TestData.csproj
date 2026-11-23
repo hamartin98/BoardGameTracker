@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../Models/Models.csproj" />
+    <ProjectReference Include="../SeedData/SeedData.csproj" />
     <ProjectReference Include="../ViewModels/ViewModels.csproj" />
   </ItemGroup>
 

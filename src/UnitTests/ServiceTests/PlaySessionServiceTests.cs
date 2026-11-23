@@ -12,6 +12,8 @@ public class PlaySessionServiceTests
 
     private readonly FixedTimeProvider TimeProvider = new(CommonTestData.DateTime);
 
+    private readonly FixedRandom Random = new(0);
+
     private async Task SeedReferencesAsync()
     {
         using var context = ContextFactory.Create();
@@ -22,7 +24,7 @@ public class PlaySessionServiceTests
 
     private PlaySessionService CreateService()
     {
-        return new PlaySessionService(ContextFactory.Create(), TimeProvider);
+        return new PlaySessionService(ContextFactory.Create(), TimeProvider, Random);
     }
 
     [Fact]
@@ -102,14 +104,17 @@ public class PlaySessionServiceTests
     }
 
     [Fact]
-    public async Task StartWithRandomStartPlayerPicksSessionPlayerTest()
+    public async Task RandomStartPlayerUsesDrawnIndexTest()
     {
         await SeedReferencesAsync();
 
-        var started = await CreateService()
-            .StartAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
+        var first = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
+        Random.Value = 1;
+        var second = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
 
-        Assert.Contains(started.StartPlayerId!.Value, started.Players.Select(e => e.Id));
+        Assert.NotEqual(first.StartPlayerId, second.StartPlayerId);
     }
 
     [Fact]
@@ -319,12 +324,12 @@ public class PlaySessionServiceTests
     }
 
     [Fact]
-    public async Task StartSetsStartTimeToUtcNowTest()
+    public async Task CreateWithStartNowSetsStartTimeToUtcNowTest()
     {
         await SeedReferencesAsync();
 
         var started = await CreateService()
-            .StartAsync(ModelsTestData.ScytheSessionStart, CancellationToken.None);
+            .CreateAsync(ModelsTestData.ScytheSessionStart, CancellationToken.None);
 
         Assert.Equal(CommonTestData.DateTime, started.StartTime);
         Assert.Equal(DateTimeKind.Utc, started.StartTime?.Kind);
@@ -338,25 +343,17 @@ public class PlaySessionServiceTests
     }
 
     [Fact]
-    public async Task StartIgnoresStartTimeAndDurationOnModelTest()
+    public async Task CreateWithStartNowOverridesStartTimeAndDurationTest()
     {
         await SeedReferencesAsync();
+        var model = ModelsTestData.ScytheSessionCreate;
+        model.StartNow = true;
+        TimeProvider.UtcNow = CommonTestData.DateTime.AddHours(3);
 
-        var started = await CreateService()
-            .StartAsync(ModelsTestData.ScytheSessionCreate, CancellationToken.None);
+        var started = await CreateService().CreateAsync(model, CancellationToken.None);
 
-        Assert.Equal(CommonTestData.DateTime, started.StartTime);
+        Assert.Equal(CommonTestData.DateTime.AddHours(3), started.StartTime);
         Assert.Null(started.Duration);
-    }
-
-    [Fact]
-    public async Task StartForExpansionThrowsTest()
-    {
-        await SeedReferencesAsync();
-
-        await Assert.ThrowsAsync<BusinessRuleException>(() =>
-            CreateService().StartAsync(ModelsTestData.ScytheFenrisSession, CancellationToken.None)
-        );
     }
 
     private async Task SeedSessionAsync(PlaySession session)

@@ -2,6 +2,7 @@ using BoardGameTracker.Models;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
+using BoardGameTracker.SeedData;
 using Xunit;
 
 namespace BoardGameTracker.TestData.Models;
@@ -10,26 +11,17 @@ public partial class ModelsTestData
 {
     public static Player Alice
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid1,
-                Name = "Alice",
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-            };
+        get => SeededEntities.Alice;
     }
 
     public static Player Bob
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid2,
-                Name = "Bob",
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-            };
+        get => SeededEntities.Bob;
+    }
+
+    public static Player Carol
+    {
+        get => new() { Name = "Carol" };
     }
 
     public static Player AliceRenamed

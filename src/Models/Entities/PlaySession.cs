@@ -23,19 +23,9 @@ public class PlaySession : AbstractEntity
     public ICollection<BoardGame> UsedExpansions { get; } = [];
 
     /// <summary>
-    /// Requested expansion ids; resolved into UsedExpansions by the service and not stored
-    /// </summary>
-    public ICollection<Guid> UsedExpansionIds { get; set; } = [];
-
-    /// <summary>
     /// Players taking part in the session
     /// </summary>
     public ICollection<Player> Players { get; } = [];
-
-    /// <summary>
-    /// Requested player ids; resolved into Players by the service and not stored
-    /// </summary>
-    public ICollection<Guid> PlayerIds { get; set; } = [];
 
     /// <summary>
     /// Id of the player who starts the game; one of the session's players
@@ -46,11 +36,6 @@ public class PlaySession : AbstractEntity
     /// Player who starts the game
     /// </summary>
     public Player? StartPlayer { get; set; }
-
-    /// <summary>
-    /// Whether the service picks a random start player from the players on create; not stored
-    /// </summary>
-    public bool RandomStartPlayer { get; set; }
 
     /// <summary>
     /// Starting date and time of the play session
