@@ -1,4 +1,5 @@
 using BoardGameTracker.Models.Enums;
+using BoardGameTracker.Models.Statistics;
 
 namespace BoardGameTracker.Models.Entities;
 
@@ -61,4 +62,9 @@ public class BoardGame : NamedEntity
     /// Scoring categories of the game; an expansion's categories extend its base game's
     /// </summary>
     public ICollection<ScoringCategory> ScoringCategories { get; } = [];
+
+    /// <summary>
+    /// Calculated play statistics; not stored
+    /// </summary>
+    public BoardGameStatistics? Statistics { get; set; }
 }

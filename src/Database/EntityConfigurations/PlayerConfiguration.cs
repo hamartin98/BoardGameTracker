@@ -10,6 +10,8 @@ public static partial class ModelBuilderExtensions
         AbstractEntityConfiguration.Configure<Player>(modelBuilder);
         modelBuilder.Entity<Player>(entity =>
         {
+            entity.Ignore(e => e.Statistics);
+
             // Filtered so a soft-deleted player's name can be reused
             entity.HasIndex(e => e.NormalizedName).IsUnique().HasFilter("is_deleted = false");
         });

@@ -22,6 +22,11 @@ public class PlayerResponseVM : PlayerCreateVM
     /// Response metadata
     /// </summary>
     public required ResponseMetaDataVM MetaData { get; set; }
+
+    /// <summary>
+    /// Calculated play statistics
+    /// </summary>
+    public PlayerStatisticsVM? Statistics { get; set; }
 }
 
 public class PlayersResponseVM : PaginatedResponseVM<PlayerResponseVM>;

@@ -39,6 +39,7 @@ public abstract class AbstractService<EntityType, FilterType, CreateType, Update
     {
         EntityType result = await FindByIdAsync(id, cancellationToken);
         await LoadRelations(result, cancellationToken);
+        await LoadCalculatedValuesAsync([result], cancellationToken);
         return result;
     }
 
@@ -52,6 +53,7 @@ public abstract class AbstractService<EntityType, FilterType, CreateType, Update
             .Set<EntityType>()
             .AddAsync(GetCreateValues(model), cancellationToken);
         await Context.SaveChangesAsync(cancellationToken);
+        await LoadCalculatedValuesAsync([entity.Entity], cancellationToken);
         return entity.Entity;
     }
 
@@ -78,6 +80,7 @@ public abstract class AbstractService<EntityType, FilterType, CreateType, Update
         Context.Entry(entity).CurrentValues.SetValues(values);
         await UpdateRelationsAsync(entity, model, cancellationToken);
         await SaveVersionedChangesAsync(cancellationToken);
+        await LoadCalculatedValuesAsync([entity], cancellationToken);
 
         return entity;
     }
@@ -95,6 +98,7 @@ public abstract class AbstractService<EntityType, FilterType, CreateType, Update
             filter.PageSize,
             cancellationToken
         );
+        await LoadCalculatedValuesAsync(result.Items, cancellationToken);
         return result;
     }
 
@@ -228,6 +232,17 @@ public abstract class AbstractService<EntityType, FilterType, CreateType, Update
     /// Loads the navigations needed by get-by-id responses
     /// </summary>
     protected virtual Task LoadRelations(EntityType entity, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Fills the calculated, not stored values of the entities returned by get, list, create and update
+    /// </summary>
+    protected virtual Task LoadCalculatedValuesAsync(
+        IReadOnlyCollection<EntityType> entities,
+        CancellationToken cancellationToken
+    )
     {
         return Task.CompletedTask;
     }
