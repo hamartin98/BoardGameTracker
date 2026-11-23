@@ -22,6 +22,8 @@ try
     builder.Services.SetupDatabaseInterceptors();
     builder.SetupDatabase(databaseType);
 
+    builder.Services.SetupHealthChecks();
+
     builder.Services.SetupServices();
     builder.Services.SetupRecommendationOptions(builder.Configuration);
 
@@ -39,6 +41,10 @@ try
         using var scope = app.Services.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<BoardGameContext>();
         await DbDataSeeder.Seed(context);
+    }
+    else if (databaseType == DatabaseType.POSTGRES)
+    {
+        await app.PrepareDatabaseAsync();
     }
 
     // Configure the HTTP request pipeline.
@@ -58,6 +64,8 @@ try
     app.UseAuthorization();
 
     app.MapControllers();
+
+    app.MapHealthEndpoints();
 
     app.Run();
 }

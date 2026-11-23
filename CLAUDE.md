@@ -34,6 +34,8 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 
 - `DatabaseType` (`IN_MEMORY` | `POSTGRES`) selects the provider in `Setup/DatabaseSetupExtensions.cs`. `IN_MEMORY` also triggers `DbDataSeeder.Seed` at startup.
 - Postgres settings come from the `PostgresConfig` section (`Configuration/PostgresConfiguration.cs`). Npgsql is configured with `MigrationsAssembly("Migrations")` and snake_case naming (`EFCore.NamingConventions`), so DB column names are snake_case (e.g. query filters/index filters use `is_deleted`).
+- `POSTGRES` runs `PrepareDatabaseAsync` (`Setup/DatabaseStartupExtensions.cs`) at startup: retries transient connection errors for 30 s, then applies pending migrations, or throws when `PostgresConfig:ApplyMigrationsOnStartup` is false. It runs after `Build()`, so `dotnet ef` design-time runs are unaffected.
+- Health endpoints (`Setup/HealthCheckSetupExtensions.cs`): `/health/live` (no checks) and `/health/ready` (`BoardGameContext` connection).
 
 ## Cross-cutting conventions
 
