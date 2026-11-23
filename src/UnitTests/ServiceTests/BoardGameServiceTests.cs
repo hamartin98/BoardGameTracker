@@ -19,7 +19,8 @@ public class BoardGameServiceTests
 
     private BoardGameService CreateService()
     {
-        return new BoardGameService(ContextFactory.Create());
+        var context = ContextFactory.Create();
+        return new BoardGameService(context, new StatisticsService(context));
     }
 
     [Fact]

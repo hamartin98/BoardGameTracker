@@ -10,6 +10,8 @@ public static partial class ModelBuilderExtensions
         AbstractEntityConfiguration.Configure<BoardGame>(modelBuilder);
         modelBuilder.Entity<BoardGame>(entity =>
         {
+            entity.Ignore(e => e.Statistics);
+
             entity
                 .HasMany(e => e.Expansions)
                 .WithOne(e => e.ExpansionOf)

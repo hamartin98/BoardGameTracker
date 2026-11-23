@@ -10,6 +10,7 @@ internal static class ServiceSetupExtensions
     {
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton(Random.Shared);
+        services.AddTransient<IStatisticsService, StatisticsService>();
         services.AddTransient<IBoardGameService, BoardGameService>();
         services.AddTransient<IPlayerService, PlayerService>();
         services.AddTransient<IPlayerScoreService, PlayerScoreService>();

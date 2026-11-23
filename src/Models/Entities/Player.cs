@@ -1,3 +1,5 @@
+using BoardGameTracker.Models.Statistics;
+
 namespace BoardGameTracker.Models.Entities;
 
 /// <summary>
@@ -9,4 +11,9 @@ public class Player : NamedEntity
     /// Collection of score entities for the player
     /// </summary>
     public ICollection<PlayerScore> PlayerScores { get; } = [];
+
+    /// <summary>
+    /// Calculated play statistics; not stored
+    /// </summary>
+    public PlayerStatistics? Statistics { get; set; }
 }

@@ -137,6 +137,11 @@ public class BoardGameResponseVM : BoardGameCreateVM
     /// </summary>
     /// <example>Scythe</example>
     public BoardGameResponseVM? ExpansionOf { get; set; }
+
+    /// <summary>
+    /// Calculated play statistics; null for a nested board game (expansionOf, recommendations)
+    /// </summary>
+    public BoardGameStatisticsVM? Statistics { get; set; }
 }
 
 public class BoardGamesResponseVM : PaginatedResponseVM<BoardGameResponseVM>;

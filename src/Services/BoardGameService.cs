@@ -10,8 +10,13 @@ namespace BoardGameTracker.Services;
 
 public class BoardGameService : NamedEntityService<BoardGame, BoardGameFilter>, IBoardGameService
 {
-    public BoardGameService(BoardGameContext context)
-        : base(context) { }
+    private readonly IStatisticsService StatisticsService;
+
+    public BoardGameService(BoardGameContext context, IStatisticsService statisticsService)
+        : base(context)
+    {
+        StatisticsService = statisticsService;
+    }
 
     protected override string DuplicateNameMessage => "A board game with this name already exists.";
 
@@ -81,6 +86,14 @@ public class BoardGameService : NamedEntityService<BoardGame, BoardGameFilter>, 
         }
     }
 
+    protected override Task LoadCalculatedValuesAsync(
+        IReadOnlyCollection<BoardGame> entities,
+        CancellationToken cancellationToken
+    )
+    {
+        return StatisticsService.LoadBoardGameStatisticsAsync(entities, cancellationToken);
+    }
+
     protected override async Task LoadDeleteRelationsAsync(
         BoardGame entity,
         CancellationToken cancellationToken
@@ -112,6 +125,7 @@ public class BoardGameService : NamedEntityService<BoardGame, BoardGameFilter>, 
             .Where(bg => bg.ExpansionOfId == id && bg.Type == BoardGameType.EXPANSION)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+        await LoadCalculatedValuesAsync(result, cancellationToken);
         return result;
     }
 }
