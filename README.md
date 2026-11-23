@@ -8,10 +8,10 @@ Board game collection and session tracker application
 
 - [x] Organize board game collection
 - [x] Keep track of game session
-- [ ] Generate statistics
+- [x] Generate statistics
 - [x] Board game recommendation based on time and player count
-- [ ] BoardGameGeek integration
 - [x] Custom scoring by board game
+- [ ] BoardGameGeek integration
 - [ ] User login
 - [ ] Frontend
 
