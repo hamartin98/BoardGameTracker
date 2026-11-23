@@ -128,12 +128,16 @@ public class PlayersControllerTests : IntegrationTestBase
     [Fact]
     public async Task CreateTest()
     {
+        Clock.UtcNow = CommonTestData.DateTime.AddHours(1);
+
         var response = await PostAsync("/players", ViewModelsTestData.CarolCreateVM);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = await ReadAsync<PlayerResponseVM>(response);
         ViewModelsTestData.CheckPlayerVM(ViewModelsTestData.CarolCreateVM, created);
         Assert.Equal(1, created.MetaData.Version);
+        Assert.Equal(CommonTestData.DateTime.AddHours(1), created.MetaData.CreatedAt);
+        Assert.Equal(CommonTestData.DateTime.AddHours(1), created.MetaData.UpdatedAt);
 
         Assert.Equal("\"1\"", response.Headers.ETag?.Tag);
         Assert.NotNull(response.Headers.Location);

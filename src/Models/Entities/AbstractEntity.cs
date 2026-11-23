@@ -11,14 +11,14 @@ public abstract class AbstractEntity
     public Guid Id { get; set; } = new Guid();
 
     /// <summary>
-    /// Creation time of the entity
+    /// Creation time of the entity; set on save when left unset
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// Last update time of the entity
+    /// Last update time of the entity; set on save when left unset
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; }
 
     /// <summary>
     /// Current version of the entity

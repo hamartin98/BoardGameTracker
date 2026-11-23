@@ -51,6 +51,32 @@ public class PlayerServiceTests
     }
 
     [Fact]
+    public async Task CreateSetsCreatedAtAndUpdatedAtFromClockTest()
+    {
+        Clock.UtcNow = CommonTestData.DateTime.AddHours(1);
+        using var context = ContextFactory.Create();
+
+        var created = await new PlayerService(context).CreateAsync(
+            ModelsTestData.Carol,
+            CancellationToken.None
+        );
+
+        Assert.Equal(CommonTestData.DateTime.AddHours(1), created.CreatedAt);
+        Assert.Equal(CommonTestData.DateTime.AddHours(1), created.UpdatedAt);
+    }
+
+    [Fact]
+    public async Task SavingKeepsExplicitCreatedAtTest()
+    {
+        Clock.UtcNow = CommonTestData.DateTime.AddHours(1);
+
+        var alice = await SeedAliceAsync();
+
+        Assert.Equal(CommonTestData.DateTime, alice.CreatedAt);
+        Assert.Equal(CommonTestData.DateTime, alice.UpdatedAt);
+    }
+
+    [Fact]
     public async Task UpdateKeepsCreatedAtAndRefreshesUpdatedAtTest()
     {
         var alice = await SeedAliceAsync();

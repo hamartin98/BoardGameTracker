@@ -15,6 +15,7 @@ public class TestDbContextFactory
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .AddInterceptors(
+                new CreateInterceptor(timeProvider ?? TimeProvider.System),
                 new UpdateInterceptor(timeProvider ?? TimeProvider.System),
                 new SoftDeleteInterceptor(timeProvider ?? TimeProvider.System)
             )

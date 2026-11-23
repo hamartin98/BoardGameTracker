@@ -6,6 +6,7 @@ internal static class DatabaseInterceptorSetupExtensions
 {
     public static IServiceCollection SetupDatabaseInterceptors(this IServiceCollection services)
     {
+        services.AddSingleton<CreateInterceptor>();
         services.AddSingleton<UpdateInterceptor>();
         services.AddSingleton<SoftDeleteInterceptor>();
         return services;
