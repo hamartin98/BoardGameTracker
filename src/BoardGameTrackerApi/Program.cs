@@ -2,7 +2,7 @@ using BoardGameTracker.Api.Configuration;
 using BoardGameTracker.Api.Middlewares;
 using BoardGameTracker.Api.Setup;
 using BoardGameTracker.Database;
-using BoardGameTracker.TestData;
+using BoardGameTracker.SeedData;
 using NLog;
 
 var logger = LoggerSetup.SetupLogger();

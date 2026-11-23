@@ -1,8 +1,7 @@
 using BoardGameTracker.Database;
 using BoardGameTracker.Models.Entities;
-using BoardGameTracker.TestData.Models;
 
-namespace BoardGameTracker.TestData;
+namespace BoardGameTracker.SeedData;
 
 public static class DbDataSeeder
 {
@@ -31,9 +30,9 @@ public static class DbDataSeeder
     {
         return
         [
-            ModelsTestData.Scythe,
-            ModelsTestData.ScytheFenris,
-            ModelsTestData.DeletedBoardGame,
+            SeededEntities.Scythe,
+            SeededEntities.ScytheFenris,
+            SeededEntities.DeletedBoardGame,
         ];
     }
 
@@ -43,10 +42,10 @@ public static class DbDataSeeder
     )
     {
         // Reference the seeded expansion and player instances, not new copies, so they aren't inserted twice
-        PlaySession session = ModelsTestData.ScytheSession;
+        PlaySession session = SeededEntities.ScytheSession;
         session.UsedExpansions.Clear();
         session.UsedExpansions.Add(
-            seededBoardGames.Single(e => e.Id == ModelsTestData.ScytheFenris.Id)
+            seededBoardGames.Single(e => e.Id == SeededEntities.ScytheFenris.Id)
         );
         session.Players.Clear();
         foreach (Player player in seededPlayers)
@@ -60,19 +59,19 @@ public static class DbDataSeeder
     {
         return
         [
-            ModelsTestData.ScytheStars,
-            ModelsTestData.ScytheTerritories,
-            ModelsTestData.FenrisBonus,
+            SeededEntities.ScytheStars,
+            SeededEntities.ScytheTerritories,
+            SeededEntities.FenrisBonus,
         ];
     }
 
     public static List<PlayerScore> GetSeededPlayerScores()
     {
-        return [ModelsTestData.AliceScytheScore, ModelsTestData.BobScytheScore];
+        return [SeededEntities.AliceScytheScore, SeededEntities.BobScytheScore];
     }
 
     public static List<Player> GetSeededPlayers()
     {
-        return [ModelsTestData.Alice, ModelsTestData.Bob];
+        return [SeededEntities.Alice, SeededEntities.Bob];
     }
 }

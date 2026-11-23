@@ -49,8 +49,8 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 ## Tests
 
 - `UnitTests` test mappings, filters and services directly; services run against an in-memory `BoardGameContext` from `UnitTests/ServiceTests/TestDbContextFactory.cs`.
-- `IntegrationTests` run the real API through `WebApplicationFactory<Program>` (`IntegrationTests/BoardGameTrackerApiFactory.cs`). Every test gets its own app and its own in-memory database (unique `InMemoryDatabaseName` setting), seeded by `DbDataSeeder` at startup. The seed data is the integration test data, so changing a seeded fixture in `TestData` can break integration tests.
-- Fixtures and `Check*` helpers for both live in `TestData`.
+- `IntegrationTests` run the real API through `WebApplicationFactory<Program>` (`IntegrationTests/BoardGameTrackerApiFactory.cs`). Every test gets its own app and its own in-memory database (unique `InMemoryDatabaseName` setting), seeded by `DbDataSeeder` at startup. The seed data is the integration test data, so changing a seeded entity can break integration tests.
+- Fixtures and `Check*` helpers for both live in `TestData` (references xunit; tests only). The seeded entities, their ids (`SeedConstants`) and `DbDataSeeder` live in `SeedData`, the only one of the two the API references, so it must not use xunit or test-only types. `ModelsTestData` forwards the seeded fixtures (`Alice => SeededEntities.Alice`) and `CommonTestData` ids forward to `SeedConstants`.
 
 ## Current state
 

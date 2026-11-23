@@ -56,6 +56,7 @@ public class PlaySessionsControllerTests : IntegrationTestBase
     [Fact]
     public async Task GetAllPagesTest()
     {
+        Clock.UtcNow += TimeSpan.FromMinutes(1);
         await PostAsync(
             "/play-sessions",
             ViewModelsTestData.ScytheSessionWithoutExpansionsCreateVM

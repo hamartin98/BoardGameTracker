@@ -24,7 +24,7 @@ Every check is an integration test in `src/IntegrationTests`. `BoardGameTrackerA
 
 ## Reference
 
-Seed data (`TestData/DbDataSeeder.cs`, fixtures in `TestData/`), using the `CommonTestData` ids:
+Seed data (`SeedData/DbDataSeeder.cs`, entities in `SeedData/SeededEntities.cs`), using the `CommonTestData` ids:
 - `Guid1`: Scythe (base game, 1–5 players). Also Alice, the seeded play session, Alice's score and the Stars category.
 - `Guid2`: the Scythe expansion Fenris. Also Bob, Bob's score and the Territories category.
 - `Guid3`: the Fenris Bonus category.

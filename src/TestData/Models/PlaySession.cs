@@ -2,6 +2,7 @@ using BoardGameTracker.Models.Commands;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
 using BoardGameTracker.Models.Filters;
+using BoardGameTracker.SeedData;
 using Xunit;
 
 namespace BoardGameTracker.TestData.Models;
@@ -10,21 +11,7 @@ public partial class ModelsTestData
 {
     public static PlaySession ScytheSession
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid1,
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-                BoardGameId = CommonTestData.Guid1,
-                UsedExpansions = { ScytheFenris },
-                Players = { Alice, Bob },
-                StartPlayerId = CommonTestData.Guid1,
-                StartTime = CommonTestData.DateTime,
-                Duration = new TimeSpan(2, 0, 0),
-                SessionType = PlaySessionType.COMPETITIVE,
-                Notes = "First game",
-            };
+        get => SeededEntities.ScytheSession;
     }
 
     public static PlaySession ScytheSessionInProgress

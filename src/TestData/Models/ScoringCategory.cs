@@ -1,5 +1,6 @@
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Filters;
+using BoardGameTracker.SeedData;
 using Xunit;
 
 namespace BoardGameTracker.TestData.Models;
@@ -8,44 +9,17 @@ public partial class ModelsTestData
 {
     public static ScoringCategory ScytheStars
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid1,
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-                BoardGameId = CommonTestData.Guid1,
-                Name = "Stars",
-                Order = 0,
-            };
+        get => SeededEntities.ScytheStars;
     }
 
     public static ScoringCategory ScytheTerritories
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid2,
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-                BoardGameId = CommonTestData.Guid1,
-                Name = "Territories",
-                Order = 1,
-            };
+        get => SeededEntities.ScytheTerritories;
     }
 
     public static ScoringCategory FenrisBonus
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid3,
-                CreatedAt = CommonTestData.DateTime,
-                UpdatedAt = CommonTestData.DateTime,
-                BoardGameId = CommonTestData.Guid2,
-                Name = "Fenris Bonus",
-                Order = 0,
-            };
+        get => SeededEntities.FenrisBonus;
     }
 
     public static ScoringCategory ScytheResourcesCreate

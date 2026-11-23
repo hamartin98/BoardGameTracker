@@ -1,5 +1,6 @@
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.Models.Enums;
+using BoardGameTracker.SeedData;
 using Xunit;
 
 namespace BoardGameTracker.TestData.Models;
@@ -8,65 +9,17 @@ public partial class ModelsTestData
 {
     public static BoardGame Scythe
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid1,
-                Name = "Scythe",
-                MinPlayerCount = 1,
-                MaxPlayerCount = 5,
-                MinPlayTime = new TimeSpan(1, 55, 0),
-                MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl = "https://boardgamegeek.com/boardgame/169786/scythe",
-                Categories =
-                    BoardGameCategory.EXPLORATION
-                    | BoardGameCategory.FIGHTING
-                    | BoardGameCategory.ECONOMIC
-                    | BoardGameCategory.SCIENCE_FICTION
-                    | BoardGameCategory.CIVILIZATION,
-                Type = BoardGameType.BASE_GAME,
-            };
+        get => SeededEntities.Scythe;
     }
 
     public static BoardGame ScytheFenris
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.Guid2,
-                Name = "Scythe: The Rise of Fenris",
-                MinPlayerCount = 1,
-                MaxPlayerCount = 5,
-                MinPlayTime = new TimeSpan(1, 55, 0),
-                MaxPlayTime = new TimeSpan(2, 0, 0),
-                BggUrl =
-                    "https://boardgamegeek.com/boardgameexpansion/242277/scythe-the-rise-of-fenris",
-                Categories =
-                    BoardGameCategory.EXPLORATION
-                    | BoardGameCategory.FIGHTING
-                    | BoardGameCategory.ECONOMIC
-                    | BoardGameCategory.SCIENCE_FICTION
-                    | BoardGameCategory.CIVILIZATION,
-                Type = BoardGameType.EXPANSION,
-                ExpansionOfId = Scythe.Id,
-            };
+        get => SeededEntities.ScytheFenris;
     }
 
     public static BoardGame DeletedBoardGame
     {
-        get =>
-            new()
-            {
-                Id = CommonTestData.DeletedGuid,
-                IsDeleted = true,
-                Name = "Scythe: The Rise of Fenris",
-                MinPlayerCount = 1,
-                MaxPlayerCount = 2,
-                MinPlayTime = new TimeSpan(0, 30, 0),
-                MaxPlayTime = new TimeSpan(1, 0, 0),
-                Categories = BoardGameCategory.ANIMALS,
-                Type = BoardGameType.BASE_GAME,
-            };
+        get => SeededEntities.DeletedBoardGame;
     }
 
     public static BoardGame ScytheUppercase
