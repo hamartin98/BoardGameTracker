@@ -22,6 +22,8 @@ public class BoardGameVMValidationTests
             { ViewModelsTestData.AzulCreateVM, [] },
             { ViewModelsTestData.AzulLimitBoundsCreateVM, [] },
             { ViewModelsTestData.AzulWithoutBggIdCreateVM, [] },
+            { ViewModelsTestData.AzulWithoutPlayTimeCreateVM, [] },
+            { ViewModelsTestData.AzulOnlyMaxPlayTimeCreateVM, [MaxPlayTimeRange] },
             { ViewModelsTestData.AzulInvalidPlayTimeCreateVM, [MinPlayTimeRange] },
             { ViewModelsTestData.AzulTooLongPlayTimeCreateVM, [MaxPlayTimeRange] },
             { ViewModelsTestData.AzulReversedPlayTimeCreateVM, [PlayTimeOrder] },

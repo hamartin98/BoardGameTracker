@@ -21,6 +21,8 @@ public class BoardGameContext : DbContext
 
     public DbSet<CategoryScore> CategoryScores { get; set; }
 
+    public DbSet<ExternalReference> ExternalReferences { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ConfigureBoardGame();
@@ -29,5 +31,6 @@ public class BoardGameContext : DbContext
         modelBuilder.ConfigurePlayerScore();
         modelBuilder.ConfigureScoringCategory();
         modelBuilder.ConfigureCategoryScore();
+        modelBuilder.ConfigureExternalReference();
     }
 }

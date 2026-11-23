@@ -21,17 +21,24 @@ public static class RecommendationScorer
         double? timeScore = null;
         if (request.MinPlayTime is not null || request.MaxPlayTime is not null)
         {
-            double rangeFit = RangeFit(
-                boardGame.MinPlayTime,
-                boardGame.MaxPlayTime,
-                request.MinPlayTime,
-                request.MaxPlayTime,
-                options.TimeTolerance
-            );
+            TimeSpan? gameMin = boardGame.MinPlayTime ?? boardGame.MaxPlayTime;
+            TimeSpan? gameMax = boardGame.MaxPlayTime ?? boardGame.MinPlayTime;
+            double? rangeFit =
+                gameMin is TimeSpan from && gameMax is TimeSpan to
+                    ? RangeFit(
+                        from,
+                        to,
+                        request.MinPlayTime,
+                        request.MaxPlayTime,
+                        options.TimeTolerance
+                    )
+                    : null;
             double? averageFit = statistics.AveragePlayTime is TimeSpan average
                 ? PointFit(average, request.MinPlayTime, request.MaxPlayTime, options.TimeTolerance)
                 : null;
-            timeScore = TimeScore(rangeFit, averageFit, options.AverageWeight);
+            timeScore = rangeFit is double range
+                ? TimeScore(range, averageFit, options.AverageWeight)
+                : averageFit;
         }
 
         double recencyScore = RecencyScore(statistics.LastPlayedAt, now, options.HalfLifeDays);

@@ -26,6 +26,7 @@ try
 
     builder.Services.SetupServices();
     builder.Services.SetupRecommendationOptions(builder.Configuration);
+    builder.Services.SetupImportOptions(builder.Configuration);
 
     builder.Services.SetupMapper();
 

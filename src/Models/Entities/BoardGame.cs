@@ -9,14 +9,14 @@ namespace BoardGameTracker.Models.Entities;
 public class BoardGame : NamedEntity
 {
     /// <summary>
-    /// Minimum play time
+    /// Optional minimum play time
     /// </summary>
-    public required TimeSpan MinPlayTime { get; set; }
+    public TimeSpan? MinPlayTime { get; set; }
 
     /// <summary>
-    /// Maximum playtime
+    /// Optional maximum play time
     /// </summary>
-    public required TimeSpan MaxPlayTime { get; set; }
+    public TimeSpan? MaxPlayTime { get; set; }
 
     /// <summary>
     /// Minimum number of players

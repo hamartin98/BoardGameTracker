@@ -11,6 +11,7 @@ Board game collection and session tracker application
 - [x] Generate statistics
 - [x] Board game recommendation based on time and player count
 - [x] Custom scoring by board game
+- [x] Import backup file from external source
 - [ ] BoardGameGeek integration
 - [ ] User login
 - [ ] Frontend

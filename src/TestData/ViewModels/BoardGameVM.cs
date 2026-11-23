@@ -111,6 +111,28 @@ public partial class ViewModelsTestData
             };
     }
 
+    public static BoardGameCreateVM AzulWithoutPlayTimeCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MinPlayTime = null;
+            boardGame.MaxPlayTime = null;
+            return boardGame;
+        }
+    }
+
+    public static BoardGameCreateVM AzulOnlyMaxPlayTimeCreateVM
+    {
+        get
+        {
+            var boardGame = AzulCreateVM;
+            boardGame.MinPlayTime = null;
+            boardGame.MaxPlayTime = new TimeSpan(0, 5, 0);
+            return boardGame;
+        }
+    }
+
     public static BoardGameCreateVM AzulInvalidPlayTimeCreateVM
     {
         get
