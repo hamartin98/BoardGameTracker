@@ -14,21 +14,21 @@ public class BoardGameVMValidationTests
     private const string MinPlayerCountRange = "MinPlayerCount should be in the range 1 - 100.";
     private const string MaxPlayerCountRange = "MaxPlayerCount should be in the range 1 - 100.";
     private const string PlayerCountOrder = "MinPlayerCount should be less than MaxPlayerCount.";
-    private const string InvalidBggUrl = "Invalid BggUrl.";
+    private const string InvalidBggId = "BggId should be positive.";
 
     public static TheoryData<BoardGameBaseVM, string[]> ValidationCases =>
         new()
         {
             { ViewModelsTestData.AzulCreateVM, [] },
             { ViewModelsTestData.AzulLimitBoundsCreateVM, [] },
-            { ViewModelsTestData.AzulWithoutBggUrlCreateVM, [] },
+            { ViewModelsTestData.AzulWithoutBggIdCreateVM, [] },
             { ViewModelsTestData.AzulInvalidPlayTimeCreateVM, [MinPlayTimeRange] },
             { ViewModelsTestData.AzulTooLongPlayTimeCreateVM, [MaxPlayTimeRange] },
             { ViewModelsTestData.AzulReversedPlayTimeCreateVM, [PlayTimeOrder] },
             { ViewModelsTestData.AzulNoPlayerCreateVM, [MinPlayerCountRange] },
             { ViewModelsTestData.AzulTooManyPlayersCreateVM, [MaxPlayerCountRange] },
             { ViewModelsTestData.AzulReversedPlayerCountCreateVM, [PlayerCountOrder] },
-            { ViewModelsTestData.AzulInvalidBggUrlCreateVM, [InvalidBggUrl] },
+            { ViewModelsTestData.AzulInvalidBggIdCreateVM, [InvalidBggId] },
             {
                 ViewModelsTestData.AzulAllInvalidCreateVM,
                 [
@@ -38,7 +38,7 @@ public class BoardGameVMValidationTests
                     MinPlayerCountRange,
                     MaxPlayerCountRange,
                     PlayerCountOrder,
-                    InvalidBggUrl,
+                    InvalidBggId,
                 ]
             },
         };

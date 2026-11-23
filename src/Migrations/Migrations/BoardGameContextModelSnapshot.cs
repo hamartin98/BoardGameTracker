@@ -48,9 +48,9 @@ namespace Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("BggUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("bgg_url");
+                    b.Property<int?>("BggId")
+                        .HasColumnType("integer")
+                        .HasColumnName("bgg_id");
 
                     b.Property<long>("Categories")
                         .HasColumnType("bigint")

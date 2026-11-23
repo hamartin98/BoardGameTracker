@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using BoardGameTracker.Utils;
 using BoardGameTracker.ViewModels.Enums;
 
 namespace BoardGameTracker.ViewModels;
@@ -42,10 +41,10 @@ public class BoardGameBaseVM : IValidatableObject
     public required byte MaxPlayerCount { get; set; }
 
     /// <summary>
-    /// Optional URL for BoardGameGeek page
+    /// Optional BoardGameGeek id
     /// </summary>
-    /// <example>https://boardgamegeek.com/boardgame/169786/scythe</example>
-    public string? BggUrl { get; set; }
+    /// <example>169786</example>
+    public int? BggId { get; set; }
 
     /// <summary>
     /// Categories of the board game
@@ -77,12 +76,11 @@ public class BoardGameBaseVM : IValidatableObject
             PlayerCountLowerLimit,
             PlayerCountUpperLimit
         );
-        var urlErrors =
-            BggUrl is null || Validators.IsUrlValid(BggUrl)
-                ? []
-                : new ValidationResult[] { new("Invalid BggUrl.") };
+        var bggIdErrors = BggId is null or > 0
+            ? []
+            : new ValidationResult[] { new("BggId should be positive.") };
 
-        return [.. playTimeErrors, .. playerCountErrors, .. urlErrors];
+        return [.. playTimeErrors, .. playerCountErrors, .. bggIdErrors];
     }
 
     /// <summary>
