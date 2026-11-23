@@ -57,4 +57,4 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 
 ## Current state
 
-All entities (`BoardGame`, `Player`, `PlaySession`, `PlayerScore`) are fully wired. Use the `add-entity` skill to add a new one. Every controller has integration tests in `IntegrationTests/ControllerTests/`.
+CRUD entities: `BoardGame`, `Player`, `PlaySession`, `PlayerScore`, `ScoringCategory` (`CategoryScore` is the `PlayerScore`–`ScoringCategory` join, written through `PlayerScore`; no controller). `RecommendationsController` is read-only, backed by `RecommendationService`. Use the `add-entity` skill for a new entity. Every controller has integration tests in `IntegrationTests/ControllerTests/`.
