@@ -63,3 +63,9 @@ public class InvalidIfMatchException : ApplicationException
     public InvalidIfMatchException()
         : base("If-Match must be a single entity tag such as \"3\".") { }
 }
+
+public class InvalidImportFileException : ApplicationException
+{
+    public InvalidImportFileException(string message, Exception? innerException = null)
+        : base(message, innerException) { }
+}

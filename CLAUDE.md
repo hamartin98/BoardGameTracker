@@ -36,6 +36,7 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 - Postgres settings come from the `PostgresConfig` section (`Configuration/PostgresConfiguration.cs`). Npgsql is configured with `MigrationsAssembly("Migrations")` and snake_case naming (`EFCore.NamingConventions`), so DB column names are snake_case (e.g. query filters/index filters use `is_deleted`).
 - `POSTGRES` runs `PrepareDatabaseAsync` (`Setup/DatabaseStartupExtensions.cs`) at startup: retries transient connection errors for 30 s, then applies pending migrations, or throws when `PostgresConfig:ApplyMigrationsOnStartup` is false. It runs after `Build()`, so `dotnet ef` design-time runs are unaffected.
 - Health endpoints (`Setup/HealthCheckSetupExtensions.cs`): `/health/live` (no checks) and `/health/ready` (`BoardGameContext` connection).
+- `ImportConfig:TimeZone` (default `Europe/Budapest`): time zone of the local times in imported BoardRecord backups.
 
 ## Cross-cutting conventions
 
@@ -56,4 +57,4 @@ Docker (from repo root): `docker build -t board_game_tracker_api -f docker/Docke
 
 ## Current state
 
-All entities (`BoardGame`, `Player`, `PlaySession`, `PlayerScore`) are fully wired. Use the `add-entity` skill to add a new one. Every controller has integration tests in `IntegrationTests/ControllerTests/`.
+All entities (`BoardGame`, `Player`, `PlaySession`, `PlayerScore`) are fully wired. `POST /imports/board-record` (`Services/Imports/BoardRecordImportService.cs`) syncs a BoardRecord backup: imported records are tracked by their source UUID in `ExternalReference`, so re-importing only adds new records. Use the `add-entity` skill to add a new one. Every controller has integration tests in `IntegrationTests/ControllerTests/`.

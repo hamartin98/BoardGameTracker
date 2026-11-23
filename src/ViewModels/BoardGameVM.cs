@@ -13,18 +13,16 @@ public class BoardGameBaseVM : IValidatableObject
     public required string Name { get; set; }
 
     /// <summary>
-    /// Minimum play time
+    /// Optional minimum play time
     /// </summary>
     /// <example>00:10:00</example>
-    [Required]
-    public required TimeSpan MinPlayTime { get; set; }
+    public TimeSpan? MinPlayTime { get; set; }
 
     /// <summary>
-    /// Maximum playtime
+    /// Optional maximum play time
     /// </summary>
     /// <example>1:00:00</example>
-    [Required]
-    public required TimeSpan MaxPlayTime { get; set; }
+    public TimeSpan? MaxPlayTime { get; set; }
 
     /// <summary>
     /// Minimum number of players
@@ -84,24 +82,24 @@ public class BoardGameBaseVM : IValidatableObject
     }
 
     /// <summary>
-    /// Checks that both bounds are within the limits and that the minimum is not above the maximum
+    /// Checks that the set bounds are within the limits and that the minimum is not above the maximum
     /// </summary>
     private static IEnumerable<ValidationResult> ValidateRange<T>(
-        (string Name, T Value) min,
-        (string Name, T Value) max,
+        (string Name, T? Value) min,
+        (string Name, T? Value) max,
         T lowerLimit,
         T upperLimit
     )
-        where T : IComparable<T>
+        where T : struct, IComparable<T>
     {
         foreach (var (name, value) in new[] { min, max })
         {
-            if (value.CompareTo(lowerLimit) < 0 || value.CompareTo(upperLimit) > 0)
+            if (value is T set && (set.CompareTo(lowerLimit) < 0 || set.CompareTo(upperLimit) > 0))
             {
                 yield return new($"{name} should be in the range {lowerLimit} - {upperLimit}.");
             }
         }
-        if (min.Value.CompareTo(max.Value) > 0)
+        if (min.Value is T minValue && max.Value is T maxValue && minValue.CompareTo(maxValue) > 0)
         {
             yield return new($"{min.Name} should be less than {max.Name}.");
         }

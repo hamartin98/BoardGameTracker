@@ -183,4 +183,31 @@ public class RecommendationScorerTests
         Assert.True(withAverage.TimeScore < withoutAverage.TimeScore);
         Assert.Equal(0.5, withAverage.CategoryScore);
     }
+
+    [Fact]
+    public void ScoreWithoutGamePlayTimeUsesAveragePlayTimeTest()
+    {
+        var boardGame = ModelsTestData.Scythe;
+        boardGame.MinPlayTime = null;
+        boardGame.MaxPlayTime = null;
+
+        var withAverage = RecommendationScorer.Score(
+            boardGame,
+            new(null, TimeSpan.FromHours(4), 1),
+            ModelsTestData.TwoPlayerEveningRequest,
+            ModelsTestData.DefaultRecommendationOptions,
+            CommonTestData.DateTime
+        );
+        var withoutAverage = RecommendationScorer.Score(
+            boardGame,
+            SessionStatistics.NeverPlayed,
+            ModelsTestData.TwoPlayerEveningRequest,
+            ModelsTestData.DefaultRecommendationOptions,
+            CommonTestData.DateTime
+        );
+
+        Assert.NotNull(withAverage.TimeScore);
+        Assert.True(withAverage.TimeScore < 1);
+        Assert.Null(withoutAverage.TimeScore);
+    }
 }

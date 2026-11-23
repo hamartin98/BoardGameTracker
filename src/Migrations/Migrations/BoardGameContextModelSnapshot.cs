@@ -68,7 +68,7 @@ namespace Migrations.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<TimeSpan>("MaxPlayTime")
+                    b.Property<TimeSpan?>("MaxPlayTime")
                         .HasColumnType("interval")
                         .HasColumnName("max_play_time");
 
@@ -76,7 +76,7 @@ namespace Migrations.Migrations
                         .HasColumnType("smallint")
                         .HasColumnName("max_player_count");
 
-                    b.Property<TimeSpan>("MinPlayTime")
+                    b.Property<TimeSpan?>("MinPlayTime")
                         .HasColumnType("interval")
                         .HasColumnName("min_play_time");
 
@@ -149,6 +149,50 @@ namespace Migrations.Migrations
                         .HasDatabaseName("ix_category_scores_scoring_category_id");
 
                     b.ToTable("category_scores", (string)null);
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Models.Entities.ExternalReference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("entity_type");
+
+                    b.Property<Guid>("ExternalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("external_id");
+
+                    b.Property<DateTime>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("source");
+
+                    b.HasKey("Id")
+                        .HasName("pk_external_references");
+
+                    b.HasIndex("EntityType", "EntityId")
+                        .HasDatabaseName("ix_external_references_entity_type_entity_id");
+
+                    b.HasIndex("Source", "ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_external_references_source_external_id");
+
+                    b.ToTable("external_references", (string)null);
                 });
 
             modelBuilder.Entity("BoardGameTracker.Models.Entities.PlaySession", b =>
