@@ -36,21 +36,29 @@ The `DatabaseType` setting selects the database:
 - `IN_MEMORY`: no setup needed. The database is seeded with sample data on startup and reset on every restart.
 - `POSTGRES`: uses the `PostgresConfig` section of `appsettings.json`:
 
-  | Setting    | Default              |
-  | ---------- | -------------------- |
-  | `Host`     | `localhost`          |
-  | `Port`     | `5432`               |
-  | `Username` | `postgres`           |
-  | `Password` | (empty)              |
-  | `Database` | `board_game_tracker` |
+  | Setting                    | Default              |
+  | -------------------------- | -------------------- |
+  | `Host`                     | `localhost`          |
+  | `Port`                     | `5432`               |
+  | `Username`                 | `postgres`           |
+  | `Password`                 | (empty)              |
+  | `Database`                 | `board_game_tracker` |
+  | `ApplyMigrationsOnStartup` | `true`               |
 
 Settings can also be overridden with environment variables, e.g. `DatabaseType=IN_MEMORY` or `PostgresConfig__Port=5433`.
 
-Before the first run against Postgres, apply the migrations. This needs the `dotnet-ef` tool (`dotnet tool install --global dotnet-ef`). From `src/BoardGameTrackerApi` run:
+On startup against Postgres, the API waits up to 30 seconds for the server, then applies any pending migrations, creating the database if it doesn't exist. The database user needs the rights to change the schema. With `ApplyMigrationsOnStartup` set to `false`, the API instead refuses to start while migrations are pending; apply them yourself with the `dotnet-ef` tool (`dotnet tool install --global dotnet-ef`), from `src/BoardGameTrackerApi`:
 
 ```bash
 dotnet ef database update
 ```
+
+### Health checks
+
+- `GET /health/live`: the process is up; checks nothing else.
+- `GET /health/ready`: the database is reachable too.
+
+Both return `Healthy` with 200, or `Unhealthy` with 503.
 
 See [docs/ef_commands.md](docs/ef_commands.md) for creating and reverting migrations.
 

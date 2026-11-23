@@ -13,6 +13,11 @@ public class PostgresConfiguration
     public string Password { get; set; } = string.Empty;
     public string Database { get; set; } = "board_game_tracker";
 
+    /// <summary>
+    /// Whether pending migrations are applied on startup; when false, the app does not start while any are pending
+    /// </summary>
+    public bool ApplyMigrationsOnStartup { get; set; } = true;
+
     public void Print()
     {
         Logger.Info("Host: {host}", Host);
@@ -20,6 +25,7 @@ public class PostgresConfiguration
         Logger.Info("Username: {username}", Username);
         Logger.Info("Password: {password}", new string('*', Password.Length));
         Logger.Info("Database: {database}", Database);
+        Logger.Info("Apply migrations on startup: {apply}", ApplyMigrationsOnStartup);
     }
 
     public string GetConnectionString()
