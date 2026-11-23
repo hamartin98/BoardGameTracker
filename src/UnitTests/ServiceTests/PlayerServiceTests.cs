@@ -8,7 +8,14 @@ namespace BoardGameTracker.UnitTests.ServiceTests;
 
 public class PlayerServiceTests
 {
-    private readonly TestDbContextFactory ContextFactory = new();
+    private readonly FixedTimeProvider Clock = new(CommonTestData.DateTime);
+
+    private readonly TestDbContextFactory ContextFactory;
+
+    public PlayerServiceTests()
+    {
+        ContextFactory = new(Clock);
+    }
 
     private async Task<Player> SeedAliceAsync()
     {
@@ -47,12 +54,13 @@ public class PlayerServiceTests
     public async Task UpdateKeepsCreatedAtAndRefreshesUpdatedAtTest()
     {
         var alice = await SeedAliceAsync();
+        Clock.UtcNow = CommonTestData.DateTime.AddHours(1);
 
         var updated = await UpdateAsync(ModelsTestData.AliceRenamed, alice.Id, 1);
 
         Assert.Equal(alice.Id, updated.Id);
         Assert.Equal(CommonTestData.DateTime, updated.CreatedAt);
-        Assert.True(updated.UpdatedAt > CommonTestData.DateTime);
+        Assert.Equal(CommonTestData.DateTime.AddHours(1), updated.UpdatedAt);
         Assert.False(updated.IsDeleted);
     }
 

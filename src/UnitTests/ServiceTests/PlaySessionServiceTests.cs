@@ -12,6 +12,8 @@ public class PlaySessionServiceTests
 
     private readonly FixedTimeProvider TimeProvider = new(CommonTestData.DateTime);
 
+    private readonly FixedRandom Random = new(0);
+
     private async Task SeedReferencesAsync()
     {
         using var context = ContextFactory.Create();
@@ -22,7 +24,7 @@ public class PlaySessionServiceTests
 
     private PlaySessionService CreateService()
     {
-        return new PlaySessionService(ContextFactory.Create(), TimeProvider);
+        return new PlaySessionService(ContextFactory.Create(), TimeProvider, Random);
     }
 
     [Fact]
@@ -110,6 +112,20 @@ public class PlaySessionServiceTests
             .StartAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
 
         Assert.Contains(started.StartPlayerId!.Value, started.Players.Select(e => e.Id));
+    }
+
+    [Fact]
+    public async Task RandomStartPlayerUsesDrawnIndexTest()
+    {
+        await SeedReferencesAsync();
+
+        var first = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
+        Random.Value = 1;
+        var second = await CreateService()
+            .CreateAsync(ModelsTestData.ScytheSessionRandomStartPlayer, CancellationToken.None);
+
+        Assert.NotEqual(first.StartPlayerId, second.StartPlayerId);
     }
 
     [Fact]

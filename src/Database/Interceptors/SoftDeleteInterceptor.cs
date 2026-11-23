@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace BoardGameTracker.Database.Interceptors;
 
-public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
+public sealed class SoftDeleteInterceptor(TimeProvider timeProvider) : SaveChangesInterceptor
 {
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
@@ -27,7 +27,7 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
             softDeletable.State = EntityState.Modified;
             softDeletable.Entity.IsDeleted = true;
             softDeletable.Entity.Version++;
-            softDeletable.Entity.UpdatedAt = DateTime.UtcNow;
+            softDeletable.Entity.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
         }
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);

@@ -13,11 +13,13 @@ public class PlaySessionService
         IPlaySessionService
 {
     private readonly TimeProvider TimeProvider;
+    private readonly Random Random;
 
-    public PlaySessionService(BoardGameContext context, TimeProvider timeProvider)
+    public PlaySessionService(BoardGameContext context, TimeProvider timeProvider, Random random)
         : base(context)
     {
         TimeProvider = timeProvider;
+        Random = random;
     }
 
     public Task<PlaySession> StartAsync(PlaySession model, CancellationToken cancellationToken)
@@ -79,7 +81,7 @@ public class PlaySessionService
                     "A random start player needs at least one player in the play session."
                 );
             }
-            model.StartPlayerId = players[Random.Shared.Next(players.Count)].Id;
+            model.StartPlayerId = players[Random.Next(players.Count)].Id;
         }
     }
 

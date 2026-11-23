@@ -27,6 +27,7 @@
     <ProjectReference Include="../Migrations/Migrations.csproj" />
     <ProjectReference Include="../Models/Models.csproj" />
     <ProjectReference Include="../Services/Services.csproj" />
+    <ProjectReference Include="../TestData/TestData.csproj" />
     <ProjectReference Include="../ViewModels/ViewModels.csproj" />
   </ItemGroup>
 

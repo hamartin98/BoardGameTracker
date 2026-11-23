@@ -1,7 +1,8 @@
+using BoardGameTracker.Database;
 using BoardGameTracker.Models.Entities;
 using BoardGameTracker.TestData.Models;
 
-namespace BoardGameTracker.Database;
+namespace BoardGameTracker.TestData;
 
 public static class DbDataSeeder
 {

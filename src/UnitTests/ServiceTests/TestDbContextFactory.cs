@@ -9,12 +9,15 @@ public class TestDbContextFactory
 {
     private readonly DbContextOptions<BoardGameContext> Options;
 
-    public TestDbContextFactory()
+    public TestDbContextFactory(TimeProvider? timeProvider = null)
     {
         Options = new DbContextOptionsBuilder<BoardGameContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .ConfigureWarnings(config => config.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .AddInterceptors(new UpdateInterceptor(), new SoftDeleteInterceptor())
+            .AddInterceptors(
+                new UpdateInterceptor(timeProvider ?? TimeProvider.System),
+                new SoftDeleteInterceptor(timeProvider ?? TimeProvider.System)
+            )
             .Options;
     }
 
