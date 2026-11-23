@@ -32,13 +32,7 @@ Seed data (`SeedData/DbDataSeeder.cs`, entities in `SeedData/SeededEntities.cs`)
 
 The seeded session (Scythe with Fenris, Alice and Bob) started at `CommonTestData.DateTime` and lasted 2 hours.
 
-Expected error codes (`Middlewares/ExceptionHandlerMiddleware.cs`), returned as ProblemDetails JSON:
-- 400: `ApplicationException`, or request validation (DataAnnotations / `IValidatableObject`)
-- 404: not found / invalid foreign key
-- 412: `If-Match` doesn't match the current version (`VersionMismatchException`)
-- 422: `BusinessRuleException`
-- 428: `If-Match` missing (`PreconditionRequiredException`)
-- 500: anything else
+Error codes are listed under **Errors** in CLAUDE.md. Request validation (DataAnnotations / `IValidatableObject`) also returns 400, and invalid foreign keys return 404.
 
 Swagger: `IntegrationTests/OpenApiTests.cs` checks that `/swagger/v1/swagger.json` is generated and lists the paths. When you add an endpoint, add its path to the `DocumentListsPathTest` cases.
 
